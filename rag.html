@@ -1,0 +1,1657 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="darkreader-lock">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RAG · 八股笔记</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' font-weight='bold' fill='white' text-anchor='middle'%3E八%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css?v=ab30056e">
+<script>
+  (function () {
+    var t = localStorage.getItem('iv.theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+</head>
+<body data-part="ai" data-sec="rag">
+<header class="site-header">
+  <button class="icon-btn menu-btn" id="menu-btn" aria-label="目录">☰</button>
+  <a href="index.html" class="brand"><span class="dot">●</span> 八股笔记</a>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="search">
+    <input id="search" type="search" placeholder="搜索题目  /" autocomplete="off" aria-label="搜索题目">
+    <span id="search-info"></span>
+    <div class="search-pop" id="search-pop" hidden></div>
+  </div>
+  <button class="icon-btn" id="theme-toggle" aria-label="切换主题">◐</button>
+</header>
+<aside class="side" id="side"><nav id="toc"></nav></aside>
+<main class="main">
+  <div id="article">
+<header class="page-head"><div class="crumb">AI &amp; Agent</div><h1>RAG <span class="cnt">77 题</span></h1><div class="tools"><button type="button" class="tool" id="t-core" aria-pressed="false">只看高频 <b>36</b></button><button type="button" class="tool" id="t-quiz" aria-pressed="false">自测模式</button><a class="tool resume" id="t-resume" hidden></a><span class="kbd-hint"><kbd>j</kbd>/<kbd>k</kbd> 上下题 · 自测时 <kbd>空格</kbd> 看答案 · <kbd>/</kbd> 搜索</span></div><nav class="overview"><div class="ov-groups"><a href="#g1">RAG 基础与流程<span><span class="n-all">5</span><span class="n-core">2</span></span></a><a href="#g2">文档解析<span><span class="n-all">7</span><span class="n-core">4</span></span></a><a href="#g3">文档切块（Chunking）<span><span class="n-all">7</span><span class="n-core">7</span></span></a><a href="#g4">Embedding<span><span class="n-all">6</span><span class="n-core">3</span></span></a><a href="#g5">向量数据库与索引<span><span class="n-all">11</span><span class="n-core">3</span></span></a><a href="#g6">检索与召回<span><span class="n-all">11</span><span class="n-core">6</span></span></a><a href="#g7">Rerank<span><span class="n-all">6</span><span class="n-core">5</span></span></a><a href="#g8" class="no-core">RAG 评估<span><span class="n-all">5</span><span class="n-core">0</span></span></a><a href="#g9">幻觉与工程优化<span><span class="n-all">6</span><span class="n-core">1</span></span></a><a href="#g10" class="no-core">进阶 RAG 范式<span><span class="n-all">4</span><span class="n-core">0</span></span></a><a href="#g11">GraphRAG 与知识图谱<span><span class="n-all">9</span><span class="n-core">5</span></span></a></div></nav></header><section class="grp has-core" id="g1"><h2 class="grp-title">RAG 基础与流程 <span class="cnt"><span class="n-all">5</span><span class="n-core">高频 2</span></span></h2><article class="q" id="q1"><h3><a class="q-link" href="#q1">RAG 概览</a></h3><div class="a"><p class="lead">RAG（Retrieval-Augmented Generation，检索增强生成）让模型在回答前先检索外部知识，再基于检索到的内容生成答案。面试基本围绕一条链路追问：解析 → Chunking → Embedding → 索引/检索（BM25 + 向量 + 融合）→ Rerank → 生成 → 评估。</p>
+<p><strong>解决什么问题</strong>：模型知识过时、不了解私有数据、容易幻觉、长文档无法全部塞进上下文、企业场景需要可追溯的来源。</p>
+<p><strong>标准在线流程</strong>：用户提问 → Query 改写 → 检索相关文档 → 重排 → 选取片段 → 注入上下文 → 模型生成答案 → 返回引用来源。</p>
+<p><strong>核心组件</strong></p>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>文档解析与清洗</td>
+<td>把 PDF/Word/HTML 等转成干净文本，去掉无用格式和噪声</td>
+</tr>
+<tr>
+<td>Chunk 切分</td>
+<td>把长文档切成语义完整、大小合适的片段</td>
+</tr>
+<tr>
+<td>Embedding</td>
+<td>把文本转成向量</td>
+</tr>
+<tr>
+<td>Vector Store</td>
+<td>存储向量并建 ANN 索引</td>
+</tr>
+<tr>
+<td>Retriever</td>
+<td>根据问题召回候选内容（向量、BM25、过滤）</td>
+</tr>
+<tr>
+<td>Reranker</td>
+<td>对候选重新打分排序，提高相关性</td>
+</tr>
+<tr>
+<td>Generator</td>
+<td>LLM 基于检索内容生成答案</td>
+</tr>
+<tr>
+<td>Citation</td>
+<td>标注出处，方便核验</td>
+</tr>
+</tbody>
+</table>
+<p><strong>常见改进方向</strong>：混合检索（关键词 + 向量）、Query 改写、Rerank 精排、上下文压缩（只保留与问题相关的句子）、引用约束（答案必须标注来源）、建立评估集持续测试命中率和回答质量。</p>
+<p><img src="images/Java%E5%85%AB%E8%82%A1%EF%BC%88%E5%90%8E%E7%AB%AF)+Agent%E5%85%AB%E8%82%A18-image-21.png" alt=""></p></div></article><article class="q core" id="q2"><h3><a class="q-link" href="#q2">什么是 RAG？完整的 RAG 系统流程是怎样的？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">RAG 即检索增强生成：用户提问时先从外部知识库检索最相关的片段，再把片段和问题一起交给 LLM，让模型基于这些依据生成更准确、更有时效性、可溯源的回答。核心流程可以概括为<strong>索引 → 检索 → 增强 → 生成</strong>，工程上拆成离线入库和在线问答两条链路。</p>
+<p><img src="images/Java+AI%E5%85%AB%E8%82%A1-Gemini_Generated_Image_u8fdl6u8fdl6u8fd.png" alt=""></p>
+<p><strong>1. 离线：知识入库（索引）</strong></p>
+<ul>
+<li><strong>解析与清洗</strong>：PDF、Word、HTML 等统一转为文本或 Markdown，保留标题层级和表格，去掉页眉页脚、乱码和重复内容。</li>
+<li><strong>切块</strong>：按标题、段落等语义边界切，必要时再按 Token 长度二次切分并设 Overlap，而不是按固定字数硬切。</li>
+<li><strong>向量化</strong>：用 Embedding 模型（如 BGE、GTE、text-embedding-3）转向量，同时保存原始文本、标题路径、来源、页码、更新时间等元数据。</li>
+<li><strong>建索引</strong>：写入 Milvus、Qdrant、pgvector、Elasticsearch 等，建向量索引（HNSW、IVF），需要关键词检索时同时建倒排索引。</li>
+</ul>
+<p><strong>2. 在线：问答（检索 → 增强 → 生成）</strong></p>
+<ul>
+<li><strong>Query 预处理</strong>：意图识别、改写、结合历史做指代消解。</li>
+<li><strong>检索</strong>：用<strong>同一个 Embedding 模型</strong>把问题转向量，相似度检索召回 Top-K；生产中叠加 BM25、权限过滤等多路召回。</li>
+<li><strong>融合与重排</strong>：合并去重（如 RRF），Rerank 精排出 Top-N。</li>
+<li><strong>增强</strong>：片段和问题按模板拼成 Prompt，约束只基于给定内容回答，信息不足时明确说明。</li>
+<li><strong>生成与后处理</strong>：返回答案和引用来源，记录日志用于评估优化。</li>
+</ul>
+<p><strong>价值</strong>：缓解幻觉、知识更新无需重训模型、回答可溯源。</p></div></article><article class="q" id="q3"><h3><a class="q-link" href="#q3">用户发起一次 RAG 问答后，系统内部的完整执行流程是什么？</a></h3><div class="a"><p class="lead">一次请求通常经过「校验 → 预处理 → 向量化 → 多路召回 → 融合重排 → 构建 Prompt → 生成 → 返回 → 记录」这条链路：</p>
+<ol>
+<li><strong>接入与校验</strong>：参数校验、用户身份认证和权限校验（决定这个用户能检索哪些文档）。</li>
+<li><strong>Query 预处理</strong>：去噪、意图识别、Query 改写、结合历史对话补全指代和省略。</li>
+<li><strong>向量化</strong>：用与入库时相同的 Embedding 模型把 Query 转成查询向量。</li>
+<li><strong>向量召回</strong>：在向量库做 ANN 检索，召回 Top-K 个相关 Chunk，同时带上租户、权限、时间等标量过滤条件。</li>
+<li><strong>其他召回通道</strong>：支持混合检索时，并行走 BM25 关键词、标签、SQL 精确查询等通道。</li>
+<li><strong>融合与重排</strong>：多路结果合并、去重、过滤低分结果（相似度阈值），再用 Rerank 模型重新排序。</li>
+<li><strong>构建 Prompt</strong>：选取最相关的若干 Chunk 作为上下文，加上系统指令，例如“必须基于给定内容回答，信息不足时明确说明不知道”。</li>
+<li><strong>调用 LLM 生成</strong>：通常开启流式输出。</li>
+<li><strong>返回结果</strong>：流式回答通过 SSE 或 WebSocket 分段推给前端，同时返回引用来源、页码、命中片段。</li>
+<li><strong>记录日志</strong>：保存问题、召回结果、回答、各阶段耗时、用户反馈，用于后续评估和优化。</li>
+</ol></div></article><article class="q" id="q4"><h3><a class="q-link" href="#q4">为什么大模型需要 RAG？它主要解决什么问题？</a></h3><div class="a"><p class="lead">RAG 让大模型具备访问外部知识的能力，基于最新、准确、可追溯的内容回答，弥补模型自身的几个天然缺陷：</p>
+<ul>
+<li><strong>知识是静态的</strong>：训练完成后参数里的知识就固定了，不知道最新文档、业务规则和实时数据（知识截止问题）。</li>
+<li><strong>容易幻觉</strong>：模型本质是概率生成，不确定时会编造看似合理但错误的答案。</li>
+<li><strong>不了解私有知识</strong>：公司制度、产品手册、内部接口文档等不在训练数据里。</li>
+<li><strong>上下文有限且昂贵</strong>：每次把大量文档直接塞进 Prompt，成本高、延迟大，还会稀释关键信息。</li>
+<li><strong>缺少可溯源性</strong>：纯模型回答无法说明依据，企业场景难以信任。</li>
+</ul>
+<p>可以把大模型看成“通用大脑”，RAG 则给它接了一个“外部资料库”。例如员工问“报销流程是什么”，只靠大模型只能给出通用流程；RAG 会先检索公司最新财务制度，再基于制度回答并给出引用，准确性和可信度都更高。</p></div></article><article class="q core" id="q5"><h3><a class="q-link" href="#q5">RAG 和微调、纯 Prompt 相比有什么优劣？实际项目怎么选型？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead"><strong>本质区别</strong>：微调修改模型参数，让模型学会某种能力、格式或风格；RAG 不改参数，通过外部检索给模型补充知识。可以概括为：RAG 解决“知识从哪里来”，微调解决“模型怎么更好地表达和执行任务”。纯 Prompt 只靠指令和少量示例，不引入外部知识，也不改模型。</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>纯 Prompt</th>
+<th>RAG</th>
+<th>微调</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>成本</td>
+<td>最低</td>
+<td>中等，需维护知识库、Embedding、Rerank 等组件</td>
+<td>高，需算力和高质量标注数据</td>
+</tr>
+<tr>
+<td>知识更新</td>
+<td>不支持</td>
+<td>更新知识库即可，分钟级生效</td>
+<td>需重新训练，周期长</td>
+</tr>
+<tr>
+<td>私有知识</td>
+<td>只能塞进上下文，受窗口限制</td>
+<td>擅长</td>
+<td>能学到一部分，但难精确记忆、难更新</td>
+</tr>
+<tr>
+<td>可溯源</td>
+<td>无</td>
+<td>可返回引用来源</td>
+<td>黑盒，难追溯</td>
+</tr>
+<tr>
+<td>输出风格/格式/任务能力</td>
+<td>有限</td>
+<td>基本不改变</td>
+<td>擅长</td>
+</tr>
+<tr>
+<td>风险</td>
+<td>幻觉</td>
+<td>依赖检索质量</td>
+<td>灾难性遗忘、过拟合</td>
+</tr>
+</tbody>
+</table>
+<p><strong>RAG 的优势</strong>：无需训练、上线快；知识可实时更新；回答可溯源；不改权重，不存在灾难性遗忘；私有数据不进模型参数，便于做权限控制和数据删除。</p>
+<p><strong>RAG 的劣势</strong>：效果强依赖解析、切片和检索质量；组件多、链路长、维护成本高；每次请求多了检索环节，延迟和成本更高；受上下文窗口限制，跨大量文档的全局总结能力弱。</p>
+<p><strong>选型思路</strong></p>
+<ul>
+<li>问题是“模型不知道某些知识”、知识更新频繁、需要溯源 → 优先 RAG。</li>
+<li>问题是“模型知道知识，但不按想要的格式、流程或风格输出”，或要提升特定任务能力（分类、结构化抽取、领域术语表达）→ 考虑微调。</li>
+<li>两种需求都有 → RAG + 微调组合：RAG 提供知识，微调提升输出稳定性。</li>
+<li>知识量小、变化少、能直接放进上下文 → 纯 Prompt 就够了。</li>
+</ul></div></article></section><section class="grp has-core" id="g2"><h2 class="grp-title">文档解析 <span class="cnt"><span class="n-all">7</span><span class="n-core">高频 4</span></span></h2><article class="q core" id="q6"><h3><a class="q-link" href="#q6">文档解析的作用是什么？解析不好会造成什么影响？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">文档解析是把原始文件转成可检索数据的第一步，直接决定后续检索和生成的上限，所谓 garbage in, garbage out。</p>
+<p><strong>作用</strong></p>
+<ul>
+<li><strong>提取关键信息</strong>：准确获取文本、表格等结构化数据及上下文关联。</li>
+<li><strong>保留文档结构</strong>：还原章节层级、表格、列表和阅读顺序，为切块和定位提供依据。</li>
+<li><strong>保障数据质量</strong>：过滤乱码、页眉页脚、水印等噪声，为高精度召回提供干净的数据底座。</li>
+</ul>
+<p><strong>解析不好的影响</strong></p>
+<ul>
+<li><strong>召回缺失或错误</strong>：关键信息被漏掉或打乱（如多栏排版读串、表格错位），检索阶段就无法命中正确答案。</li>
+<li><strong>上下文逻辑扭曲</strong>：段落错位、跨页内容被截断，模型会基于错误上下文给出偏离主题的回答。</li>
+<li><strong>误差逐级放大</strong>：解析错误会传导到切块、向量化、检索和生成，后面再怎么优化也难以弥补，最终影响用户体验。</li>
+</ul></div></article><article class="q core" id="q7"><h3><a class="q-link" href="#q7">不同格式的文档如何解析？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">难点在于多源异构，思路是按格式路由到不同的解析方式，最后统一输出带结构信息的文本（通常是 Markdown 或 JSON）。</p>
+<p><strong>通用流程</strong></p>
+<ol>
+<li><strong>格式识别与分发</strong>：识别文件类型，把 PDF、DOCX、图片、HTML 等路由到对应解析模块。</li>
+<li><strong>底层文本抽取</strong>：电子版文档直接调用解析库提取文本和排版信息；扫描件和图片用 OCR 识别文字，并还原段落、表格、公式。</li>
+<li><strong>布局与结构化处理</strong>：用版面分析模型或规则还原阅读顺序和层级，识别标题、表格、列表、图注等元素。</li>
+<li><strong>清洗</strong>：去掉页眉页脚、页码、水印等干扰。</li>
+<li><strong>附加元数据</strong>：为每块内容绑定文件名、章节标题、页码等，便于后续检索和溯源。</li>
+</ol>
+<p><strong>常见格式的做法</strong></p>
+<table>
+<thead>
+<tr>
+<th>格式</th>
+<th>常用方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>原生 PDF（可复制文本）</td>
+<td>PyMuPDF、pdfplumber 提取文本和坐标；版面复杂时用 MinerU 等版面分析工具</td>
+</tr>
+<tr>
+<td>扫描 PDF / 图片</td>
+<td>OCR（PaddleOCR 等）+ 版面分析，表格和公式用专用模型</td>
+</tr>
+<tr>
+<td>Word（DOCX）</td>
+<td>python-docx 等按段落样式提取标题层级、表格</td>
+</tr>
+<tr>
+<td>HTML / 网页</td>
+<td>解析 DOM，去导航栏和广告，保留 h1–h6、列表、表格</td>
+</tr>
+<tr>
+<td>Markdown</td>
+<td>天然带结构，直接按标题层级解析</td>
+</tr>
+<tr>
+<td>Excel / CSV</td>
+<td>按行或按表转换，保留表头与字段含义</td>
+</tr>
+<tr>
+<td>数据库</td>
+<td>通过 SQL 导出，把结构化记录转成文本或直接走结构化查询</td>
+</tr>
+</tbody>
+</table></div></article><article class="q core" id="q8"><h3><a class="q-link" href="#q8">多级文档怎么在检索阶段保留层级信息？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">核心思路是<strong>解析时把层级结构变成元数据，切块时把层级绑定到每个 Chunk，检索和展示时利用这些元数据</strong>。</p>
+<ol>
+<li><strong>结构化存储</strong>：把各级标题、表格和图片的位置转成可索引的元数据，以 JSON 或数据库表落盘，形成文档树。</li>
+<li><strong>上下文绑定</strong>：每个 Chunk 记录所属文档 ID、页码、章节路径（如“费用报销制度 &gt; 差旅报销 &gt; 住宿标准”）、父节点 ID。常见做法是把标题路径作为前缀拼进 Chunk 文本再做 Embedding，让向量也带上层级语义。</li>
+<li><strong>多维检索策略</strong>：先用向量相似度筛候选，再用层级元数据做过滤或加权，例如问题指向某个章节时，提升该章节下 Chunk 的权重；也可以用 Parent-Child（小块检索、返回父块）或分层索引（先检索章节摘要，再检索章节内细节）。</li>
+<li><strong>可视化溯源</strong>：展示答案时标出所属文档、章节和页码，方便用户理解语境并定位原始文档。</li>
+</ol></div></article><article class="q core" id="q9"><h3><a class="q-link" href="#q9">如何评价文档解析的效果？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">从「文字对不对、结构对不对、对下游有没有用」三个层面评估：</p>
+<ol>
+<li><strong>OCR / 文本准确率</strong>：把提取结果与人工校对文本比对，用字符错误率（CER）或词错误率（WER）衡量。</li>
+<li><strong>段落完整度</strong>：检查自然段、列表、表格的边界是否完整，有没有过度切分或错误拼接。</li>
+<li><strong>结构保真度</strong>：评估表格（单元格、合并单元格、行列关系）、多栏阅读顺序、多级标题、公式的还原程度。表格可用 TEDS 等指标衡量结构相似度。</li>
+<li><strong>下游检索验证</strong>：用真实问题做检索测试，看召回率和准确率，以及最终答案准确率。解析质量最终要体现在检索命中上。</li>
+<li><strong>溯源能力</strong>：验证能否通过解析结果精准定位到原始文档的页码和段落。</li>
+</ol>
+<p>实践中通常先建一个覆盖各种版式（多栏、跨页表格、扫描件、公式）的小样本集，人工标注后做自动比对，再配合端到端评测。</p></div></article><article class="q" id="q10"><h3><a class="q-link" href="#q10">MinerU 相比其他 PDF 解析框架有什么优缺点？</a></h3><div class="a"><p class="lead">MinerU 是上海人工智能实验室（OpenDataLab）开源的文档解析工具，基于 PDF-Extract-Kit 等模型做版面分析和内容识别，输出 Markdown 或 JSON，对 RAG 比较友好。</p>
+<p><strong>优点</strong></p>
+<ul>
+<li><strong>版面重构能力强</strong>：基于 CV 模型做物理版面分析，能还原多栏、图文混排和人类阅读顺序。</li>
+<li><strong>结构解析保真度高</strong>：公式（行内和行间）转成 LaTeX，表格重建为 Markdown/HTML 表格，比传统 OCR 不容易错位。</li>
+<li><strong>自动降噪</strong>：识别并剔除页眉、页脚、页码等非正文内容，降低清洗成本。</li>
+<li><strong>幻觉风险低</strong>：Pipeline 模式采用“版面检测 + 分区识别”，比纯端到端生成式模型（如 Nougat）更不容易漏字或编造内容。</li>
+</ul>
+<p><strong>缺点</strong></p>
+<ul>
+<li><strong>资源占用大</strong>：依赖 GPU 加速，纯 CPU 推理慢，不适合高并发实时解析。</li>
+<li><strong>部署运维门槛高</strong>：依赖 PyTorch 等深度学习环境，需要下载和加载多套模型权重。</li>
+<li><strong>简单场景性价比低</strong>：单栏纯文本、可直接复制文本的原生 PDF，用 PyMuPDF 这类传统库快得多。</li>
+</ul></div></article><article class="q" id="q11"><h3><a class="q-link" href="#q11">MinerU 处理复杂图文混排文档的流程是什么？</a></h3><div class="a"><p class="lead">整体是「图像化 → 版面检测 → 分区识别 → 阅读顺序重建 → 结构化输出」的 Pipeline：</p>
+<ol>
+<li><strong>页面图像化</strong>：把 PDF 每页渲染成高分辨率图像，抹平原生 PDF 和扫描 PDF 的差异，为视觉处理提供统一输入。</li>
+<li><strong>版面分析与元素定位</strong>：用目标检测模型识别页面中各元素的边界框（Bounding Box）和类别，包括正文、标题、图片、图注、表格、行内公式、行间公式等。</li>
+<li><strong>分区识别</strong>：按类别把区域裁剪出来，交给对应模型：
+<ul>
+<li>文本类（正文、标题、图注）→ OCR 模型（原生 PDF 也可以直接取文本层）；</li>
+<li>公式 → 公式识别模型，转成 LaTeX；</li>
+<li>表格 → 表格结构识别模型，转成 Markdown 或 HTML；</li>
+<li>图片 → 裁剪保存为独立图片文件。</li>
+</ul>
+</li>
+<li><strong>阅读顺序重建</strong>：基于边界框坐标和规则（或阅读顺序模型）重建逻辑顺序，处理框重叠去重、多栏顺序，把行内公式、图注等拼回正文流。</li>
+<li><strong>结构化输出</strong>：生成 Markdown 或 JSON，正文、公式、表格按顺序排布，图片以相对路径插入对应位置。</li>
+</ol></div></article><article class="q" id="q12"><h3><a class="q-link" href="#q12">MinerU 解析还存在哪些局限性？</a></h3><div class="a"><p class="lead"><strong>主要局限</strong></p>
+<ul>
+<li>阅读顺序基于空间分布排序，极端复杂的排版下部分区域可能乱序。</li>
+<li>对竖排文字支持有限。</li>
+<li>复杂表格（大量合并单元格、跨页表格）可能出现行列识别错误；部分公式在 Markdown 中可能无法正常渲染。</li>
+</ul>
+<p><strong>次要局限</strong></p>
+<ul>
+<li>目录、列表靠规则识别，少见的列表格式可能识别不出来。</li>
+<li>漫画、艺术画册、小学教材、习题等特殊版式解析效果不好。</li>
+<li>代码块在版面模型中支持不足。</li>
+<li>小语种 PDF 的 OCR 可能出现字符错误（如阿拉伯文中容易混淆的字符）。</li>
+</ul>
+<p>MinerU 版本迭代很快，具体支持情况以所用版本的官方说明为准。</p></div></article></section><section class="grp has-core" id="g3"><h2 class="grp-title">文档切块（Chunking） <span class="cnt"><span class="n-all">7</span><span class="n-core">高频 7</span></span></h2><article class="q core" id="q13"><h3><a class="q-link" href="#q13">为什么向量化之前要对文档切块？不切会有什么后果？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">切块一是为了适配模型的长度限制，二是把文档拆成语义单元，让检索更准、更省。</p>
+<p><strong>原因</strong></p>
+<ol>
+<li><strong>Embedding 模型有输入长度上限</strong>：BERT 类模型通常 512 Token，bge-m3 等约 8K。超长文本会被截断，信息丢失。</li>
+<li><strong>避免语义稀释</strong>：长文档往往有多个主题，整体压成一个向量后语义被平均，和具体问题的相似度变低，检索很难命中细节。</li>
+<li><strong>控制召回粒度</strong>：检索返回的是相关片段而不是整篇文档，可以直接放进 Prompt，节省 Token，也不容易超出 LLM 上下文窗口。</li>
+</ol>
+<p><strong>不切的后果</strong>：检索命中不了具体细节，召回内容噪声大、Token 消耗高，模型要从大段无关内容里找答案，容易遗漏或幻觉，下游生成质量下降。</p>
+<p><strong>注意</strong>：切分策略本身也很关键，粗暴切分会破坏语义、造成信息碎片化；结构复杂的场景常用多级切分来兼顾宏观和细节检索。</p></div></article><article class="q core" id="q14"><h3><a class="q-link" href="#q14">Chunk 太大和太小各有什么问题？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">一句话：<strong>太大，Embedding 不准、噪声多；太小，信息不完整，要召回很多块拼接。</strong></p>
+<p><strong>过大</strong></p>
+<ul>
+<li><strong>语义稀释</strong>：一个块包含多个话题，向量被平均化，与具体问题的相似度下降，难以精准命中。</li>
+<li><strong>噪声多</strong>：大量无关内容进入上下文，浪费 Token，还会把模型带偏。</li>
+<li><strong>答案难提取</strong>：即使块里有正确答案，模型也要从大量冗余中找关键事实，容易遗漏或幻觉。</li>
+</ul>
+<p><strong>过小</strong></p>
+<ul>
+<li><strong>信息不完整</strong>：单块语义不足，只看一块往往答不了问题，容易断章取义。</li>
+<li><strong>需要召回多块</strong>：为了凑齐信息要召回很多小块，可能混入冲突或无关片段，增加重排和生成压力。</li>
+<li><strong>语义断裂</strong>：关键信息被切散，检索可能只命中一部分，回答片面。</li>
+<li><strong>上下文和存储开销上升</strong>：块数变多，索引更大；拼进 Prompt 的块之间缺乏衔接，模型需要额外推理。</li>
+</ul>
+<p><strong>常见做法</strong>：按文档结构切分，配合 Overlap，把标题路径等元数据补进 Chunk；块大小常从几百 Token（如 256–512）起步，再用评测集调参。也可以用 Parent-Child 策略：小块负责检索命中，返回时扩展为父块提供完整上下文。</p></div></article><article class="q core" id="q15"><h3><a class="q-link" href="#q15">常见的 Chunking 策略有哪些？固定、语义、层级分片各有什么优缺点？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead"><strong>设计依据</strong>：主要看文档类型（连续的散文、带结构的 Markdown、代码、表格）和期望的检索粒度（按段落、按主题还是按章节），再兼顾成本和延迟。</p>
+<p><strong>三类核心策略</strong></p>
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>做法</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>固定分片</td>
+<td>按固定字符数或 Token 数切，可设 Overlap</td>
+<td>实现简单、速度快，适合快速原型</td>
+<td>容易在句子中间断开，破坏语义</td>
+</tr>
+<tr>
+<td>语义分片</td>
+<td>计算相邻句子 Embedding 的相似度，在语义变化大的地方切</td>
+<td>主题边界更自然</td>
+<td>计算成本高，效果对阈值敏感，实际收益不稳定</td>
+</tr>
+<tr>
+<td>层级分片</td>
+<td>按文档 → 章节 → 段落 → 句子的天然结构递归切</td>
+<td>保留结构信息，支持多粒度检索</td>
+<td>块大小不均，依赖解析质量</td>
+</tr>
+</tbody>
+</table>
+<p><strong>LangChain 等框架中的常见分割器</strong></p>
+<ul>
+<li><strong>Recursive</strong>（RecursiveCharacterTextSplitter）：常用默认，按分隔符列表（默认 <code>[&quot;\n\n&quot;, &quot;\n&quot;, &quot; &quot;, &quot;&quot;]</code>）依次尝试，直到块小于 chunk_size。</li>
+<li><strong>Token</strong>：按 Token 数切（如 tiktoken），和模型长度限制对得最准。</li>
+<li><strong>结构化</strong>：按 Markdown 标题、HTML 标签、代码的类和函数切。</li>
+<li><strong>Agentic</strong>：让 LLM 决定切分点或改写成独立命题（proposition），可能更好，但每个文档都要调 LLM，成本高、速度慢。</li>
+</ul>
+<p><strong>实践经验</strong>：Recursive 或按文档结构切分，配合合适的 chunk_size 和 overlap，通常是性价比最高、最不容易出错的 baseline。语义切分和 Agentic 切分是否值得，要用评测集验证后再决定。</p></div></article><article class="q core" id="q16"><h3><a class="q-link" href="#q16">如何设计一个好的 Chunking 方案？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">一般分两个阶段：<strong>先按规则切分，再做语义连贯性调整</strong>，最后控制长度。</p>
+<p><strong>1. 基于规则的初切分</strong></p>
+<ul>
+<li>以章节标题、段落换行、列表项、表格边界作为切分点，遇到新的章节或列表就开启新 Chunk。</li>
+<li>表格、代码块、图片（及其说明）整体作为独立 Chunk，避免中途截断。</li>
+</ul>
+<p><strong>2. 语义连贯性调整</strong></p>
+<ul>
+<li>检查相邻 Chunk：某块过短且和前后紧密相关（如上一块以冒号结尾、内容没说完），就合并。</li>
+<li>跨页段落：下一页开头不是新标题，就和上一页末尾合并；跨页表格合成一个完整表格 Chunk。</li>
+<li>可以用相邻段落的 Embedding 相似度判断主题是否延续，辅助决定合并还是切开。</li>
+</ul>
+<p><strong>3. 长度与平衡</strong></p>
+<ul>
+<li>在语义完整的前提下控制长度，使其符合 Embedding 模型上限（如不超过 512 Token）。</li>
+<li>过长就按次级标题或句号、分号等边界再拆分；过短就与相邻段落合并。</li>
+<li>设置适量 Overlap，并把标题路径、页码等元数据挂到每个 Chunk 上。</li>
+</ul>
+<p><strong>目标</strong>：每个 Chunk 语义完整、信息密度适中、脱离上下文也能被独立检索和理解。最终用检索评测集对比不同参数的效果。</p></div></article><article class="q core" id="q17"><h3><a class="q-link" href="#q17">切块时怎么避免完整的段落和语义被硬切断？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">核心是<strong>依据解析出的结构切分，切不开时在自然语义边界拆，并用重叠和元数据补上下文</strong>。</p>
+<ol>
+<li><strong>优先按文档结构切分</strong>：借助 MinerU 等解析工具拿到句子边界、段落 ID、版面信息（行距、换行）和多级标题（H1/H2/H3），保证同一段落、同一标题下的内容尽量留在一个 Chunk。</li>
+<li><strong>长度超限再二次拆分</strong>：用 Token 计数判断，合并后不超过阈值就保留整段；超过了就在句号、分号等自然边界拆，不在句子中间切。</li>
+<li><strong>设置 Overlap</strong>：相邻 Chunk 保留一定重叠（如 50–100 Token 或块长的 10%–20%），防止关键信息正好落在边界上。</li>
+<li><strong>补全上下级标题</strong>：把“费用报销制度 &gt; 差旅报销 &gt; 住宿标准”这样的标题路径作为元数据或前缀拼进 Chunk。</li>
+<li><strong>特殊内容特殊处理</strong>：表格不按行乱切（拆分时每块都带上表头），代码按函数或类切，流程类内容保持步骤完整。</li>
+<li><strong>可选语义切分</strong>：根据句子间语义相似度找切分点。</li>
+</ol>
+<p>例如“员工出差住宿标准如下：一线城市每天不超过 500 元，二线城市每天不超过 350 元。”如果硬切成“……一线城市每天不超过”和“500 元，二线城市……”，两块单独看都不完整，检索和生成都会出错。</p></div></article><article class="q core" id="q18"><h3><a class="q-link" href="#q18">如何根据 chunk 建立索引并定位原文位置？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">关键是<strong>入库时给每个 Chunk 保存源信息元数据</strong>：文档 ID、文件名、页码、段落 ID、多级标题路径、在原始文档中的字符偏移（start/end offset），PDF 还可以存边界框坐标。</p>
+<ul>
+<li><strong>建索引</strong>：向量和元数据一起写入向量库（或向量库存 chunk_id，元数据放在关系库），同时可为标题、文件名等字段建倒排或标量索引。</li>
+<li><strong>检索增强</strong>：标题等元数据本身也可以作为检索信号，或用于过滤（按文档、章节、时间）。</li>
+<li><strong>定位原始文档</strong>：命中 Chunk 后，通过文档 ID + 页码 + 偏移量回到原始文档，前端可以展示来源、跳转并高亮对应段落，方便用户溯源和核验。</li>
+<li><strong>扩展上下文</strong>：存好前后相邻 chunk_id 或父块 ID，需要时可以取回相邻内容或父块。</li>
+</ul></div></article><article class="q core" id="q19"><h3><a class="q-link" href="#q19">如何评价和验证 Chunking 的质量？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">从三个层次验证：<strong>物理指标层、检索效果层、端到端效果层</strong>。前两层定位问题，最后一层看最终收益。</p>
+<p><strong>1. 物理指标层：切分本身有没有明显问题</strong></p>
+<ul>
+<li><strong>块大小分布</strong>：统计每块 Token 数的分布，看是否有大量过小（语义不完整）或过大（噪声多）的块。</li>
+<li><strong>重叠比例</strong>：相邻块重叠 Token 数占块长的比例，太高浪费存储和计算，太低可能漏信息。</li>
+<li><strong>信息完整度</strong>：表格、图片、标题等元素是否完整保留，可量化为完整保留率或信息缺失率。</li>
+<li><strong>语义连贯度</strong>：统计句子被切断、段落被割裂的比例。</li>
+<li><strong>结构准确率</strong>：切分后标题与正文仍保持正确层级关系的比例。</li>
+<li><strong>人工抽检</strong>：随机抽 50–100 个块，人工判断是否是完整语义单元。例如“产品支持 Docker、Kubernetes”和后一句“但不支持 OpenShift”被切开，就会产生误导。</li>
+</ul>
+<p><strong>2. 检索效果层：对检索的实际影响</strong></p>
+<ul>
+<li>Recall@K：相关内容是否被召回。</li>
+<li>Precision@K：召回结果中相关内容的比例。</li>
+<li>MRR：第一个相关结果排名的倒数，衡量相关结果是否靠前。</li>
+<li>NDCG@K：综合考虑分级相关性和排序位置。</li>
+</ul>
+<p><strong>3. 端到端效果层</strong></p>
+<ul>
+<li>答案准确率：基于检索结果生成的答案是否正确。</li>
+<li>答案完整性：是否因切分导致关键信息遗漏。</li>
+<li>也可以用 Ragas 的 Context Recall、Faithfulness 等指标自动评估。</li>
+</ul>
+<p>做法上，固定一套评测问题，只改切分参数（块大小、overlap、策略）做对比实验。</p></div></article></section><section class="grp has-core" id="g4"><h2 class="grp-title">Embedding <span class="cnt"><span class="n-all">6</span><span class="n-core">高频 3</span></span></h2><article class="q core" id="q20"><h3><a class="q-link" href="#q20">什么是 Embedding？为什么向量化之后就能做语义检索？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">Embedding（向量化）是把文本、图片、代码等非结构化数据映射成固定维度的数值向量。这个向量由模型通过训练学到，用来表示内容的语义。</p>
+<p><strong>为什么能做语义检索</strong>：Embedding 模型一般通过对比学习训练，目标是让语义相近的样本向量靠近、不相关的样本远离。所以“如何申请报销”和“报销流程是什么”字面不同，向量却很接近。检索时把问题也编码成向量，在向量空间里找最近的文档向量，就实现了“按意思找”，而不是“按字面找”。</p>
+<p><strong>相似度度量</strong>：余弦相似度、内积（点积）、欧氏距离（L2）。向量做过 L2 归一化后，三者给出的排序一致。</p>
+<p><strong>作用</strong>：语义搜索、RAG 召回、文本分类、聚类、推荐、去重等。在 RAG 中，Embedding 质量直接决定召回质量。</p>
+<p>可以理解为：Embedding 给每段文本生成一个“语义坐标”，向量数据库做的就是在海量坐标中找离用户问题最近的那些知识片段。</p></div></article><article class="q core" id="q21"><h3><a class="q-link" href="#q21">你了解哪些 Embedding 模型？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead"><strong>常见模型</strong></p>
+<ul>
+<li><strong>BGE 系列（BAAI 智源）</strong>：应用最广的开源中英文模型之一，有 v1、v1.5、bge-m3 等版本。训练上经过大规模预训练、弱监督对比学习和指令微调，通用检索表现稳定。</li>
+<li><strong>bge-m3</strong>：支持 100 多种语言、最长约 8192 Token 输入，一个模型同时输出稠密向量、稀疏向量（词项权重）和多向量（ColBERT 式 late interaction）三种表示。</li>
+<li><strong>GTE 系列（阿里）</strong>：针对中文和多语言优化，性价比高；Qwen3-Embedding（2025）也是阿里推出的新一代多语言 Embedding 模型。</li>
+<li><strong>E5 系列（Microsoft）</strong>：训练和使用时给输入加 <code>query: </code> / <code>passage: </code> 前缀，泛化能力强，有多语言版本。</li>
+<li><strong>Conan-embedding（腾讯）</strong>：曾在 C-MTEB 中文榜单排名靠前，重点在难负样本的动态挖掘和多任务损失平衡。</li>
+<li><strong>其他</strong>：m3e、text2vec（国内早期常用）；Sentence-BERT；Jina Embeddings（长文本）；商用 API 如 OpenAI text-embedding-3-small/large、Cohere Embed。</li>
+</ul>
+<p><strong>bge-m3 原理（常见追问）</strong>：用单一 Transformer 编码器同时产出三类表示：</p>
+<ul>
+<li><strong>Dense</strong>：取 [CLS] 向量，做全局语义匹配；</li>
+<li><strong>Sparse</strong>：为每个 Token 输出一个权重，类似学习到的 BM25，用于关键词匹配；</li>
+<li><strong>Multi-vector</strong>：保留每个 Token 的向量，用 MaxSim 做细粒度的 late interaction 匹配。</li>
+</ul>
+<p>三者通过多目标联合训练（配合自蒸馏）一起优化。一个模型就能支撑稠密、稀疏、多向量三种检索方式，降低混合检索的工程复杂度。</p></div></article><article class="q" id="q22"><h3><a class="q-link" href="#q22">如何选择合适的 Embedding 模型并评估效果？</a></h3><div class="a"><p class="lead"><strong>选型维度</strong></p>
+<ol>
+<li><strong>语言支持</strong>：中文知识库重点看中文能力；多语言场景选 bge-m3、OpenAI text-embedding-3、multilingual-e5 等，并在每种目标语言上单独验证。</li>
+<li><strong>最大输入长度</strong>：BERT 类模型通常 512 Token，bge-m3、Jina 等约 8K。长度决定了切块上限，超出会被截断。</li>
+<li><strong>领域适配</strong>：医疗、法律、金融、代码等垂直领域，通用模型可能理解不了专有术语，需要选领域模型或微调。</li>
+<li><strong>向量维度与资源</strong>：维度越高，存储和计算成本越高（大致线性增长）；模型越大，显存和延迟越高。</li>
+<li><strong>推理速度与吞吐</strong>：在线系统要评估延迟和并发，是否需要 GPU。</li>
+<li><strong>部署方式</strong>：数据敏感时优先选可私有化部署的开源模型；用 API 则要考虑费用和数据出境。</li>
+</ol>
+<p><strong>参考榜单</strong>：Hugging Face 上的 MTEB 排行榜。原始 MTEB（2022）覆盖 8 类任务；2025 年的 MMTEB 已扩展到 500 多个任务、250 多种语言，现在的榜单按不同 benchmark 分开展示，如 MTEB(eng, v2)、MTEB(cmn) / C-MTEB、MTEB(Multilingual)。选中文模型看中文榜即可。榜单只能作为初筛参考，公开数据集上的成绩在业务场景不一定成立。</p>
+<p><strong>效果评估</strong></p>
+<ul>
+<li>构建业务测试集：真实用户问题、标准答案、相关和不相关的文档片段（可人工标注，也可用 LLM 根据文档生成问题再人工校验）。</li>
+<li>检索指标：Recall@K、Hit Rate、MRR、NDCG@K。</li>
+<li>端到端指标：最终答案准确率、忠实度。</li>
+<li>工程指标：编码延迟、吞吐、显存和存储占用。</li>
+</ul>
+<p>候选模型都满足不了需求时，用业务数据微调。</p></div></article><article class="q" id="q23"><h3><a class="q-link" href="#q23">Embedding 维度怎么选？是否越高维越好？稠密向量和稀疏向量有什么区别？</a></h3><div class="a"><p class="lead"><strong>稠密向量 vs 稀疏向量</strong></p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>稠密向量（Dense）</th>
+<th>稀疏向量（Sparse）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>形态</td>
+<td>几百到几千维，几乎每维都非零</td>
+<td>维度等于词表大小（数万以上），绝大多数为 0</td>
+</tr>
+<tr>
+<td>来源</td>
+<td>BGE、E5 等 Embedding 模型</td>
+<td>BM25/TF-IDF，或 SPLADE、bge-m3 sparse 等学习式稀疏模型</td>
+</tr>
+<tr>
+<td>擅长</td>
+<td>语义相似、同义改写</td>
+<td>关键词、专有名词、编号的精确匹配</td>
+</tr>
+<tr>
+<td>短板</td>
+<td>对精确术语、数字不敏感</td>
+<td>语义理解弱</td>
+</tr>
+<tr>
+<td>索引</td>
+<td>HNSW、IVF 等 ANN 索引</td>
+<td>倒排索引</td>
+</tr>
+</tbody>
+</table>
+<p>两者互补，常组合成混合检索。</p>
+<p><strong>维度不是越高越好</strong></p>
+<ul>
+<li>成本随维度<strong>线性</strong>增长：存储 = 向量数 × 维度 × 每维字节数，单次距离计算是 O(d)，维度翻倍，存储和计算大约也翻倍。</li>
+<li>效果边际收益递减：超过一定维度后提升很小，而且维度主要由模型决定，模型本身的质量比维度更重要。</li>
+<li>经验上 768 / 1024 维最常见；资源紧张可用 384 / 512 维的小模型；OpenAI text-embedding-3-large 是 3072 维。</li>
+<li>用 Matryoshka 方式训练的模型（如 OpenAI text-embedding-3 系列，可通过 <code>dimensions</code> 参数指定）可以把向量截短使用，在效果和成本之间灵活取舍。</li>
+<li>还可以用量化（如 int8、二值化）或 PQ 压缩降低存储。</li>
+</ul>
+<p>最终应在业务评测集上比较不同维度的召回效果和成本再定。</p></div></article><article class="q core" id="q24"><h3><a class="q-link" href="#q24">Embedding 模型在下游任务中有什么缺陷？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">根本原因是<strong>把一段文本压缩成一个固定维度的向量，必然丢失细粒度信息</strong>。最典型的问题是长文本的向量稀释。</p>
+<ul>
+<li><strong>长文本向量稀释</strong>：不同主题、事实和段落混进同一个向量，核心语义被平均掉。查询只关心某个细节时很难命中，候选数量越多，越难拉开细微差异。</li>
+<li><strong>精确匹配能力弱</strong>：对关键词、数字、日期、实体名、错误码不敏感，容易出现“语义大致相似，但关键信息不对”的情况，例如把“2023 年报”匹配成“2024 年报”。</li>
+<li><strong>单向量表达有限</strong>：一个向量难以同时表达多意图、多主题，也做不了局部对齐，更适合粗粒度召回。</li>
+<li><strong>没有 query-doc 交互</strong>：文档向量在提问前就已离线算好，编码时看不到查询，无法根据问题动态关注文档中的相关部分，对多义词和否定语义也处理得不好。</li>
+<li><strong>对 Query 表述敏感</strong>：同一个意思换一种说法，或问题本身很口语化，检索结果可能波动较大。</li>
+<li><strong>领域迁移差</strong>：通用模型对垂直领域术语理解不足，长度上限之外的内容会被截断。</li>
+</ul>
+<p><strong>对应补救</strong>：合理切块、混合检索（补关键词匹配）、Rerank（补 query-doc 交互）、Query 改写、领域微调、多向量模型（如 ColBERT、bge-m3 multi-vector）。</p></div></article><article class="q" id="q25"><h3><a class="q-link" href="#q25">如何提升 Embedding 模型的检索效果？</a></h3><div class="a"><p class="lead">从<strong>训练层面</strong>（让表示本身更好）和<strong>推理层面</strong>（让表示的能力发挥出来）两方面入手。</p>
+<p><strong>训练层面</strong></p>
+<ul>
+<li><strong>有监督微调</strong>：用业务问答对、点击日志、相关性标注构造 (query, 正例, 负例) 三元组，做对比学习（如 InfoNCE 损失），让相关样本更近、不相关样本更远。</li>
+<li><strong>难负样本挖掘</strong>：用当前模型或 BM25 检索出“看似相关、实际不相关”的样本作为负例，提升区分能力，这是微调效果的关键。</li>
+<li><strong>领域继续预训练</strong>：在领域语料上继续训练，让表示贴合领域分布。</li>
+<li><strong>Cross-Encoder 蒸馏</strong>：用更强的 Rerank 模型给样本打分，把它的判别能力蒸馏到双塔模型上。</li>
+<li><strong>合成数据</strong>：标注不足时用 LLM 根据文档生成问题，构造训练对。</li>
+</ul>
+<p><strong>推理层面</strong></p>
+<ul>
+<li><strong>Query 侧</strong>：改写、扩展、拆分、HyDE，降低口语化和歧义的影响；按模型要求加指令前缀（如 E5 的 <code>query: </code>，BGE 的检索指令）。</li>
+<li><strong>文档侧</strong>：合理切块，把标题路径拼进 Chunk，为 Chunk 生成摘要或假设问题再做索引。</li>
+<li><strong>召回链路</strong>：混合检索、多阶段召回加 Rerank，弥补纯向量检索在关键词、实体和细粒度匹配上的不足。</li>
+<li><strong>工程细节</strong>：入库和查询使用同一个模型和同样的预处理；用余弦相似度时先做向量归一化。</li>
+</ul></div></article></section><section class="grp has-core" id="g5"><h2 class="grp-title">向量数据库与索引 <span class="cnt"><span class="n-all">11</span><span class="n-core">高频 3</span></span></h2><article class="q" id="q26"><h3><a class="q-link" href="#q26">什么是向量数据库？原理是什么？和关系型数据库有什么区别？</a></h3><div class="a"><p class="lead">向量数据库是专门存储、索引和检索高维向量的数据库，核心能力是<strong>近似最近邻搜索（ANN）</strong>：给定查询向量，快速找到最相似的 Top-K 向量及其元数据。常用于 RAG 知识库、语义搜索、以图搜图和推荐召回。</p>
+<p><strong>原理（核心流程）</strong></p>
+<ol>
+<li><strong>向量化</strong>：用 Embedding 模型把原始数据转成向量（长文档先切块再编码），连同原始文本和元数据一起写入。</li>
+<li><strong>索引构建</strong>：用 HNSW、IVF、PQ、DiskANN 等算法建索引，避免每次查询都和全部向量逐一计算。</li>
+<li><strong>相似度检索</strong>：按余弦相似度、内积或 L2 距离，在索引上做 ANN 搜索返回 Top-K，通常支持叠加标量过滤（租户、权限、时间等）。</li>
+</ol>
+<p>ANN 用少量精度损失换取数量级的速度提升，所以评估向量库常看<strong>召回率（相对精确检索）、查询延迟、吞吐量、可扩展性</strong>。</p>
+<p><strong>和关系型数据库的区别</strong></p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>关系型数据库（如 MySQL）</th>
+<th>向量数据库</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数据</td>
+<td>结构化的行和列</td>
+<td>高维向量 + 元数据</td>
+</tr>
+<tr>
+<td>查询语义</td>
+<td>精确匹配、范围查询：“字段值是否满足条件”</td>
+<td>相似度搜索：“哪些内容语义上最接近”</td>
+</tr>
+<tr>
+<td>结果</td>
+<td>确定性的精确结果</td>
+<td>近似的 Top-K 排序结果</td>
+</tr>
+<tr>
+<td>索引</td>
+<td>B+ 树、哈希</td>
+<td>HNSW、IVF、PQ 等 ANN 索引</td>
+</tr>
+<tr>
+<td>强项</td>
+<td>事务、关联查询、强一致性</td>
+<td>高维相似检索、水平扩展</td>
+</tr>
+</tbody>
+</table>
+<p>例如 MySQL 执行的是 <code>SELECT * FROM user WHERE id = 1001</code>，而向量库做的是“找出和用户问题语义最接近的 10 段知识”。两者常配合使用，PostgreSQL 也可以通过 pgvector 扩展获得向量检索能力。</p></div></article><article class="q core" id="q27"><h3><a class="q-link" href="#q27">RAG 如何建索引？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">RAG 把知识块存进专门的存储，并建立检索用的索引结构，最常见的是<strong>向量索引 + 倒排索引</strong>。</p>
+<p><strong>流程</strong></p>
+<ol>
+<li>文档解析、切块，为每个 Chunk 生成 Embedding。</li>
+<li>把向量、原始文本和元数据（文档 ID、标题路径、页码、时间、权限标签）写入向量数据库。</li>
+<li>建<strong>向量索引</strong>（HNSW、IVF、DiskANN 等）支持语义检索；为需要关键词匹配的文本建<strong>倒排索引</strong>（BM25）；为过滤字段建<strong>标量索引</strong>。</li>
+<li>按需建结构化或高级索引：父子块索引、摘要索引、知识图谱索引等。</li>
+</ol>
+<p><strong>存储选型</strong>：专用向量数据库（Milvus、Qdrant、Weaviate）、向量检索库（FAISS）、带向量能力的搜索引擎（Elasticsearch 8.x 原生支持 dense_vector 和 kNN）、数据库扩展（pgvector）。</p></div></article><article class="q core" id="q28"><h3><a class="q-link" href="#q28">常见的向量索引算法有哪些？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><table>
+<thead>
+<tr>
+<th>索引</th>
+<th>原理</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Flat（如 FAISS IndexFlatL2）</td>
+<td>暴力计算与所有向量的距离</td>
+<td>100% 精确</td>
+<td>O(N) 扫描，数据量大时慢</td>
+</tr>
+<tr>
+<td>IVF</td>
+<td>用 k-means 把向量聚成 nlist 个簇，查询时只搜最近的 nprobe 个簇</td>
+<td>速度快，内存可控</td>
+<td>需要训练；簇边界附近的向量可能漏召回</td>
+</tr>
+<tr>
+<td>HNSW</td>
+<td>多层可导航小世界图，类似跳表：从顶层稀疏图贪心搜索，逐层下沉到底层精细查找</td>
+<td>查询快、召回高，支持增量插入</td>
+<td>内存占用大，构建较慢</td>
+</tr>
+<tr>
+<td>PQ（乘积量化）</td>
+<td>把向量切成 m 段，每段用码本量化成短码，用查表近似计算距离</td>
+<td>大幅压缩内存</td>
+<td>有精度损失</td>
+</tr>
+<tr>
+<td>IVF-PQ / IVF_SQ8</td>
+<td>IVF 缩小范围 + 量化压缩</td>
+<td>适合亿级数据</td>
+<td>召回率会下降</td>
+</tr>
+<tr>
+<td>DiskANN</td>
+<td>基于 Vamana 图，图和原始向量放在 SSD，内存只保留压缩向量</td>
+<td>内存占用低，适合超大规模</td>
+<td>延迟受磁盘 I/O 影响</td>
+</tr>
+</tbody>
+</table>
+<p><strong>常用参数</strong>：IVF 的 nlist（簇数）、nprobe（越大召回越高、越慢）；HNSW 的 M（每个节点的邻居数）、efConstruction（构建时的候选数）、efSearch（查询时的候选数）。</p>
+<p><strong>选型</strong>：小数据量用 Flat；内存充足、追求低延迟高召回用 HNSW；数据量大、内存受限用 IVF-PQ；内存放不下用 DiskANN。</p></div></article><article class="q core" id="q29"><h3><a class="q-link" href="#q29">大规模文档建索引时，有很多相似文档怎么处理？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">相似文档过多会导致 Top-K 被重复内容占满、浪费 Token，并且难以区分版本。处理思路是<strong>入库前去重、入库时加区分信息、检索时做多样性控制</strong>。</p>
+<ul>
+<li><strong>近重复检测去重</strong>：用 MinHash + LSH、SimHash 检测近重复文档（如相似度 &gt; 90%），只保留一份或做版本合并。这一步只作用于索引层，原始数据保留，保证可追溯。</li>
+<li><strong>更细粒度切块</strong>：分到段落或句子级别再嵌入，让相似文档中真正有差异的部分能被区分出来。</li>
+<li><strong>注入元数据</strong>：把时间、来源、版本、作者等写进元数据，也可以拼在 Chunk 头部，用于过滤，或在检索时优先选择最新、最权威的版本。</li>
+<li><strong>优化 Embedding 模型</strong>：选择区分能力更强的模型，或用业务里的难负样本微调。</li>
+<li><strong>多级索引</strong>：稠密 + 稀疏 + 多向量组合，或用 RAPTOR 这类树状摘要索引，分层检索以适配不同粒度的查询。</li>
+<li><strong>检索阶段</strong>：粗排 + 精排，结果层面去重，用 MMR（最大边际相关性）在相关性和多样性之间平衡，避免 Top-K 都是同一内容。</li>
+</ul></div></article><article class="q" id="q30"><h3><a class="q-link" href="#q30">RAG 索引有哪些优化策略？</a></h3><div class="a"><p class="lead">索引质量决定了检索阶段能否拿到正确的上下文，常见优化方向有以下几类：</p>
+<ol>
+<li><strong>Chunk 策略</strong>：块大小（如 128/256/512 Token）在上下文完整性和噪声之间权衡；用递归切分、滑动窗口（overlap）缓解截断；用 Small-to-Big（小块检索，返回所在的父块或前后窗口）兼顾检索精度和上下文完整性。</li>
+<li><strong>附加元数据</strong>：页码、文件名、作者、类别、时间戳等，用于过滤缩小检索范围；按时间戳加权可以实现时间感知的 RAG，避免召回过时信息。还可以人工或用 LLM 构造元数据，如段落摘要、假设性问题：让 LLM 为每个 Chunk 生成它能回答的问题并索引这些问题，检索时比较“问题和问题”的相似度，缩小问答之间的语义差距（也称反向 HyDE）。</li>
+<li><strong>结构化 / 分层索引</strong>：按文档树组织父子关系，每个节点存摘要，先定位章节再下钻到 Chunk，检索更快，也减少因切块不当造成的错误。RAPTOR 则自底向上递归聚类并生成摘要，形成树状索引。</li>
+<li><strong>知识图谱索引</strong>：用实体和关系组织文档，表达概念间的联系，支持多跳推理。例如 KGP（Knowledge Graph Prompting）把段落、页面、表格作为节点，以语义或词汇相似度作为边，在多文档之间建立索引。</li>
+<li><strong>多表示索引</strong>：同一内容同时建稠密向量、稀疏向量和关键词索引，支持混合检索。</li>
+<li><strong>向量索引参数调优</strong>：选择合适的 ANN 索引并调优 M、ef、nlist、nprobe 等参数，在召回率和延迟之间平衡。</li>
+</ol></div></article><article class="q" id="q31"><h3><a class="q-link" href="#q31">你用过哪些向量数据库？如何选型？数据量和性能表现怎么样？</a></h3><div class="a"><p class="lead">选型主要看数据规模、过滤需求和现有技术栈。常见方案定位不同，有的是完整数据库，有的只是检索库：</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>定位</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Milvus</td>
+<td>开源分布式向量数据库（Zilliz），计算存储分离，索引类型丰富</td>
+<td>大规模生产、企业级 RAG、推荐召回</td>
+</tr>
+<tr>
+<td>Qdrant</td>
+<td>Rust 实现的开源向量数据库，Payload 过滤能力强，部署轻</td>
+<td>自托管、向量 + 条件过滤</td>
+</tr>
+<tr>
+<td>Weaviate</td>
+<td>开源向量数据库，对象化数据建模，内置多模态和向量化模块</td>
+<td>语义搜索、多模态知识库</td>
+</tr>
+<tr>
+<td>Chroma</td>
+<td>轻量嵌入式向量库，接入简单</td>
+<td>本地开发、原型验证、小规模知识库</td>
+</tr>
+<tr>
+<td>FAISS</td>
+<td>Meta 开源的向量检索库，不是数据库</td>
+<td>应用内检索、离线实验，需自行补齐持久化、元数据和服务化能力</td>
+</tr>
+<tr>
+<td>Elasticsearch</td>
+<td>搜索引擎，8.x 起原生支持 kNN（HNSW）</td>
+<td>已有 ES 体系，需要关键词 + 向量混合检索</td>
+</tr>
+<tr>
+<td>pgvector</td>
+<td>PostgreSQL 扩展，支持 HNSW 和 IVFFlat</td>
+<td>已重度使用 PostgreSQL，数据量中等，希望架构简单</td>
+</tr>
+</tbody>
+</table>
+<p>易错点：ES 向量能力够用，但大规模纯向量场景不如专用向量库；FAISS 不是数据库。</p>
+<p><strong>性能</strong>：取决于规模、维度、索引参数、Top-K、过滤条件和硬件。经验上百万级 Chunk 配合 HNSW，单次召回几毫秒到几十毫秒，加上过滤和网络一般在百毫秒内。更大规模用分片、量化或 DiskANN。回答时应给出具体数据量、P99 延迟、召回率和压测方式。</p></div></article><article class="q" id="q32"><h3><a class="q-link" href="#q32">为什么选择 Milvus？</a></h3><div class="a"><p class="lead">Milvus 的核心优势是<strong>面向海量向量检索的分布式架构，以及完整的数据库能力</strong>，适合生产级 RAG。</p>
+<ol>
+<li><strong>分布式扩展</strong>：存算分离，查询节点、数据节点、索引节点可以独立扩容，能支撑亿级以上向量。</li>
+<li><strong>索引类型丰富</strong>：FLAT、IVF_FLAT、IVF_SQ8、IVF_PQ、HNSW、DiskANN、GPU 索引等，可按规模、召回率、延迟和内存成本选择。</li>
+<li><strong>标量过滤</strong>：支持按 <code>tenant_id</code>、<code>user_id</code>、<code>doc_type</code>、<code>timestamp</code> 等字段过滤，对权限控制和多租户检索很重要；还支持 Partition 和 Partition Key 做数据隔离。</li>
+<li><strong>混合检索</strong>：Milvus 2.4 起，一个 Collection 可以有多个向量字段，并做多路 hybrid search，内置 RRFRanker / WeightedRanker 融合；2.5 起内置 BM25 全文检索（以稀疏向量形式存储）。“关键词 + 向量”的混合检索可以只在 Milvus 内完成，不一定要再搭 ES。</li>
+<li><strong>工程能力完整</strong>：持久化、索引构建、查询服务、动态 Schema、集群部署都是现成的，不像 FAISS 那样需要自己封装数据库能力。</li>
+<li><strong>生态成熟</strong>：与 LangChain、LlamaIndex 等框架集成良好，有托管版（Zilliz Cloud），中文社区资料多。</li>
+</ol></div></article><article class="q" id="q33"><h3><a class="q-link" href="#q33">Milvus 相比 ES 有什么优势？</a></h3><div class="a"><p class="lead">Milvus 是<strong>为向量相似度检索设计</strong>的，ES 的核心是<strong>倒排索引和全文检索</strong>，向量是后来加入的能力。大规模 Embedding 检索、RAG 和多模态语义检索场景下，Milvus 更合适。</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Milvus</th>
+<th>Elasticsearch</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>核心定位</td>
+<td>向量数据库</td>
+<td>全文搜索引擎（8.x 起原生支持 kNN）</td>
+</tr>
+<tr>
+<td>向量索引</td>
+<td>HNSW、IVF 系列、PQ、DiskANN、GPU 索引等</td>
+<td>主要是 HNSW，支持 int8 等量化</td>
+</tr>
+<tr>
+<td>大规模向量</td>
+<td>存算分离，针对亿级向量优化</td>
+<td>HNSW 图常驻内存，大规模时内存成本高</td>
+</tr>
+<tr>
+<td>全文检索</td>
+<td>2.5 起支持 BM25，能力不如 ES 全面</td>
+<td>强项：分词、BM25、高亮、聚合</td>
+</tr>
+<tr>
+<td>典型场景</td>
+<td>RAG 知识库、多模态检索、推荐召回</td>
+<td>关键词搜索、日志检索、全文搜索为主的混合检索</td>
+</tr>
+</tbody>
+</table>
+<p><strong>结论</strong>：向量检索是主要需求、数据规模大时选 Milvus；全文检索是核心、已有 ES 体系、向量规模适中时，用 ES 做混合检索更省事。两者也常组合使用：ES 负责 BM25，Milvus 负责向量，在应用层用 RRF 融合。</p></div></article><article class="q" id="q34"><h3><a class="q-link" href="#q34">了解 Milvus 的索引吗？</a></h3><div class="a"><p class="lead">Milvus 的索引分为<strong>向量索引</strong>和<strong>标量索引</strong>两类。</p>
+<p><strong>向量索引</strong></p>
+<ol>
+<li><strong>FLAT</strong>：暴力检索，召回率 100%，适合小数据量或作为精度基准。</li>
+<li><strong>IVF 系列</strong>：先用 k-means 聚成 nlist 个簇，查询时只搜 nprobe 个簇。
+<ul>
+<li>IVF_FLAT：簇内存原始向量，召回好；</li>
+<li>IVF_SQ8：标量量化成 int8，内存约降为原来的 1/4，召回略降；</li>
+<li>IVF_PQ：乘积量化，压缩率更高，精度损失更大。</li>
+</ul>
+</li>
+<li><strong>HNSW</strong>：多层图索引，查询快、召回高，但内存占用大，构建较慢；参数有 M、efConstruction、ef。适合高并发低延迟场景。</li>
+<li><strong>DiskANN</strong>：图和原始向量放在 SSD，内存只放压缩向量，适合内存放不下的超大规模数据，延迟受磁盘性能影响。</li>
+<li><strong>GPU 索引</strong>：如 GPU_IVF_FLAT、GPU_CAGRA，适合高吞吐场景。</li>
+<li><strong>稀疏向量索引</strong>：SPARSE_INVERTED_INDEX 等，用于 BM25 或学习式稀疏向量。</li>
+</ol>
+<p><strong>标量索引</strong>：对 <code>tenant_id</code>、<code>doc_type</code>、<code>timestamp</code> 等普通字段建倒排、位图等索引，加速过滤。典型用法是先按权限、租户、时间过滤，再做向量 Top-K。</p>
+<p><strong>度量类型</strong>：L2、IP（内积）、COSINE，建索引时需要指定。</p></div></article><article class="q" id="q35"><h3><a class="q-link" href="#q35">FAISS 向量检索的原理是什么？</a></h3><div class="a"><p class="lead">FAISS 是 Meta（Facebook AI Research）开源的向量相似度检索库（C++ 实现，提供 Python 接口，支持 GPU），负责<strong>建索引、算距离、返回近邻</strong>，不是完整的数据库。</p>
+<p><strong>原理</strong></p>
+<ol>
+<li><strong>向量化</strong>：用 Embedding 模型把数据转成向量后加入索引，FAISS 内部用连续 ID 标识向量（可用 IndexIDMap 绑定业务 ID）。</li>
+<li><strong>距离度量</strong>：FAISS 只原生支持 L2 和内积（METRIC_INNER_PRODUCT）两种。要用余弦相似度，需要先对向量做 L2 归一化，再用内积。</li>
+<li><strong>索引加速</strong>：
+<ul>
+<li><code>IndexFlatL2</code> / <code>IndexFlatIP</code>：暴力精确检索；</li>
+<li><code>IndexIVFFlat</code>：k-means 聚类成倒排列表，只搜最近的 nprobe 个簇；</li>
+<li><code>IndexPQ</code> / <code>IndexIVFPQ</code>：乘积量化压缩向量，用查表方式近似计算距离，节省内存；</li>
+<li><code>IndexHNSWFlat</code>：图索引，查询快、召回高。</li>
+<li>可以用 <code>index_factory(&quot;IVF4096,PQ64&quot;)</code> 组合各种结构。</li>
+</ul>
+</li>
+<li><strong>返回 Top-K</strong>：在候选集中计算距离并排序，返回最相似向量的 ID 和距离。</li>
+</ol>
+<p><strong>常问调参</strong>：IVF 的 nlist（簇数）和 nprobe（查询时搜几个簇，越大召回越高、越慢）；HNSW 的 M（每个节点的邻居数）、efConstruction 和 efSearch。IVF 和 PQ 类索引需要先用样本数据 <code>train</code> 再 <code>add</code>。</p></div></article><article class="q" id="q36"><h3><a class="q-link" href="#q36">FAISS 相比其他向量数据库有哪些优点？</a></h3><div class="a"><p class="lead">FAISS 的优势是<strong>轻量、高性能、灵活</strong>，适合应用内检索、离线召回和算法实验。</p>
+<ol>
+<li><strong>性能强</strong>：专注向量计算，底层做了 SIMD 和 BLAS 优化，支持 GPU 加速，适合大规模批量检索和离线召回。</li>
+<li><strong>轻量易集成</strong>：不需要单独部署服务，直接嵌入 Python 或 C++ 程序，开发和实验成本低。</li>
+<li><strong>索引方案丰富</strong>：Flat、IVF、PQ、HNSW 等可以自由组合，便于在召回率、延迟和内存之间精细取舍。</li>
+<li><strong>适合算法场景</strong>：只需要向量检索、不需要服务化时最直接，也常被其他系统用作底层检索引擎。</li>
+</ol>
+<p><strong>局限</strong>（选型时要一起讲）：没有原生的服务化、分布式、权限、事务能力；元数据过滤能力弱；持久化要靠自己 <code>write_index</code> / <code>read_index</code>；删除和更新支持有限。生产环境需要这些能力时，更适合用 Milvus、Qdrant 等完整的向量数据库。</p></div></article></section><section class="grp has-core" id="g6"><h2 class="grp-title">检索与召回 <span class="cnt"><span class="n-all">11</span><span class="n-core">高频 6</span></span></h2><article class="q core" id="q37"><h3><a class="q-link" href="#q37">RAG 如何做检索（BM25、Embedding、混合检索）？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">检索方式分为<strong>稀疏检索</strong>（关键词）和<strong>稠密检索</strong>（向量），生产中常把两者组合成<strong>混合检索</strong>。</p>
+<p><strong>1. 稀疏检索：BM25</strong>
+BM25 是 TF-IDF 的改进版，对每个查询词打分后求和：</p>
+<p>$score(D,Q)=\sum_{t\in Q} IDF(t)\cdot\frac{f(t,D),(k_1+1)}{f(t,D)+k_1,(1-b+b\cdot\frac{|D|}{avgdl})}$</p>
+<ul>
+<li>IDF：词越稀有越重要，BM25 用平滑形式 log((N − df + 0.5) / (df + 0.5) + 1)。</li>
+<li><strong>k1</strong> 控制词频饱和（常用 1.2–2.0），词频再高得分也趋于上限；<strong>b</strong> 控制长度归一化（常用 0.75，b = 0 不归一化）。</li>
+<li>快、无需训练、可解释，擅长编号、错误码、专有名词；但不理解同义词，依赖分词质量。</li>
+</ul>
+<p><strong>2. 稠密检索：Embedding</strong>：查询和文档用同一模型映射到同一向量空间，按余弦 / 内积 / L2 检索，HNSW、IVF 等 ANN 索引加速。能理解同义改写，但对精确术语、数字不敏感，成本更高。</p>
+<p><strong>3. 混合检索</strong></p>
+<ul>
+<li><strong>分数融合</strong>：α·向量分 + (1−α)·BM25 分，两路量纲不同，必须先 min-max 等归一化。</li>
+<li><strong>RRF</strong>：$RRF(d)=\sum_{i}\frac{1}{k+r_i(d)}$，r_i(d) 是第 i 路中的名次，k 常取 60。只看名次，绕开了分数不可比的问题，多路都靠前的文档胜出。</li>
+<li><strong>级联</strong>：一种方法粗召回，再用另一种或 Cross-Encoder 精排。</li>
+</ul>
+<p><strong>权重怎么定</strong>：没有固定值，用评测集调。术语、编号多（技术手册、法规）关键词调高，如 7:3；口语化（社区问答）向量调高，如 3:7；通用知识库从 5:5 起步。也可按 Query 类型动态调整。</p></div></article><article class="q" id="q38"><h3><a class="q-link" href="#q38">关键词检索、语义检索、混合检索有什么区别？为什么生产环境推荐混合检索？</a></h3><div class="a"><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>关键词检索（BM25）</th>
+<th>语义检索（向量）</th>
+<th>混合检索</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>原理</td>
+<td>倒排索引 + 词频统计</td>
+<td>Embedding + 向量相似度</td>
+<td>两路召回后融合（RRF / 加权）</td>
+</tr>
+<tr>
+<td>擅长</td>
+<td>精确匹配：型号、错误码、人名、编号</td>
+<td>同义改写、口语化表达、语义相近</td>
+<td>兼顾两者</td>
+</tr>
+<tr>
+<td>短板</td>
+<td>不理解语义，换个说法就召回不到</td>
+<td>对精确术语和数字不敏感</td>
+<td>系统更复杂，需要调融合策略</td>
+</tr>
+</tbody>
+</table>
+<p><strong>举例</strong></p>
+<ul>
+<li>用户问“怎么重置登录密码？”，文档写的是“可通过忘记密码功能重新设置账户凭证”。字面重合少，BM25 效果一般，向量检索能理解两者语义相近。</li>
+<li>用户问“错误码 E10023 是什么？”，错误码必须精确匹配，BM25 更准，向量检索可能召回一堆相似但无关的错误码。</li>
+</ul>
+<p><strong>为什么推荐混合检索</strong>：真实查询既有精确术语，也有模糊的自然语言，任何单一检索都有短板。两路互补，能同时提高召回的覆盖面和稳定性，整体更鲁棒。常见做法：BM25 和向量各召回 Top-K，用 RRF 融合去重，再用 Rerank 精排。</p></div></article><article class="q core" id="q39"><h3><a class="q-link" href="#q39">不同检索方式各有什么问题？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead"><strong>稀疏检索（BM25 等）</strong></p>
+<ul>
+<li>语义表达能力有限：只看词项匹配，处理不了同义词、近义改写和隐含语义（词汇不匹配问题）。</li>
+<li>依赖字面形式：查询和文档表述不同就召回不到。</li>
+<li>对分词和预处理敏感：中文分词质量直接影响效果，新词、专业词需要维护词典。</li>
+<li>不建模词序和上下文，难以从整体语义判断相关性。</li>
+</ul>
+<p><strong>稠密检索（向量）</strong></p>
+<ul>
+<li>精确匹配能力弱：专有名词、编号、代码、数字容易匹配不准。</li>
+<li>可解释性差：很难说清为什么召回了这条。</li>
+<li>依赖模型质量：训练数据和领域决定效果，换领域可能明显下降。</li>
+<li>成本高：需要 GPU 编码和 ANN 索引，大规模下有内存和性能压力；ANN 本身也有近似误差。</li>
+<li>语义漂移：结果“语义相关但不精确”，甚至偏离原始意图。</li>
+</ul>
+<p><strong>混合检索</strong></p>
+<ul>
+<li>系统复杂：要同时维护倒排索引和向量索引，以及两套数据同步。</li>
+<li>融合策略难设计：不同打分机制难以统一，权重依赖经验和调参（RRF 可以缓解分数不可比的问题）。</li>
+<li>计算开销和延迟增加：多路召回加合并。</li>
+<li>排序稳定性：各路结果分布差异大，融合后排序可能不稳定，通常还要靠 Rerank 兜底。</li>
+</ul></div></article><article class="q" id="q40"><h3><a class="q-link" href="#q40">什么是多路召回？为什么单一召回不够？如何设计混合检索？</a></h3><div class="a"><p class="lead"><strong>多路召回</strong>：同时从多个通道召回候选文档，再合并、去重、排序，一次拿到覆盖面更广的候选集。常见通道有：向量语义召回、BM25 关键词召回、标题召回、标签或元数据过滤召回、热门问题或 FAQ 召回、历史问答召回、知识图谱召回、SQL 精确查询。</p>
+<p><strong>为什么单一召回不够</strong>：用户问题类型很杂，有的适合语义检索，有的需要关键词精确匹配，有的需要结构化过滤或权限筛选。</p>
+<ul>
+<li>“Redis protected mode 报错怎么解决？”：“protected mode”是强关键词，BM25 很有效。</li>
+<li>“为什么我的缓存会突然查不到数据？”：偏语义表达，向量检索更有效。</li>
+</ul>
+<p><strong>混合检索的设计步骤</strong></p>
+<ol>
+<li><strong>离线建索引</strong>：为文档建倒排索引（ES 或 Milvus 2.5+ 内置 BM25），同时生成 Embedding 写入向量库，并维护好元数据。</li>
+<li><strong>并行召回</strong>：Query 进来后多路并行，例如向量 Top 20 + BM25 Top 20 + 标题 Top 10，同时应用权限、租户、时间等过滤。</li>
+<li><strong>融合去重</strong>：用 RRF（只看名次，k 常取 60）或归一化后加权融合，合并去重。</li>
+<li><strong>精排</strong>：用 Rerank 模型对融合结果重新打分，选 Top 3–5 进入 Prompt。</li>
+<li><strong>评估调参</strong>：用 Recall@K、MRR 等指标调整各路的 K 和权重。</li>
+</ol></div></article><article class="q core" id="q41"><h3><a class="q-link" href="#q41">什么是 Query 改写/重构？有哪些方法？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">Query 改写（Query Rewrite / 重构）是在检索前把用户问题改写、补全、拆分、路由或结构化，让检索更容易命中真正相关的内容。用户问题通常口语化、模糊、依赖上下文，直接拿去检索效果差。</p>
+<p><strong>常见改写场景</strong>：指代消解（“它有什么缺点”→“RAG 有什么缺点”）、省略补全、同义规范化（纠错、展开缩写）、复杂问题拆解。</p>
+<p><strong>方法分类</strong></p>
+<ol>
+<li><strong>Query Translation：变成更适合检索的形式</strong>
+<ul>
+<li>Multi-Query：多角度改写分别检索后合并；RAG-Fusion 再用 RRF 融合排序。</li>
+<li>Decomposition：拆成子问题分别或依次检索，适合多跳问题。</li>
+<li>Step-Back：抽象成更一般的问题（“X 在 2020 年的职位”→“X 的职业经历”），召回背景知识。</li>
+<li>HyDE：先让 LLM 生成假设答案，用它的向量去检索，缩小问题与文档的语义差距，适合长尾和专业问题。</li>
+</ul>
+</li>
+<li><strong>Query Routing：判断该去哪里查</strong>。可基于规则、分类模型或 LLM；Logical Routing 按业务逻辑选知识库，Semantic Routing 按与路由描述的语义相似度选索引、Prompt 或工具。</li>
+<li><strong>Query Construction：转成结构化查询</strong>，如元数据过滤（Self-Query）、Text-to-SQL、Text-to-Cypher。</li>
+</ol>
+<p><strong>注意</strong>：改写需要额外调用 LLM，会增加延迟，实时性要求高的场景要控制，可以用小模型或缓存；改写结果最好与原始 Query 一起检索，防止改写跑偏。</p></div></article><article class="q" id="q42"><h3><a class="q-link" href="#q42">什么是召回率和精准率？RAG 里怎么平衡两者？</a></h3><div class="a"><ul>
+<li><strong>召回率（Recall）</strong> = 检出的相关文档数 / 全部相关文档数，衡量“找得全不全”。</li>
+<li><strong>精准率（Precision）</strong> = 检出的相关文档数 / 检出的全部文档数，衡量“找得准不准”。</li>
+</ul>
+<p>两者通常此消彼长：Top K 调大，召回率上升、精准率下降。</p>
+<p><strong>平衡思路：先保召回，再提精度</strong>。漏掉的信息后续环节无法补回，而多召回的噪声可以被下游过滤。</p>
+<pre><code class="language-text">多路召回扩大覆盖 → 召回阶段取较大的 Top K（如 50）保证不漏 → Rerank 精排降噪
+→ 相似度阈值过滤低质结果 → 只把 Top 3–5 放进 Prompt
+</code></pre>
+<p>同时从源头优化切块和 Query 改写，减少“检不到”和“检错”。评估时分别看 Recall@K（召回阶段）和 Precision@K、MRR（最终进入 Prompt 的结果）。</p></div></article><article class="q core" id="q43"><h3><a class="q-link" href="#q43">召回数量 Top K 过大或过小有什么影响？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">Top K 决定每次检索有多少候选 Chunk 进入后续链路。<strong>过小伤召回率，过大伤准确率和成本</strong>。</p>
+<p><strong>Top K 过小</strong></p>
+<ul>
+<li>信息遗漏：相关但排名稍靠后的 Chunk 被截掉，模型因缺少信息答不全或推断错误。</li>
+<li>回答片面：多证据问题只拿到部分片段，遗漏重要方面。</li>
+<li>容错差：召回排序稍有偏差就没有冗余空间，一次失误直接导致答案错误。</li>
+</ul>
+<p><strong>Top K 过大</strong></p>
+<ul>
+<li>噪声增多：排名靠后的弱相关内容进入上下文，干扰模型判断。</li>
+<li>上下文压力：Token 消耗和调用成本上升，延迟变高；长上下文中间部分的信息还容易被忽略（Lost in the Middle）。</li>
+<li>重排压力：Rerank 要处理更多候选，延迟上升。</li>
+<li>信息冲突：不同版本或来源的矛盾信息同时被召回，模型自行取舍时容易出错。</li>
+</ul>
+<p><strong>常见做法</strong>：区分“召回 K”和“最终放进上下文的 N”，例如召回 50、Rerank 后取 5，同时配合相似度阈值。</p></div></article><article class="q core" id="q44"><h3><a class="q-link" href="#q44">如何根据业务场景选择合适的 Top K？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">核心原则是看业务的容错倾向：<strong>优先保召回时 K 取大，优先保精度时 K 取小</strong>，最后用评测集确定具体数值。</p>
+<p><strong>优先保证召回率（K 较大）</strong>：漏掉信息的代价远大于引入噪声的代价。噪声可以交给 Rerank 和生成环节过滤，漏掉的关键信息却补不回来。</p>
+<ul>
+<li>法律检索：漏掉一个关键判例可能导致案件策略偏差，K 可以取 20–30 甚至更高。</li>
+<li>医学文献检索：遗漏相关研究可能影响决策，宁可多看几条也要覆盖全面。</li>
+<li>多跳、对比、汇总类问题：需要多个 Chunk 共同支撑答案。</li>
+</ul>
+<p><strong>优先保证准确率（K 较小）</strong>：噪声的代价大，或下游对上下文长度敏感。</p>
+<ul>
+<li>客服 FAQ：用户问“怎么退货”，只需要退货流程这一个标准答案，取 3–5 条即可；召回太多弱相关 FAQ，模型可能把退款政策当成退货流程来回答。</li>
+<li>实时查询类：“某产品今天的价格”，1–2 个包含当日价格的 Chunk 就够了，历史版本和促销规则都是噪声。</li>
+</ul>
+<p><strong>工程方法</strong></p>
+<ul>
+<li>在评测集上画 Recall@K 曲线，选曲线趋于平缓的位置作为召回 K。</li>
+<li>两阶段设置：召回 K 大一些（如 30–100），Rerank 后的 N 小一些（如 3–8），再结合 Chunk 大小和模型上下文预算。</li>
+<li>动态 K：按 Query 类型调整，或按 Rerank 分数阈值截断，而不是固定条数。</li>
+</ul></div></article><article class="q core" id="q45"><h3><a class="q-link" href="#q45">文档很多时如何保持检索性能？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">从<strong>数据层面</strong>和<strong>检索层面</strong>同时优化，目标是缩小搜索空间、保证候选质量。</p>
+<p><strong>数据层面</strong></p>
+<ul>
+<li><strong>定期清洗</strong>：删除过期、失效、低价值内容，保持检索空间干净。</li>
+<li><strong>去重和版本管理</strong>：近重复文档去重，多版本只保留有效版本或打上版本标记，避免同一信息重复占用候选位置。</li>
+<li><strong>完善元数据</strong>：来源、时间、主题、业务线、权限等，检索时先过滤再检索。</li>
+<li><strong>合理切块</strong>：太碎会导致索引膨胀，太大会引入噪声。</li>
+<li><strong>分库分区</strong>：按业务线、知识域、租户或时间做 Collection/Partition 拆分，避免所有数据挤在一个大索引里。</li>
+</ul>
+<p><strong>检索层面</strong></p>
+<ul>
+<li><strong>高效 ANN 索引与调参</strong>：HNSW、IVF-PQ、DiskANN，按数据规模选择；必要时做分片和量化压缩。</li>
+<li><strong>先过滤再检索</strong>：利用标量索引缩小候选范围。</li>
+<li><strong>混合检索</strong>：兼顾精确匹配和语义匹配，保证召回质量不随规模下降。</li>
+<li><strong>Query 改写和路由</strong>：先路由到正确的知识库，再检索。</li>
+<li><strong>粗排 + 精排</strong>：先用低成本方法召回，再对少量候选做 Rerank。</li>
+<li><strong>分层检索</strong>：先检索章节或文档摘要定位主题，再在范围内检索细节；复杂问题多轮逐步缩小范围。</li>
+<li><strong>缓存</strong>：缓存高频 Query 的向量和召回结果。</li>
+</ul></div></article><article class="q" id="q46"><h3><a class="q-link" href="#q46">什么是检索噪声？怎么减少噪声对生成结果的影响？</a></h3><div class="a"><p class="lead"><strong>检索噪声</strong>是召回结果中混入了与问题不相关或弱相关的内容。这些内容进入 Prompt 后会误导模型，导致答案错误或跑题，长上下文时还会挤占关键信息的注意力。</p>
+<p><strong>减少噪声的方法</strong></p>
+<ul>
+<li><strong>优化切块</strong>：避免过大的块，让每块只包含一个主题。</li>
+<li><strong>混合检索</strong>：BM25 + 向量（RRF 或加权融合），提高召回的相关度。</li>
+<li><strong>Rerank</strong>：用 Cross-Encoder 对候选重新打分，把最相关的排到前面，只保留 Top N。</li>
+<li><strong>相似度阈值</strong>：过滤掉相似度或 Rerank 分数低于阈值的块。</li>
+<li><strong>Query 改写</strong>：减少模糊问题导致的方向跑偏。</li>
+<li><strong>元数据过滤</strong>：按时间、版本、业务线等限定范围。</li>
+<li><strong>上下文压缩</strong>：只抽取块中与问题相关的句子（如 LLM 抽取、LongLLMLingua 等压缩方法）。</li>
+<li><strong>Prompt 约束</strong>：明确要求模型只基于提供的内容回答、忽略无关信息、信息不足时说明不知道；把最相关的内容放在上下文开头或结尾，减轻 Lost in the Middle。</li>
+</ul></div></article><article class="q" id="q47"><h3><a class="q-link" href="#q47">RAG 常见的检索优化手段有哪些？你实际做过哪些？</a></h3><div class="a"><p class="lead">按链路分层来答：</p>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>优化手段</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>文档层</td>
+<td>清洗、去重、去噪，结构化解析，表格特殊处理，保留标题层级</td>
+</tr>
+<tr>
+<td>切块层</td>
+<td>合理 Chunk 大小、Overlap，按标题和段落切分，拼接标题路径，父子块</td>
+</tr>
+<tr>
+<td>Embedding 层</td>
+<td>选择适合业务的模型（中文、代码、金融、医疗等），必要时做领域微调</td>
+</tr>
+<tr>
+<td>Query 层</td>
+<td>改写、多轮补全、Multi-Query、HyDE、路由</td>
+</tr>
+<tr>
+<td>召回层</td>
+<td>向量 + BM25 混合检索、标题召回、标签和权限过滤、多路召回 + RRF</td>
+</tr>
+<tr>
+<td>排序层</td>
+<td>Rerank 精排、相似度阈值、MMR 去冗余</td>
+</tr>
+<tr>
+<td>Prompt 层</td>
+<td>控制上下文数量，按相关性排列，要求基于检索内容回答、信息不足时明确说明</td>
+</tr>
+<tr>
+<td>缓存层</td>
+<td>缓存高频问题、Query 向量、召回结果和最终回答，降低延迟和成本</td>
+</tr>
+</tbody>
+</table>
+<p><strong>回答“实际做过哪些”时</strong>，可以按“问题 → 方案 → 效果”的结构举例，并给出指标变化：</p>
+<ol>
+<li><strong>切分策略</strong>：从固定长度切分改为“标题层级 + 段落 + Overlap”，召回片段更完整。</li>
+<li><strong>混合检索</strong>：向量召回 + BM25，用 RRF 融合，解决专业术语、错误码、编号类问题召回不准的情况。</li>
+<li><strong>引入 Rerank</strong>：召回 Top 50 后用 bge-reranker 精排取 Top 5，提升进入 Prompt 的上下文质量。</li>
+<li><strong>缓存</strong>：对高频问题做语义缓存，减少重复的向量化和 LLM 调用。</li>
+</ol>
+<p>每项优化都要用同一个评测集对比 Recall@K、MRR、答案准确率和延迟，说明收益是怎么量化出来的。</p></div></article></section><section class="grp has-core" id="g7"><h2 class="grp-title">Rerank <span class="cnt"><span class="n-all">6</span><span class="n-core">高频 5</span></span></h2><article class="q core" id="q48"><h3><a class="q-link" href="#q48">为什么向量检索后要加一层 Rerank？Rerank 的作用是什么？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">Rerank 位于初步检索和生成之间，作用是<strong>对召回的候选做更精细的相关性重新打分和排序</strong>，把真正相关的内容排到前面，只让少量高质量上下文进入 Prompt。</p>
+<p><strong>向量检索（Bi-Encoder）的局限</strong></p>
+<ul>
+<li>任意长度的文本都被压缩成一个固定向量，会丢失语义信息，多义词难以区分，长文本语义被平均化。</li>
+<li>文档向量在用户提问前就已离线算好，<strong>编码时看不到查询</strong>，无法根据问题关注文档中的相关部分。</li>
+<li>只比较整体向量的相似度，难以捕捉词级、句级的细粒度匹配关系。</li>
+</ul>
+<p><strong>Rerank（Cross-Encoder）为什么更准</strong>：把 Query 和文档拼接成一个序列送进 Transformer，两者的 Token 通过 self-attention 充分交互（模型里没有单独的 cross-attention 层），直接输出相关性分数。</p>
+<ul>
+<li>缓解语义丢失：不先压缩成单一向量再比较，而是在编码过程中动态关注关键片段。</li>
+<li>多义词消歧：Query 参与编码，可以结合查询语境理解词义。</li>
+<li>缓解长文本平均化：能突出文档中与查询最相关的局部内容。</li>
+</ul>
+<p><strong>代价</strong>：每个 query-doc 对都要在线做一次完整推理，速度慢、成本高，所以只能对少量候选使用。</p>
+<p>因此实践中采用经典的两阶段架构：<strong>向量 / BM25 负责召回，Rerank 负责精排</strong>。Rerank 还有一个好处：多路召回的分数不可比，Rerank 用同一个模型统一打分，天然解决了融合排序的问题。</p></div></article><article class="q core" id="q49"><h3><a class="q-link" href="#q49">重排序阶段的作用是什么？粗排和精排有什么区别？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">重排序是对已召回的一小批候选做更精细的相关性判断，把最相关的内容排到最前面，提升最终输入模型的上下文质量。粗排和精排是<strong>效率与精度的分工</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>粗排（召回）</th>
+<th>精排（重排序）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>输入规模</td>
+<td>全库（百万到亿级）</td>
+<td>粗排输出的 Top K（几十到几百）</td>
+</tr>
+<tr>
+<td>方法</td>
+<td>向量检索（Bi-Encoder）、BM25</td>
+<td>Cross-Encoder、LLM 打分排序</td>
+</tr>
+<tr>
+<td>目标</td>
+<td>高召回，允许混入部分不相关结果</td>
+<td>高精度，选出最相关的 Top N</td>
+</tr>
+<tr>
+<td>速度</td>
+<td>快，文档侧可离线预计算</td>
+<td>慢，需要逐对在线计算</td>
+</tr>
+<tr>
+<td>精度</td>
+<td>一般</td>
+<td>高</td>
+</tr>
+</tbody>
+</table>
+<p>粗排解决“找得到”，精排解决“排得准”。</p></div></article><article class="q core" id="q50"><h3><a class="q-link" href="#q50">Rerank 模型和 Embedding 模型有什么区别？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Embedding 模型（Bi-Encoder，双塔）</th>
+<th>Rerank 模型（Cross-Encoder）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>输入</td>
+<td>Query 和文档<strong>分别</strong>编码</td>
+<td>Query 和文档<strong>拼接</strong>后一起编码</td>
+</tr>
+<tr>
+<td>输出</td>
+<td>各自的向量，再算余弦相似度或内积</td>
+<td>直接输出一个相关性分数</td>
+</tr>
+<tr>
+<td>交互方式</td>
+<td>只在最后的向量层面比较（无 Token 级交互）</td>
+<td>所有 Token 通过 self-attention 充分交互</td>
+</tr>
+<tr>
+<td>预计算</td>
+<td>文档向量可离线算好并建索引</td>
+<td>不能预计算，每一对都要在线推理</td>
+</tr>
+<tr>
+<td>速度</td>
+<td>快，可检索百万到亿级</td>
+<td>慢，只适合几十到几百个候选</td>
+</tr>
+<tr>
+<td>精度</td>
+<td>较粗</td>
+<td>高</td>
+</tr>
+<tr>
+<td>用途</td>
+<td>召回</td>
+<td>精排</td>
+</tr>
+</tbody>
+</table>
+<p><strong>架构是核心区别</strong>：双塔模型的优势在于“文档向量可以提前算好”，代价是 Query 和文档之间缺少交互；交叉编码器交互充分，代价是无法预计算。</p>
+<p><strong>两者之间</strong>：ColBERT 这类 late interaction（多向量）模型，文档的每个 Token 向量可以离线算好，查询时用 MaxSim 做细粒度匹配，精度接近 Cross-Encoder、速度接近双塔。bge-m3 的 multi-vector 输出就是这种思路。</p></div></article><article class="q core" id="q51"><h3><a class="q-link" href="#q51">为什么不直接全量 Rerank，而是对粗排结果做精排？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">因为 Cross-Encoder <strong>无法离线预计算</strong>：Query 只有在用户提问时才确定，每个 query-doc 对都要在线做一次完整的 Transformer 推理。对全库 N 个文档做 Rerank，就要做 N 次前向计算，百万级文档的延迟和算力成本完全不可接受。</p>
+<p>所以实际系统先用 Embedding 或 BM25 做低成本粗筛（文档侧可预计算，加上 ANN 索引，复杂度远低于 O(N) 次模型推理），从全量数据中召回 Top K（如 Top 50），再只对这几十个候选用 Rerank 精排。这样既避免全量 Rerank 的高延迟，又保证了最终结果的质量，是速度和准确性之间的折中。</p>
+<p>需要注意的是，两阶段的上限受第一阶段召回率限制，所以粗排要保证足够的召回。</p></div></article><article class="q core" id="q52"><h3><a class="q-link" href="#q52">粗排 + 精排两阶段方案有什么优缺点？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead"><strong>优点</strong></p>
+<ul>
+<li><strong>整体精度高</strong>：粗排从大规模数据中快速筛出候选，精排做细粒度语义建模，最终结果质量明显优于只用向量检索。</li>
+<li><strong>兼顾效率</strong>：昂贵的模型只用在少量候选上，总延迟可控。</li>
+<li><strong>统一打分</strong>：多路召回的分数不可比，精排用同一个模型重新打分，天然解决融合排序问题。</li>
+<li><strong>各自可独立优化</strong>：召回模型和精排模型可以分别迭代和替换。</li>
+</ul>
+<p><strong>缺点</strong></p>
+<ul>
+<li><strong>延迟增加</strong>：多了一次模型推理（通常几十到几百毫秒，取决于候选数和模型大小）。</li>
+<li><strong>召回瓶颈</strong>：粗排没召回的结果（漏召），精排再强也补不回来，效果上限受第一阶段限制。</li>
+<li><strong>系统复杂度高</strong>：多一个服务依赖，需要 GPU 资源；高并发下精排容易成为瓶颈，需要做限流、降级（如超时就直接用粗排结果）和扩容。</li>
+</ul>
+<p><strong>缓解方法</strong>：粗排做多路召回并适当放大 K，提高召回率；精排选轻量模型、控制候选数、批量推理，降低延迟。</p></div></article><article class="q" id="q53"><h3><a class="q-link" href="#q53">了解过哪些 Rerank 模型？</a></h3><div class="a"><p class="lead">主流是 Cross-Encoder 类（如 bge-reranker），追求更高精度用 LLM 类 Reranker，延迟敏感用轻量蒸馏模型。</p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>代表模型</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BERT 类 Cross-Encoder</td>
+<td>bge-reranker-base/large、bge-reranker-v2-m3、ms-marco-MiniLM 系列</td>
+<td>最常用，query-doc 拼接打分，精度高；MiniLM 等蒸馏模型快，适合在线低延迟</td>
+</tr>
+<tr>
+<td>基于 LLM 的 Reranker</td>
+<td>Qwen3-Reranker、bge-reranker-v2-gemma / minicpm-layerwise</td>
+<td>复杂 Query、长文本、跨语言表现好；成本高，需控制候选规模（如 Top 50 以内）</td>
+</tr>
+<tr>
+<td>Seq2Seq 类</td>
+<td>monoT5</td>
+<td>相关性转成生成“true/false”的概率</td>
+</tr>
+<tr>
+<td>LLM 直接排序</td>
+<td>RankGPT 等 pointwise / listwise</td>
+<td>灵活但慢且贵，常用于离线评估或生成训练标注</td>
+</tr>
+<tr>
+<td>多向量 late interaction</td>
+<td>ColBERT、bge-m3 multi-vector</td>
+<td>介于双塔和交叉编码器之间，可预计算</td>
+</tr>
+<tr>
+<td>商用 API</td>
+<td>Cohere Rerank、Jina Reranker</td>
+<td>开箱即用，按调用计费</td>
+</tr>
+<tr>
+<td>传统 LTR</td>
+<td>LambdaMART 等</td>
+<td>融合 BM25 分、点击率、时效等业务特征，延迟低但语义弱，常与深度模型结合</td>
+</tr>
+</tbody>
+</table>
+<p><strong>选型</strong>：中文和多语言通用场景从 bge-reranker-v2-m3 起步；最终在业务评测集上比较 NDCG、MRR 和延迟再定。</p></div></article></section><section class="grp" id="g8"><h2 class="grp-title">RAG 评估 <span class="cnt"><span class="n-all">5</span><span class="n-core">高频 0</span></span></h2><article class="q" id="q54"><h3><a class="q-link" href="#q54">如何评估一个 RAG 系统的效果？有哪些核心指标？</a></h3><div class="a"><p class="lead">做法是<strong>构建标准测试集，分开评估检索和生成，再看工程指标</strong>。测试集包括问题、标准答案和标准引用文档。</p>
+<p>分阶段评估的好处是便于定位问题：召回阶段没命中正确文档，说明要优化检索链路；召回正确但回答错误，说明要优化 Prompt、上下文组织或生成环节。</p>
+<p><strong>1. 检索侧</strong></p>
+<ul>
+<li>Recall@K：相关文档是否出现在前 K 个结果里，覆盖得全不全。</li>
+<li>Precision@K：前 K 个结果中相关文档的比例。</li>
+<li>Hit Rate@K：前 K 个结果中至少命中一个相关文档的问题占比。</li>
+<li>MRR：第一个相关结果名次的倒数，再对所有问题求平均。</li>
+<li>NDCG@K：考虑分级相关性和位置的排序质量。</li>
+</ul>
+<p><strong>2. 生成侧</strong></p>
+<ul>
+<li>答案正确性：与标准答案对比，可以人工评，也可以用 LLM-as-a-Judge。</li>
+<li>忠实度（Faithfulness）：答案是否都能被检索内容支持，衡量幻觉程度。</li>
+<li>答案相关性：是否回答了用户的问题。</li>
+<li>完整性：是否覆盖了问题需要的关键点。</li>
+<li>引用准确性：引用的来源是否真的支撑对应结论。</li>
+<li>可读性：表达是否清晰。</li>
+</ul>
+<p><strong>3. 工程侧</strong>：端到端延迟、首 Token 延迟（TTFT）、P95/P99、QPS、单次调用成本、缓存命中率、失败率。</p>
+<p><strong>工具</strong>：Ragas、RAGChecker、TruLens 等可以自动化计算大部分指标；上线后再结合用户反馈（点赞、点踩、转人工率）持续评估。</p></div></article><article class="q" id="q55"><h3><a class="q-link" href="#q55">RAG 经典的准确率评估指标有哪些？</a></h3><div class="a"><p class="lead">分为<strong>检索指标</strong>（Query 与 Chunk 的匹配质量）和<strong>生成指标</strong>（生成答案与参考答案的一致性）。</p>
+<p><strong>检索指标</strong></p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>计算</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MRR</td>
+<td>对每个 Query 取 1 / 第一个相关结果的名次（Top K 内没有则为 0），再对所有 Query 求平均</td>
+<td>只要找到一个关键证据就能回答的问题</td>
+</tr>
+<tr>
+<td>NDCG@K</td>
+<td>DCG@K / IDCG@K</td>
+<td>多个相关结果、相关性有强弱之分</td>
+</tr>
+<tr>
+<td>Precision@K</td>
+<td>Top K 中相关数 / K</td>
+<td>关注结果是否干净</td>
+</tr>
+<tr>
+<td>Recall@K</td>
+<td>Top K 中相关数 / 全部相关数</td>
+<td>需要多个证据共同支撑答案</td>
+</tr>
+</tbody>
+</table>
+<p>NDCG 中 $DCG@K=\sum_{i=1}^{K}\frac{2^{rel_i}-1}{\log_2(i+1)}$，IDCG 是理想排序下的 DCG。相关性 [2,1,0] 时 NDCG = 1；[1,2,0] 相关数量一样，但重要结果没排最前，NDCG 更低。</p>
+<p><strong>生成指标</strong></p>
+<ul>
+<li><strong>BLEU</strong>：n-gram 精确率（带短句惩罚），偏字面，语义相同但表述不同时分低。</li>
+<li><strong>ROUGE</strong>：偏召回，看参考答案被覆盖多少（ROUGE-1/2 看一元/二元词，ROUGE-L 看最长公共子序列）。</li>
+<li><strong>METEOR</strong>：考虑词干、同义词和词序，更接近人工判断。</li>
+<li><strong>EM</strong>：规范化后完全一致得 1，否则 0，适合人名、数字、日期；“2024 年”vs“2024”也得 0。</li>
+<li><strong>Token 级 F1</strong>：按重合词算 P、R 再求 F1，比 EM 宽松，适合短答案。</li>
+</ul>
+<p>这些指标依赖人工标注的相关性和参考答案，而且对开放式回答只能做字面比较，所以现在多和 LLM-as-a-Judge 结合使用。</p></div></article><article class="q" id="q56"><h3><a class="q-link" href="#q56">基于大模型的 RAG 评估（LLM-as-a-Judge）怎么做？</a></h3><div class="a"><p class="lead"><strong>传统指标的局限</strong></p>
+<ul>
+<li><strong>检索侧</strong>：MRR、NDCG、Precision、Recall 都要提前标注 Query 与 Chunk 的相关关系。真实问题往往对应多个 Chunk，答案还可能跨 Chunk，标注难、人工成本高，换场景又要重新标注。</li>
+<li><strong>生成侧</strong>：BLEU、ROUGE 只看词语重合，语义一致但表述不同时分数偏低；EM 又过于严格，不适合开放式问答。</li>
+</ul>
+<p><strong>LLM-as-a-Judge 的做法</strong>：用一个较强的 LLM 当评审，按照预设的评分标准（rubric）评估：</p>
+<ul>
+<li><strong>评估对象</strong>：答案是否被上下文支持（忠实度）、是否回答了问题（相关性）、与参考答案是否语义一致（正确性）、检索上下文是否相关和充分。</li>
+<li><strong>评分方式</strong>：直接打分（如 1–5 分）、二元判断、两两比较（pairwise，A 和 B 哪个更好），或先把答案拆成原子陈述（claim）再逐条验证。claim 级验证更稳定、更可解释。</li>
+<li><strong>提升可靠性</strong>：给出明确的评分标准和示例，让模型先写理由再打分；用温度 0；pairwise 比较时交换 A/B 顺序做两次，抵消位置偏差；用少量人工标注校准评审结果与人工判断的一致性。</li>
+<li><strong>已知偏差</strong>：位置偏差、偏好更长的答案（冗长偏差）、偏好与自己风格相近的输出（自我偏好），以及评审模型本身也可能判断错误。</li>
+</ul>
+<p>常用框架有 <strong>Ragas</strong>（指标级打分，上手简单）和 <strong>RAGChecker</strong>（claim 级细粒度诊断）。</p></div></article><article class="q" id="q57"><h3><a class="q-link" href="#q57">了解 RAGAs、RAGChecker 等评价框架吗？</a></h3><div class="a"><p class="lead">两者都基于 LLM 自动评估。<strong>Ragas 粒度较粗，上手快；RAGChecker 做 claim 级细粒度诊断</strong>，能定位问题出在检索还是生成。</p>
+<p><strong>Ragas</strong></p>
+<p>输入是 question、answer（response）、contexts，以及可选的 ground_truth（reference）。</p>
+<pre><code class="language-json">{
+  &quot;question&quot;: &quot;法国的首都是什么？&quot;,
+  &quot;answer&quot;: &quot;巴黎是法国的首都。&quot;,
+  &quot;contexts&quot;: [&quot;巴黎是法国的首都，也是最大的城市。&quot;, &quot;法国位于欧洲西部。&quot;],
+  &quot;ground_truth&quot;: &quot;法国的首都是巴黎。&quot;
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>计算</th>
+<th>需要标准答案</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Faithfulness</td>
+<td>答案拆成 claim，能被上下文支持的比例（3 个中 2 个有依据得 ≈ 0.67）</td>
+<td>否</td>
+</tr>
+<tr>
+<td>Answer Relevance（0.2 起叫 Response Relevancy）</td>
+<td>由答案反推 N 个问题，与原问题的平均余弦相似度</td>
+<td>否</td>
+</tr>
+<tr>
+<td>Context Precision</td>
+<td>相关 Chunk 是否排在前面：各相关位置的 Precision@k 求平均，v = [1,0,1,1] 时 ≈ 0.81</td>
+<td>可选</td>
+</tr>
+<tr>
+<td>Context Recall</td>
+<td>标准答案的 claim 被上下文支持的比例</td>
+<td>是</td>
+</tr>
+</tbody>
+</table>
+<p>优点是简单、可批量自动化；缺点是粒度粗，分数受评审 LLM 和 Prompt 影响波动明显。</p>
+<p><strong>RAGChecker（Amazon Science 开源）</strong></p>
+<p>类似“按点给分”：把<strong>回复和标准答案</strong>都拆成原子 claim，再逐条核对，输入为 query、gt_answer、response、retrieved_context。四组比较：回复 vs 标准答案（正确性）、标准答案 vs 回复（完整性）、回复 vs 上下文（忠实度和幻觉）、标准答案 vs 上下文（检索质量）。</p>
+<p><img src="images/Java+AI%E5%85%AB%E8%82%A1-image-32.png" alt=""></p>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>指标</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>整体</td>
+<td>Precision / Recall / F1</td>
+<td>回复的正确性、完整性、综合质量</td>
+</tr>
+<tr>
+<td>检索</td>
+<td>Claim Recall / Context Precision</td>
+<td>标准答案 claim 覆盖率 / 相关 Chunk 比例</td>
+</tr>
+<tr>
+<td>生成</td>
+<td>Context Utilization</td>
+<td>用上了多少相关上下文</td>
+</tr>
+<tr>
+<td>生成</td>
+<td>Noise Sensitivity / Hallucination</td>
+<td>被噪声误导的程度 / 幻觉，越低越好</td>
+</tr>
+<tr>
+<td>生成</td>
+<td>Self-knowledge / Faithfulness</td>
+<td>用自身知识的程度 / 与上下文一致程度</td>
+</tr>
+</tbody>
+</table>
+<p>优点：能区分漏召回、噪声干扰、幻觉等具体问题，更稳定。缺点：需要标准答案，LLM 调用多、成本高。</p>
+<p><strong>选型</strong>：快速迭代、没有标准答案时用 Ragas；需要定位问题、做严肃评测时用 RAGChecker。</p></div></article><article class="q" id="q58"><h3><a class="q-link" href="#q58">除了准确率，RAG 系统还有哪些评价指标？</a></h3><div class="a"><p class="lead">还可以从<strong>系统性能、可扩展性、成本、用户体验</strong>几个方面评估。</p>
+<p><strong>1. 系统性能</strong></p>
+<ul>
+<li>平均响应时间，以及分阶段耗时（改写、检索、Rerank、生成）。</li>
+<li>P95 / P99 延迟：看长尾慢请求是否严重。</li>
+<li>首 Token 延迟（TTFT）：流式输出时最影响用户体感。</li>
+<li>延迟分布直方图：观察请求集中区间和长尾。</li>
+</ul>
+<p><strong>2. 可扩展性</strong></p>
+<ul>
+<li>数据规模扩展：文档量增长后，延迟是否明显上升、检索准确率是否下降。</li>
+<li>吞吐量：QPS。</li>
+<li>高并发表现：压测下是否出现超时、错误率上升。</li>
+</ul>
+<p><strong>3. 成本与稳定性</strong>：单次请求 Token 消耗和费用、缓存命中率、失败率和降级比例。</p>
+<p><strong>4. 用户体验</strong></p>
+<ul>
+<li>人工满意度：人工打分、点赞和点踩比例、用户反馈。</li>
+<li>答案可读性：表达清晰、自然，便于理解。</li>
+<li>业务指标：问题解决率、转人工率、引用点击率。</li>
+</ul></div></article></section><section class="grp has-core" id="g9"><h2 class="grp-title">幻觉与工程优化 <span class="cnt"><span class="n-all">6</span><span class="n-core">高频 1</span></span></h2><article class="q" id="q59"><h3><a class="q-link" href="#q59">用了 RAG 为什么还会有幻觉？常见原因有哪些？怎么降低？</a></h3><div class="a"><p class="lead">RAG 能降低幻觉，但不能消除。原因可以按<strong>数据、检索、上下文、生成</strong>四个环节归类。</p>
+<p><strong>常见原因</strong></p>
+<ul>
+<li><strong>知识库层</strong>：知识缺失，模型只能编造补全；文档本身有错误或多版本冲突，模型采纳了过时或错误的内容。</li>
+<li><strong>切片层</strong>：切块割裂语义，片段不完整，模型自行补全。</li>
+<li><strong>检索层</strong>：召回率低，没找到相关内容；排序偏差，相关内容排在后面被截掉；Query 意图模糊，检索方向跑偏；混入大量无关文档。</li>
+<li><strong>上下文层</strong>：上下文过长、噪声多，造成窗口污染；关键信息在长上下文中间被忽略（Lost in the Middle）；超出窗口被截断。</li>
+<li><strong>生成层</strong>：模型过度依赖参数知识、忽视检索内容；生成时添加上下文里没有的细节；即使信息不足也倾向于给出流畅、看似合理的回答；采样带来随机性。</li>
+<li><strong>Prompt 层</strong>：约束不够强，没有要求“只基于给定内容回答”。</li>
+</ul>
+<p><strong>降低幻觉的方法</strong></p>
+<ol>
+<li><strong>提升检索质量</strong>：优化切块、混合检索、多路召回、Rerank、相似度阈值、Query 改写。</li>
+<li><strong>治理知识库</strong>：补全缺失知识，做版本管理，优先最新和权威的文档，并处理冲突内容。</li>
+<li><strong>强化 Prompt 约束</strong>：明确“只能基于以下内容回答，内容不足时回答不知道”，要求逐条标注引用。</li>
+<li><strong>引用溯源</strong>：返回来源和页码，让答案可核验。</li>
+<li><strong>答案校验</strong>：生成后让模型或 NLI 模型检查每个结论是否被上下文支持，不支持的就删除或重新生成；Self-RAG、CRAG 等方法把检索质量判断和自我反思纳入流程。</li>
+<li><strong>调低随机性</strong>：降低 temperature。</li>
+<li><strong>高风险场景人工审核</strong>：法律、医疗、金融等领域。</li>
+<li><strong>持续评估</strong>：用 Faithfulness 等指标监控幻觉率。</li>
+</ol></div></article><article class="q" id="q60"><h3><a class="q-link" href="#q60">什么是上下文窗口污染？如何避免无关文档混入？</a></h3><div class="a"><p class="lead"><strong>上下文窗口污染</strong>：检索召回的大量无关、冗余或过时文档被塞进 Prompt，占用窗口长度、稀释关键信息、干扰模型判断，进而诱发幻觉或错误答案。</p>
+<p><strong>规避方法</strong></p>
+<ul>
+<li><strong>相似度阈值</strong>：低于阈值的结果直接丢弃，宁缺毋滥。</li>
+<li><strong>Rerank 精排</strong>：用高精度模型把真正有价值的文档排到前面，只取 Top N。</li>
+<li><strong>精细化切块</strong>：每块聚焦一个主题，避免大块带入无关内容。</li>
+<li><strong>元数据过滤</strong>：按时间、版本、业务线、权限过滤，排除过期和不相关的数据源。</li>
+<li><strong>去重</strong>：去掉重复和近重复的片段。</li>
+<li><strong>上下文压缩</strong>：只抽取与问题相关的句子。</li>
+<li><strong>控制数量和顺序</strong>：限制进入 Prompt 的 Chunk 数，最相关的放在开头或结尾。</li>
+<li><strong>多轮对话清理</strong>：只保留与当前问题相关的历史，必要时对历史做摘要。</li>
+</ul></div></article><article class="q core" id="q61"><h3><a class="q-link" href="#q61">RAG 有哪些痛点？能做哪些优化？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead"><strong>痛点</strong>集中在检索和生成两个阶段：</p>
+<ul>
+<li><strong>检索阶段</strong>：召回不准（大量不相关文档带来噪声）、召回不全（遗漏关键信息，长文档和多跳问题尤其明显）。</li>
+<li><strong>生成阶段</strong>：文本块太多超出上下文、推理变慢、成本升高；检索结果多而杂，模型抓不住重点，甚至出现幻觉。</li>
+</ul>
+<p><strong>优化</strong>围绕链路的四个环节展开：</p>
+<ol>
+<li><strong>文档解析与切分</strong>
+<ul>
+<li>用 MinerU 等版面分析和 OCR 工具把 PDF、Word 转成 Markdown，保留标题、表格、公式等结构。</li>
+<li>固定长度切分会破坏语义，块太小信息不够、需要召回很多块，块太大 Embedding 效果差、费 Token。更推荐结构化或语义切分（按章节、段落、特殊标识符），配合 Overlap 和标题元数据。</li>
+</ul>
+</li>
+<li><strong>向量化与存储</strong>
+<ul>
+<li>根据语言、领域、长度和成本选 Embedding 模型。维度越高表达能力可能越强，但存储和计算成本也越高，要权衡；必要时做领域微调。</li>
+<li>选择合适的 ANN 索引，完善元数据和过滤字段。</li>
+</ul>
+</li>
+<li><strong>检索与召回</strong>
+<ul>
+<li>用户问题往往模糊，用 Query 改写转成更准确的检索语句（会增加延迟，实时性要求高的场景要慎用或用小模型）。</li>
+<li>多路召回：稀疏召回（BM25）+ 稠密召回（向量）+ 标题或标签召回；多路分数难以对齐，用 RRF 融合，再串联 Rerank，既过滤冗余，又提升精度。</li>
+</ul>
+</li>
+<li><strong>生成与输出</strong>
+<ul>
+<li>设计 Prompt 模板，要求基于上下文作答、标注引用、不足时说明。</li>
+<li>上下文压缩、合理排序，对答案做校验和后处理。</li>
+</ul>
+</li>
+</ol>
+<p>此外还要建立评估集和监控，持续迭代。</p></div></article><article class="q" id="q62"><h3><a class="q-link" href="#q62">RAG 的瓶颈在哪？落地中最难解决的问题是什么？</a></h3><div class="a"><p class="lead">成熟的 RAG 不是简单的“向量库 + 大模型”，而是围绕<strong>知识治理、检索优化、生成控制和效果评估</strong>构建的工程系统。</p>
+<p><strong>技术瓶颈</strong></p>
+<ul>
+<li><strong>检索质量上限</strong>：可能召回不相关内容或遗漏关键信息，复杂推理、多跳问题尤其明显；召回没命中，后面再强也补不回来。</li>
+<li><strong>上下文窗口</strong>：窗口虽然越来越大，但塞入大量检索块会增加成本和延迟，还会稀释关键信息。</li>
+<li><strong>切块导致信息损失</strong>：破坏文档的全局结构，跨块信息难以关联；对“全文主要讲了什么”这类全局问题，基础 RAG 效果差。</li>
+<li><strong>实时性与一致性</strong>：高频更新的知识库需要快速增量索引和同步，还要处理新旧版本。</li>
+<li><strong>成本与延迟</strong>：每次请求都要经过改写、检索、重排、生成，相比纯 LLM 调用开销更大，大规模并发下难以保持低延迟。</li>
+</ul>
+<p><strong>落地最难的三件事</strong></p>
+<ol>
+<li><strong>知识质量</strong>：原始文档重复、过期、冲突、格式混乱，再好的检索和模型也生成不了高质量答案。RAG 的上限很大程度取决于知识库质量，需要持续治理。</li>
+<li><strong>检索准确性</strong>：真实问题有口语化表达、多轮追问、专业术语、编号和缩写，单纯向量检索很难都召回准，需要 Query 改写、混合检索、多路召回、Rerank 等一整套优化。</li>
+<li><strong>答案可信度</strong>：即使检索正确，模型仍可能总结错误、遗漏重点或产生幻觉，需要引用溯源、Prompt 约束、答案校验和人工反馈闭环。</li>
+</ol>
+<p>还有一个常被忽视的问题：<strong>缺少评测集</strong>。没有量化评估，就无法判断每项优化是否真的有效。</p></div></article><article class="q" id="q63"><h3><a class="q-link" href="#q63">RAG 如何实现加速？</a></h3><div class="a"><p class="lead">目标是减少重复计算、降低检索和网络开销、提高吞吐。分三个层面：</p>
+<p><strong>1. Embedding 阶段</strong></p>
+<ul>
+<li><strong>批量请求</strong>：一次发送多段文本，避免逐条调用的网络开销。</li>
+<li><strong>异步并发</strong>：用 asyncio 等并行请求，离线入库时尤其有效。</li>
+<li><strong>缓存</strong>：高频 Query 的向量存入 Redis 或本地缓存；文档向量全部离线预计算。</li>
+<li><strong>模型分层</strong>：简单、高频场景用轻量模型，复杂场景再用强模型；本地部署可以用 ONNX、TensorRT、量化等方式加速推理。</li>
+<li><strong>合理切块</strong>：块太多会增加编码和检索负担。</li>
+</ul>
+<p><strong>2. 检索阶段</strong></p>
+<ul>
+<li><strong>高效 ANN 索引</strong>：HNSW、IVF 等，调优 ef、nprobe 等参数平衡速度和召回。</li>
+<li><strong>批量或并发检索</strong>：多路召回并行执行。</li>
+<li><strong>先过滤后检索</strong>：用标签、时间、业务条件缩小候选集。</li>
+<li><strong>分阶段检索</strong>：先粗召回再精排；控制 Top K，减轻 Rerank 和生成的负担。</li>
+<li><strong>Rerank 加速</strong>：用轻量模型、限制候选数、批量推理。</li>
+</ul>
+<p><strong>3. 系统架构</strong></p>
+<ul>
+<li><strong>异步流水线</strong>：可以并行的步骤并行执行（如改写和关键词检索同时进行），减少串行等待。</li>
+<li><strong>流式输出</strong>：LLM 结果通过 SSE 流式返回，降低首 Token 延迟的体感。</li>
+<li><strong>任务队列与批处理</strong>：高并发请求聚合处理，推理服务用 vLLM 等做 continuous batching。</li>
+<li><strong>负载均衡</strong>：多实例部署，多个 API Key 分摊限流，避免单点瓶颈。</li>
+<li><strong>冷热分层</strong>：热数据放内存索引，冷数据放低成本存储（如 DiskANN、对象存储）。</li>
+<li><strong>预计算与缓存</strong>：热门问题的答案做语义缓存（相似问题直接命中），开启 LLM 的 Prompt Caching（固定的系统提示放在前缀），对热门路由结果做预热。</li>
+</ul></div></article><article class="q" id="q64"><h3><a class="q-link" href="#q64">知识库如何动态更新？新增文档后怎么快速生效？</a></h3><div class="a"><p class="lead">核心是<strong>增量入库 + 版本管理 + 异步处理</strong>，不做全量重建。</p>
+<ol>
+<li><strong>新增</strong>：上传后触发解析、清洗、切块、向量化，写入向量库；文档 ID、版本号、更新时间、状态等写入元数据表。</li>
+<li><strong>修改</strong>：根据文档 ID 找到旧版本的全部 Chunk，标记失效或删除，再写入新版本。可以用内容哈希判断哪些 Chunk 真正变了，只重算变化的部分。</li>
+<li><strong>删除</strong>：物理删除向量，或逻辑删除（状态字段 + 检索过滤），之后再定期清理。</li>
+<li><strong>版本管理</strong>：同一文档可能有多个版本，检索时按版本或状态过滤，优先最新版本，避免召回旧内容。可以先写入新版本，再一次性切换状态，避免更新过程中出现两个版本同时可见或都不可见。</li>
+<li><strong>异步任务</strong>：解析和向量化耗时较长，用消息队列（Kafka、RabbitMQ 等）异步处理，支持失败重试和进度追踪。</li>
+<li><strong>快速生效</strong>：写入后让数据尽快可查。不同向量库的可见性机制不同，例如 Milvus 有 flush 和一致性级别设置，ES 有 refresh 间隔，需要确认配置。同时清理相关的语义缓存和答案缓存。</li>
+<li><strong>同步一致</strong>：向量索引、倒排索引、元数据库要同时更新，可以监听数据源变更（CDC）自动触发。</li>
+</ol>
+<p>大批量更新时，HNSW 等索引的删除标记会累积，需要定期做 compaction 或重建索引，保证检索性能和召回率。</p></div></article></section><section class="grp" id="g10"><h2 class="grp-title">进阶 RAG 范式 <span class="cnt"><span class="n-all">4</span><span class="n-core">高频 0</span></span></h2><article class="q" id="q65"><h3><a class="q-link" href="#q65">除了基础 RAG，你还了解哪些高级 RAG 架构或范式？</a></h3><div class="a"><table>
+<thead>
+<tr>
+<th>范式</th>
+<th>核心思想</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Naive RAG</td>
+<td>切块 → 向量检索 → 拼进 Prompt 生成，是最基础的流程</td>
+</tr>
+<tr>
+<td>Advanced RAG</td>
+<td>在检索前后加优化：Query 改写、混合检索、Rerank、上下文压缩、引用溯源</td>
+</tr>
+<tr>
+<td>Modular RAG</td>
+<td>把检索、改写、路由、记忆等拆成可组合的模块，按需编排流程</td>
+</tr>
+<tr>
+<td>Conversational RAG</td>
+<td>面向多轮对话，结合历史做 Query 改写，解决指代和省略问题</td>
+</tr>
+<tr>
+<td>Hybrid RAG</td>
+<td>组合向量检索、关键词检索、结构化数据库查询、知识图谱检索</td>
+</tr>
+<tr>
+<td>GraphRAG</td>
+<td>用知识图谱组织实体和关系，支持多跳推理和全局总结</td>
+</tr>
+<tr>
+<td>Agentic RAG</td>
+<td>Agent 自主决定是否检索、检索什么、检索几次、调用哪些工具</td>
+</tr>
+<tr>
+<td>Self-RAG</td>
+<td>训练模型输出反思标记（reflection tokens），自主判断是否需要检索、检索结果是否相关、答案是否被支持</td>
+</tr>
+<tr>
+<td>Corrective RAG（CRAG）</td>
+<td>用评估器给检索结果打分，质量差就改写后重新检索或转向网络搜索，并对文档做精炼</td>
+</tr>
+<tr>
+<td>Adaptive RAG</td>
+<td>按问题复杂度路由：简单问题不检索，中等问题单次检索，复杂问题多步检索</td>
+</tr>
+<tr>
+<td>RAPTOR</td>
+<td>递归聚类并生成摘要，构建树状索引，支持不同抽象层级的检索</td>
+</tr>
+<tr>
+<td>Multimodal RAG</td>
+<td>检索图片、表格、图表，用多模态模型理解和生成</td>
+</tr>
+</tbody>
+</table></div></article><article class="q" id="q66"><h3><a class="q-link" href="#q66">了解过 Agentic RAG 吗？</a></h3><div class="a"><p class="lead">Agentic RAG 是在 RAG 中引入 Agent 的自主决策能力，把“检索 → 生成”从固定的一次性流程，变成<strong>动态、迭代、可调整</strong>的过程：由系统自己决定怎么检索、检索几次、是否调用其他工具、是否需要反思和修正。</p>
+<p><strong>关键特点</strong></p>
+<ol>
+<li><strong>自主决策</strong>：根据问题复杂度选择策略，例如是否需要检索、查哪个知识库、要不要联网搜索或查数据库。</li>
+<li><strong>迭代改进</strong>：得到初步结果后判断信息是否足够、答案是否可靠，不够就改写后再检索，形成“检索 → 评估 → 再检索”的闭环。</li>
+<li><strong>工具融合</strong>：检索只是工具之一，还可以调用 API、SQL、搜索引擎、业务系统，适合需要实时数据的场景。</li>
+</ol>
+<p><strong>典型模块</strong>：LLM 作为推理引擎；记忆模块（短期上下文、长期经验）；Planning 模块（任务拆解，如 ReAct、Plan-and-Execute）；Reflection 模块（结果校验）；工具调用模块（向量库、外部系统）。</p>
+<p><strong>多 Agent 模式</strong>：路由 Agent 分发任务，检索、验证、总结、业务接口调用分别由不同的 Agent 负责，最后汇总结果。</p>
+<p><strong>代价</strong>：多轮 LLM 调用导致延迟和成本上升，行为更难预测和调试，需要设置最大迭代次数、超时，并做好可观测性。适合复杂、多步骤的问题，简单 FAQ 用传统 RAG 就够了。</p></div></article><article class="q" id="q67"><h3><a class="q-link" href="#q67">什么是多轮对话？</a></h3><div class="a"><p class="lead">多轮对话是用户和系统连续多轮交互，后续提问依赖前文语境，例如先问“这台打印机怎么样”，再问“它的功能是什么”。</p>
+<p>在 RAG 中，多轮对话的核心实现是<strong>Query 改写</strong>：用一个改写模块（通常是 LLM）结合历史对话改写当前问题，把模糊的问题变成能独立理解的查询，再去检索和回答。主要手段有两个：</p>
+<ul>
+<li><strong>指代消解</strong>：把“它”“他”“那个”等代词替换为具体实体，例如“它的功能”改写成“这台打印机的功能”。</li>
+<li><strong>省略补全</strong>：补齐缺失的信息，例如上一句问“我的电脑配置怎么样”，下一句“那性能呢”补全为“我的电脑性能怎么样”，脱离历史也能理解。</li>
+</ul>
+<p>工程上还要做<strong>会话记忆管理</strong>：完整保留最近几轮对话，较早的历史做摘要，控制 Token 消耗；按会话 ID 存储历史（如存在 Redis 中）。</p></div></article><article class="q" id="q68"><h3><a class="q-link" href="#q68">多轮对话 RAG 主要解决什么问题？</a></h3><div class="a"><p class="lead">主要解决：<strong>当前提问依赖历史对话，单独看是模糊或不完整的，直接拿去检索会召回不到相关文档，或者召回错误文档</strong>。例如“那它的价格呢？”，单独检索根本不知道“它”指什么。</p>
+<p><strong>解决方式</strong>：在检索前加一个改写模块（Condense Question / Query Rewrite），结合历史对话做指代消解和省略补全，把问题还原成独立完整的查询，再送入检索链路。改写后的查询能明显提升召回精度，进而保证回答准确。</p>
+<p><strong>其他要点</strong></p>
+<ul>
+<li><strong>话题切换判断</strong>：识别用户是在追问还是换了新话题，避免把无关历史拼进查询。</li>
+<li><strong>历史管理</strong>：生成时带上必要的对话历史，但要控制长度（滑动窗口 + 摘要）。</li>
+<li><strong>上下文复用</strong>：追问同一主题时，可以复用上一轮的检索结果，减少重复检索。</li>
+</ul></div></article></section><section class="grp has-core" id="g11"><h2 class="grp-title">GraphRAG 与知识图谱 <span class="cnt"><span class="n-all">9</span><span class="n-core">高频 5</span></span></h2><article class="q" id="q69"><h3><a class="q-link" href="#q69">知识图谱的三要素是什么？</a></h3><div class="a"><p class="lead">知识图谱的三要素是<strong>实体（Entity）、关系（Relation）、属性（Attribute）</strong>。知识通常用三元组表示：(头实体, 关系, 尾实体) 或 (实体, 属性, 属性值)。</p>
+<ul>
+<li><strong>实体</strong>：现实世界中的对象或概念，如人、地点、组织、产品、事件，在图中是节点。可以直观理解为“名词”。</li>
+<li><strong>关系</strong>：实体之间的语义联系，如“任职于”“位于”“推出”，在图中是有向边。可以理解为连接名词的“动词”。</li>
+<li><strong>属性</strong>：实体或关系的描述性特征，以键值对表示，如实体的“成立时间”，关系的“生效时间”。</li>
+</ul>
+<p><strong>以苹果公司为例</strong></p>
+<ul>
+<li>实体：苹果公司（组织）、蒂姆·库克（人物）、库比蒂诺（地点）、iPhone（产品）。</li>
+<li>关系：(苹果公司)-[CEO 是]-&gt;(蒂姆·库克)、(苹果公司)-[总部位于]-&gt;(库比蒂诺)、(苹果公司)-[推出]-&gt;(iPhone)。</li>
+<li>属性：苹果公司{成立时间: 1976 年, 股票代码: AAPL}；iPhone{首发年份: 2007 年, 操作系统: iOS}。</li>
+</ul></div></article><article class="q" id="q70"><h3><a class="q-link" href="#q70">知识图谱构建的核心流程是什么？</a></h3><div class="a"><p class="lead">核心步骤是<strong>实体抽取 → 关系抽取 → 知识融合与对齐 → 存储与更新</strong>。GraphRAG 里的建图也是这个思路，只是主要由 LLM 来抽取。</p>
+<p><img src="images/Java+AI%E5%85%AB%E8%82%A1-image-37.png" alt=""></p>
+<ol>
+<li><strong>数据准备</strong>：收集结构化、半结构化和非结构化数据，非结构化文本先做解析和切块。</li>
+<li><strong>实体抽取（NER）</strong>：识别人名、组织、地点、产品等实体。方法包括规则和词典（正则、领域词表）、深度学习序列标注（BERT + CRF 等）、LLM 抽取（按 Schema 用 Prompt 抽取）。</li>
+<li><strong>关系抽取</strong>：识别实体之间的语义关系。方法有规则模板、监督学习分类，以及实体和关系的联合抽取，现在也常用 LLM 直接输出三元组；同时抽取属性。</li>
+<li><strong>知识融合与对齐</strong>：处理多来源数据的冲突与重复。
+<ul>
+<li>实体消歧：区分同名不同义的实体，如水果“苹果”和苹果公司；</li>
+<li>共指消解：识别同一实体的不同表述，如“苹果公司”“Apple”“它”；</li>
+<li>实体对齐：合并不同知识库中的同一实体。</li>
+</ul>
+</li>
+<li><strong>质量校验与存储</strong>：去掉错误三元组，写入图数据库，设计 Schema（本体）。</li>
+<li><strong>持续更新</strong>：增量抽取新文档，并处理与已有知识的冲突。</li>
+</ol></div></article><article class="q" id="q71"><h3><a class="q-link" href="#q71">知识图谱用什么存储？有哪些图数据库？</a></h3><div class="a"><p class="lead">知识图谱可以存在 RDF 三元组库中（如 Apache Jena，用 SPARQL 查询），工程上更常用<strong>属性图数据库</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>图数据库</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Neo4j</td>
+<td>最成熟的原生属性图数据库，使用 Cypher 查询语言，社区活跃，适合关联查询和路径分析；GraphRAG 场景用得最多</td>
+</tr>
+<tr>
+<td>NebulaGraph</td>
+<td>国产开源分布式图数据库，水平扩展能力强，适合超大规模图谱</td>
+</tr>
+<tr>
+<td>JanusGraph</td>
+<td>开源分布式图数据库，存储后端可选 HBase、Cassandra 等，使用 Gremlin 查询</td>
+</tr>
+<tr>
+<td>HugeGraph</td>
+<td>百度开源，支持百亿级节点和边，与大数据生态对接好</td>
+</tr>
+<tr>
+<td>ArangoDB</td>
+<td>多模型数据库，同时支持图、文档和 KV，灵活，但纯图场景性能不如原生图库</td>
+</tr>
+<tr>
+<td>Amazon Neptune</td>
+<td>托管图数据库，同时支持属性图（Gremlin、openCypher）和 RDF（SPARQL）</td>
+</tr>
+</tbody>
+</table>
+<p>一般掌握 Neo4j 和 Cypher 就够应对面试了，例如：</p>
+<pre><code class="language-cypher">MATCH (c:Company {name: '苹果公司'})-[:CEO_IS]-&gt;(p:Person) RETURN p.name
+</code></pre></div></article><article class="q" id="q72"><h3><a class="q-link" href="#q72">什么场景下会用知识图谱而不是单纯的向量检索？</a></h3><div class="a"><p class="lead">问题不只是“语义相似”，而是涉及<strong>明确的实体关系、多跳推理、路径解释或全局聚合</strong>时，就适合用知识图谱。向量检索擅长找相似的内容，不擅长表达强结构化的关系。</p>
+<p><strong>适用场景</strong></p>
+<ol>
+<li><strong>实体关系复杂</strong>：金融风控中用户、账户、设备、手机号、交易之间的关联网络。</li>
+<li><strong>多跳查询</strong>：“某客户关联了哪些高风险账户，这些账户又关联了哪些设备”。向量检索很难一次召回整条链路。</li>
+<li><strong>需要可解释的路径</strong>：风控、医疗、法律等场景，不仅要给结论，还要说明关联路径和依据。</li>
+<li><strong>层级和依赖关系明确</strong>：组织架构、产品依赖、供应链、论文引用、代码调用关系。</li>
+<li><strong>精确的聚合或枚举</strong>：“列出所有供应商为 X 的产品”，图查询或 SQL 比相似度检索更准。</li>
+<li><strong>全局性问题</strong>：“这批文档的主要主题有哪些”，可以借助 GraphRAG 的社区摘要回答。</li>
+</ol>
+<p><strong>和 RAG 的结合</strong>：先识别问题中的关键实体，在图谱中查询相关关系和路径（如用 Text-to-Cypher 或子图扩展），同时用向量检索召回相关文本，两者一起交给大模型生成答案。</p>
+<p><strong>代价</strong>：建图和维护成本高。纯文档问答、关系不重要的场景，用向量检索加 Rerank 就够了。</p></div></article><article class="q core" id="q73"><h3><a class="q-link" href="#q73">GraphRAG 解决了 RAG 的什么问题？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">GraphRAG（微软 2024 年提出）在索引阶段先用 LLM 从文档中抽取实体和关系构建知识图谱，再做社区划分并生成社区摘要。它主要解决传统 RAG <strong>关系建模不足、全局理解弱、多跳推理难</strong>的问题。</p>
+<ul>
+<li><strong>平面检索问题</strong>：传统 RAG 把 Chunk 当作相互独立的单元，只能找到“相似”的片段，不知道它们之间的联系。GraphRAG 用实体和关系把信息连成网络，支持沿关系做多跳检索。</li>
+<li><strong>语境缺失</strong>：检索到的片段可能缺少上下文。GraphRAG 能带上实体的关联信息和所属社区的摘要，提供更完整的上下文。</li>
+<li><strong>全局性问题（核心价值）</strong>：像“这批文档的主要主题是什么”这类问题，答案分散在全库中，Top-K 检索只能看到局部片段。GraphRAG 通过层次化的社区摘要做 map-reduce，能整合分散信息，回答跨文档的总结和分析类问题。</li>
+<li><strong>检索更有针对性</strong>：从相关实体出发，只沿相关节点和路径扩展，而不是在全库做相似度匹配。</li>
+</ul>
+<p>一句话：传统 RAG 擅长回答局部事实问题，GraphRAG 补上了关系推理和全局总结能力。</p></div></article><article class="q core" id="q74"><h3><a class="q-link" href="#q74">GraphRAG 的知识图谱是怎么建立的？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">本质是把原始文本逐步转成<strong>实体 → 关系 → 社区 → 摘要</strong>的结构化知识体系：</p>
+<ol>
+<li><strong>文本切分</strong>：切成 TextUnit（Chunk），保留与源文档的对应关系。</li>
+<li><strong>实体与关系抽取</strong>：LLM 从每个 Chunk 抽取实体（名称、类型、描述）和关系（源、目标、描述、强度），也可抽 claim；可多轮抽取（gleaning）减少遗漏。</li>
+<li><strong>图谱融合</strong>：同名同类型实体合并，多处描述由 LLM 汇总，去重去噪。</li>
+<li><strong>分层社区检测</strong>：用 Leiden 做层次化社区划分，每个社区对应一个主题或子主题。</li>
+<li><strong>社区摘要</strong>：LLM 为每个社区生成报告（主要实体、关系、关键发现），底层摘要作为上层输入，形成多层摘要。</li>
+<li><strong>向量化</strong>：实体描述、文本单元、社区报告做 Embedding，供 local / global 检索。</li>
+</ol>
+<p><strong>Leiden（常见追问）</strong>：对 Louvain 的改进，解决 Louvain 可能产出内部不连通社区的问题，且通常收敛更快。迭代三步：局部移动（节点移到增益最大的邻居社区）→ <strong>细化</strong>（社区内再细分，保证内部连通，这是关键改进）→ 聚合（社区压成超级节点再重复），自然得到层次结构。易错点：分辨率限制是模块度目标函数本身的问题，Leiden 用模块度时同样存在，改用 CPM 等目标才能缓解。</p></div></article><article class="q core" id="q75"><h3><a class="q-link" href="#q75">GraphRAG 常见的检索方式有哪些？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">微软 GraphRAG 主要提供 <strong>Local Search</strong> 和 <strong>Global Search</strong> 两种方式，后来又加入了 DRIFT Search。</p>
+<ul>
+<li><strong>Local Search（局部检索）</strong>：适合询问具体实体细节的问题，例如“某科研项目的负责人是谁”。先用向量相似度找到与问题相关的实体，再沿图扩展，收集相关的实体描述、关系、所属社区报告和原始文本单元，拼成上下文交给 LLM 回答。</li>
+<li><strong>Global Search（全局检索）</strong>：适合跨文档的全局总结问题，例如“这批文档的主要主题有哪些”“本季度所有产品的销售趋势如何”。在某个社区层级上，对所有社区报告做 <strong>map-reduce</strong>：map 阶段每批报告各自生成带重要性评分的要点，reduce 阶段筛选高分要点汇总成最终答案。成本较高。</li>
+<li><strong>DRIFT Search</strong>：结合两者，先用社区报告得到全局视角和后续子问题，再用 local search 逐步深入细节。</li>
+<li><strong>其他图检索方式</strong>：从实体出发的 N 跳子图扩展、路径查询、Text-to-Cypher 直接查询图数据库，以及图检索与向量检索的混合。</li>
+</ul></div></article><article class="q core" id="q76"><h3><a class="q-link" href="#q76">GraphRAG 相比传统 RAG 有什么劣势？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">主要劣势是<strong>前期构建成本高、更新不灵活、维护复杂</strong>。</p>
+<ul>
+<li><strong>建图成本高</strong>：实体关系抽取、描述汇总、社区摘要都要大量调用 LLM，Token 消耗通常是普通向量索引的数倍到数十倍以上，耗时也长。</li>
+<li><strong>增量更新难</strong>：传统 RAG 新增文档只需切块和向量化。GraphRAG 新增内容可能影响已有实体、关系和社区结构，社区和摘要往往要部分或全部重算，增删改都比较麻烦。</li>
+<li><strong>实时性弱</strong>：数据变化快的场景，图结构和摘要跟不上更新。</li>
+<li><strong>维护成本高</strong>：需要持续处理实体去重、消歧、关系冲突和图谱一致性；抽取质量依赖 LLM，抽错的实体和关系会在图里传播。</li>
+<li><strong>查询成本</strong>：Global Search 的 map-reduce 要处理大量社区报告，延迟高、费用高。</li>
+<li><strong>系统复杂度高</strong>：涉及图存储、图算法、抽取 Prompt 调优、分层摘要等模块，链路长，排查和调优困难。</li>
+<li><strong>简单问题收益有限</strong>：对单点事实问答，效果不一定比向量检索加 Rerank 更好，性价比低。</li>
+</ul></div></article><article class="q core" id="q77"><h3><a class="q-link" href="#q77">还有哪些 GraphRAG 算法？分别解决了什么问题？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">改进主要沿两个方向：<strong>降低建图和查询成本</strong>，以及<strong>解决图谱难以更新的问题</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>核心思路</th>
+<th>解决的问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LightRAG（港大，2024）</td>
+<td>轻量图索引，不做重量级的社区聚类和社区报告；双层检索（low-level 检索具体实体，high-level 检索主题和关系关键词），结合图和向量；新文档抽取后直接合并进已有图</td>
+<td>建图成本高、增量更新难</td>
+</tr>
+<tr>
+<td>LazyGraphRAG（微软，2024）</td>
+<td>索引阶段不用 LLM 做摘要，只用轻量 NLP 抽取名词短语和共现关系；把 LLM 的摘要推迟到查询时按需进行，可以通过预算参数在成本和质量之间调节</td>
+<td>前期索引成本过高，官方称索引成本与向量 RAG 相当，约为完整 GraphRAG 的 0.1%</td>
+</tr>
+<tr>
+<td>Fast GraphRAG（Circlemind）</td>
+<td>用 Personalized PageRank 在图上做相关性传播和检索，支持增量更新</td>
+<td>速度、成本和动态数据</td>
+</tr>
+<tr>
+<td>HippoRAG</td>
+<td>借鉴海马体记忆理论，构建知识图谱后用 Personalized PageRank 做多跳检索</td>
+<td>单步检索完成多跳推理，成本低</td>
+</tr>
+<tr>
+<td>KG-RAG / Think-on-Graph 等</td>
+<td>LLM 在图上逐步探索推理路径</td>
+<td>复杂多跳推理</td>
+</tr>
+</tbody>
+</table>
+<p>面试时重点讲 LightRAG（增量更新 + 双层检索）和 LazyGraphRAG（摘要推迟到查询时），这两个最常被问到。</p></div></article></section><nav class="pager"><a href="finetune.html" class="prev"><small>上一章</small>训练与微调</a><a href="agent.html" class="next"><small>下一章</small>Agent</a></nav>
+  </div>
+</main>
+<div class="backdrop" id="backdrop"></div>
+<button class="to-top" id="to-top" aria-label="回到顶部">↑</button>
+<script id="outline" type="application/json">[{"id":"g1","title":"RAG 基础与流程","n":5,"core":2},{"id":"g2","title":"文档解析","n":7,"core":4},{"id":"g3","title":"文档切块（Chunking）","n":7,"core":7},{"id":"g4","title":"Embedding","n":6,"core":3},{"id":"g5","title":"向量数据库与索引","n":11,"core":3},{"id":"g6","title":"检索与召回","n":11,"core":6},{"id":"g7","title":"Rerank","n":6,"core":5},{"id":"g8","title":"RAG 评估","n":5,"core":0},{"id":"g9","title":"幻觉与工程优化","n":6,"core":1},{"id":"g10","title":"进阶 RAG 范式","n":4,"core":0},{"id":"g11","title":"GraphRAG 与知识图谱","n":9,"core":5}]</script>
+<script src="assets/app.js?v=ab30056e"></script>
+</body>
+</html>

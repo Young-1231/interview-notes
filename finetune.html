@@ -1,0 +1,871 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="darkreader-lock">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>训练与微调 · 八股笔记</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' font-weight='bold' fill='white' text-anchor='middle'%3E八%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css?v=ab30056e">
+<script>
+  (function () {
+    var t = localStorage.getItem('iv.theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+</head>
+<body data-part="ai" data-sec="finetune">
+<header class="site-header">
+  <button class="icon-btn menu-btn" id="menu-btn" aria-label="目录">☰</button>
+  <a href="index.html" class="brand"><span class="dot">●</span> 八股笔记</a>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="search">
+    <input id="search" type="search" placeholder="搜索题目  /" autocomplete="off" aria-label="搜索题目">
+    <span id="search-info"></span>
+    <div class="search-pop" id="search-pop" hidden></div>
+  </div>
+  <button class="icon-btn" id="theme-toggle" aria-label="切换主题">◐</button>
+</header>
+<aside class="side" id="side"><nav id="toc"></nav></aside>
+<main class="main">
+  <div id="article">
+<header class="page-head"><div class="crumb">AI &amp; Agent</div><h1>训练与微调 <span class="cnt">37 题</span></h1><div class="tools"><button type="button" class="tool" id="t-core" aria-pressed="false">只看高频 <b>11</b></button><button type="button" class="tool" id="t-quiz" aria-pressed="false">自测模式</button><a class="tool resume" id="t-resume" hidden></a><span class="kbd-hint"><kbd>j</kbd>/<kbd>k</kbd> 上下题 · 自测时 <kbd>空格</kbd> 看答案 · <kbd>/</kbd> 搜索</span></div><nav class="overview"><div class="ov-groups"><a href="#g1">训练阶段总览<span><span class="n-all">4</span><span class="n-core">1</span></span></a><a href="#g2">SFT 与选型<span><span class="n-all">6</span><span class="n-core">1</span></span></a><a href="#g3">LoRA 与参数高效微调<span><span class="n-all">7</span><span class="n-core">2</span></span></a><a href="#g4">微调实战<span><span class="n-all">5</span><span class="n-core">1</span></span></a><a href="#g5">显存估算与精度<span><span class="n-all">5</span><span class="n-core">3</span></span></a><a href="#g6">强化学习与偏好对齐<span><span class="n-all">10</span><span class="n-core">3</span></span></a></div></nav></header><section class="grp has-core" id="g1"><h2 class="grp-title">训练阶段总览 <span class="cnt"><span class="n-all">4</span><span class="n-core">高频 1</span></span></h2><article class="q core" id="q1"><h3><a class="q-link" href="#q1">预训练、SFT、RLHF、DPO 分别是什么？它们之间是什么关系？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">它们是大模型训练的几个典型阶段：<strong>预训练让模型&quot;会说话、有知识&quot;，SFT 让模型&quot;听懂指令、按格式回答&quot;，RLHF / DPO 让模型&quot;回答得更符合人类偏好&quot;</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>数据</th>
+<th>训练目标</th>
+<th>产出</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>预训练（Pretrain）</td>
+<td>海量无标注文本（万亿 token 级）</td>
+<td>自监督 next-token 预测，交叉熵损失</td>
+<td>Base 模型：有语言能力和世界知识，但只会续写</td>
+</tr>
+<tr>
+<td>SFT（监督微调）</td>
+<td>人工或模型构造的&quot;指令-回答&quot;对，通常几千到几十万条</td>
+<td>仍是 next-token 交叉熵，但通常只对回答部分算 loss</td>
+<td>Instruct / Chat 模型：能遵循指令、多轮对话</td>
+</tr>
+<tr>
+<td>RLHF（PPO）</td>
+<td>人类偏好数据（同一问题多个回答的排序）</td>
+<td>先训练 Reward Model，再用 PPO 最大化奖励，同时用 KL 约束不偏离 SFT 模型</td>
+<td>更有帮助、更安全、更符合人类偏好</td>
+</tr>
+<tr>
+<td>DPO</td>
+<td>偏好对 <code>(prompt, chosen, rejected)</code></td>
+<td>不训练 Reward Model、不做在线采样，直接在偏好对上做类监督优化</td>
+<td>与 RLHF 目标相同，流程更简单</td>
+</tr>
+</tbody>
+</table>
+<p><strong>关系</strong>：三者是串行递进的，后一阶段在前一阶段的模型上继续训练。预训练决定能力上限，SFT 和偏好对齐主要是把已有能力&quot;调出来&quot;并对齐人类期望。DPO 是 RLHF 中 PPO 那一步的替代方案。此外，推理模型（如 DeepSeek-R1）还会用 GRPO 等在线 RL 方法，基于可验证的奖励（答案对错、代码能否通过测试）强化推理能力。</p></div></article><article class="q" id="q2"><h3><a class="q-link" href="#q2">为什么要预训练？什么是增量预训练？</a></h3><div class="a"><p class="lead">预训练本质上是在做&quot;词语接龙&quot;：给定前文预测下一个 token。它不需要人工标注（自监督），模型在海量语料上从随机参数开始学习，把语言规律、语法、常识和世界知识压缩进参数，形成通用的特征表示。</p>
+<p><strong>为什么需要</strong>：</p>
+<ul>
+<li><strong>降低对标注数据的依赖</strong>：无标注文本几乎取之不尽，而标注数据昂贵。</li>
+<li><strong>为下游提供好的初始化</strong>：有了通用能力，后续 SFT 只需少量数据就能适配具体任务。</li>
+<li><strong>带来泛化能力</strong>：预训练充分的模型具备 Zero-shot 和 Few-shot 能力，可以通过 Prompt 直接解决新任务。</li>
+</ul>
+<p><strong>增量预训练（Continue Pretrain / Post-pretrain）</strong>：大规模从零预训练一般只有基座模型团队才会做。业务上如果要让模型掌握大量新的领域知识（法律、医疗、某个专有代码库），通常在现成的 Base 模型上继续用领域语料做预训练。训练方式与预训练相同，区别只在数据。为了避免灾难性遗忘，一般要把领域语料与一定比例的通用语料混合，学习率也比从零预训练小。之后再做 SFT。</p></div></article><article class="q" id="q3"><h3><a class="q-link" href="#q3">预训练中的 Packing 指什么？</a></h3><div class="a"><p class="lead">Packing（序列拼接）是指构建训练 batch 时，<strong>把多条长度不一的短文本用分隔符（如 <code>&lt;EOS&gt;</code>）首尾拼接成一条长度等于最大上下文长度（如 4096、8192）的长序列</strong>。</p>
+<ul>
+<li><strong>为什么要做</strong>：如果每条样本单独成序列，短样本需要大量 padding，padding 部分不贡献有效梯度，浪费算力。Packing 后几乎没有 padding，GPU 利用率和吞吐显著提高。</li>
+<li><strong>问题</strong>：拼在一起的文档之间本来无关，普通因果注意力会让后一篇&quot;看到&quot;前一篇。常见处理是在文档间插入 EOS，或使用文档级注意力掩码（document mask）并重置位置编码，让每篇文档只关注自身。</li>
+<li>SFT 阶段也可以用 Packing 提速，但必须做样本间的注意力隔离，否则不同对话会互相干扰。</li>
+</ul></div></article><article class="q" id="q4"><h3><a class="q-link" href="#q4">SFT 和 Pretrain 有什么区别？</a></h3><div class="a"><p class="lead"><strong>两者的训练方式基本一样，都是 next-token 预测、交叉熵损失；区别主要在数据形式和训练目的。</strong></p>
+<p><strong>数据与训练细节</strong>：</p>
+<ul>
+<li><strong>数据形式</strong>：Pretrain 是海量无结构纯文本；SFT 是结构化的指令-回答（或多轮对话）数据，量小但质量要求高。</li>
+<li><strong>对话模板与特殊 token</strong>：SFT 会把数据套进 Chat Template，用 <code>&lt;|im_start|&gt;</code>、<code>&lt;|im_end|&gt;</code> 或 <code>system</code>/<code>user</code>/<code>assistant</code> 等角色标记把文本切分成不同角色，让模型理解对话结构。</li>
+<li><strong>停止符</strong>：SFT 在每个回答末尾加上结束 token（EOS 或模板中的结束标记）并计算 loss，让模型学会&quot;回答完主动停止&quot;。</li>
+<li><strong>Loss Mask</strong>：SFT 通常只对回答（assistant）部分计算 loss，对 system 和 user 部分做掩码。因为模型要学的是如何回答，而不是去预测用户会说什么；不做掩码还可能让模型学会续写用户的话。</li>
+<li><strong>Packing</strong>：Pretrain 普遍拼接到满长度；SFT 通常按样本独立组织，要拼接的话需要做注意力隔离。</li>
+<li><strong>超参数</strong>：SFT 数据少，学习率更小、epoch 通常 1–3 轮。</li>
+</ul>
+<p><strong>训练目的</strong>：</p>
+<ul>
+<li><strong>Pretrain</strong>：学习语言规律和世界知识，构建能力基座。</li>
+<li><strong>SFT</strong>：对齐人类意图，激发指令遵循能力，学习用特定的格式、语气、角色输出已有知识。</li>
+</ul>
+<p><strong>注意</strong>：如果需要给模型灌输大量全新的领域知识，应优先做<strong>增量预训练</strong>，而不是只靠 SFT。SFT 的数据量和多样性有限，用它强行注入知识效果差，还容易引发灾难性遗忘和幻觉。</p></div></article></section><section class="grp has-core" id="g2"><h2 class="grp-title">SFT 与选型 <span class="cnt"><span class="n-all">6</span><span class="n-core">高频 1</span></span></h2><article class="q" id="q5"><h3><a class="q-link" href="#q5">什么时候需要做微调？为什么通常先用 Prompt 工程？</a></h3><div class="a"><p class="lead"><strong>原则是先 Prompt，再 RAG，Prompt 和 RAG 都无法稳定解决时再考虑微调。</strong></p>
+<p><strong>为什么优先 Prompt 工程</strong>：</p>
+<ul>
+<li><strong>冷启动成本低</strong>：不需要准备训练数据和算力，改完立即生效。</li>
+<li><strong>适合需求不稳定的早期</strong>：业务规则经常变，改 Prompt 几乎零成本；微调每次都要改数据、重训、重新评估。</li>
+<li><strong>很多任务没复杂到要微调</strong>：明确目标、加约束、给 Few-shot 示例、规范输出格式，强基座模型往往已经够用。</li>
+<li><strong>不影响通用能力</strong>：不改模型参数，不存在灾难性遗忘。</li>
+</ul>
+<p><strong>适合微调的场景</strong>：</p>
+<ul>
+<li><strong>输出格式要求高度稳定</strong>：如 JSON 结构化抽取、固定模板报告，Prompt 下仍有一定比例格式错误。</li>
+<li><strong>话术和风格要统一</strong>：如客服、金融研报、以律师口吻和专业术语回答的法律助手。</li>
+<li><strong>任务模式固定、样本充足</strong>：如合同条款抽取、工单分类、代码审查，且有足够的高质量标注数据。</li>
+<li><strong>任务复杂到 Prompt 列举不完</strong>：规则和边界情况太多，写进 Prompt 既长又不稳定。</li>
+<li><strong>Tool Calling 不稳定</strong>：模型调用工具的参数和格式经常出错，需要用数据固化调用方式。</li>
+<li><strong>成本和延迟要求</strong>：用小模型微调替代大模型 + 长 Prompt，降低推理成本。</li>
+</ul>
+<p><strong>不建议微调</strong>：只是少量规则调整、一次性任务，或者知识频繁更新（这时用 RAG）。微调需要数据、评估和持续维护，成本更高。</p></div></article><article class="q core" id="q6"><h3><a class="q-link" href="#q6">微调和 RAG 有什么区别？什么场景选哪个？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead"><strong>RAG 解决&quot;知道什么&quot;（知识），微调解决&quot;怎么做&quot;（行为）。</strong></p>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>微调</th>
+<th>RAG</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>原理</td>
+<td>修改模型参数</td>
+<td>不改参数，回答前先从外部知识库检索相关片段，作为上下文交给模型</td>
+</tr>
+<tr>
+<td>擅长</td>
+<td>输出格式、话术风格、任务流程、领域表达、工具调用习惯</td>
+<td>企业文档问答、制度政策、产品手册等知识型问答</td>
+</tr>
+<tr>
+<td>知识更新</td>
+<td>需要重新训练，知识容易过期</td>
+<td>更新知识库即可，实时生效</td>
+</tr>
+<tr>
+<td>可解释性</td>
+<td>低，答案来源不可追溯</td>
+<td>高，可以给出引用来源</td>
+</tr>
+<tr>
+<td>幻觉</td>
+<td>灌输知识时仍可能编造</td>
+<td>有依据可查，幻觉更少（但受检索质量影响）</td>
+</tr>
+<tr>
+<td>成本</td>
+<td>训练成本和数据成本高</td>
+<td>主要是检索系统建设，推理时 Prompt 变长</td>
+</tr>
+</tbody>
+</table>
+<p><strong>怎么选</strong>：</p>
+<ul>
+<li>知识更新频繁、需要溯源：选 RAG。</li>
+<li>行为模式固定、格式和风格要求稳定：选微调。</li>
+<li>既要企业知识又要稳定输出风格：RAG + 微调组合，例如微调模型更好地利用检索结果、按规定格式引用。</li>
+</ul></div></article><article class="q" id="q7"><h3><a class="q-link" href="#q7">微调到底提升了模型什么？是知识还是能力？</a></h3><div class="a"><p class="lead">微调既能带来一些知识，也能改变行为，但<strong>生产中更推荐用微调提升&quot;行为能力&quot;，而不是注入知识</strong>。</p>
+<ul>
+<li><strong>为什么不适合注入知识</strong>：SFT 数据量有限，模型很难通过少量样本可靠地记住新事实；知识会过期，每次更新都要重训；用模型不熟悉的事实做 SFT，反而可能让模型学会&quot;自信地编造&quot;，加重幻觉。</li>
+<li><strong>微调真正擅长的</strong>：结构化输出、行业话术风格、工具调用格式、复杂指令遵循、特定领域任务的处理流程。本质上是让模型形成稳定的任务行为模式。</li>
+<li><strong>确实要注入大量领域知识时</strong>：用增量预训练（海量领域语料）而不是 SFT，或者用 RAG。</li>
+</ul></div></article><article class="q" id="q8"><h3><a class="q-link" href="#q8">SFT 有哪些局限性？</a></h3><div class="a"><p class="lead">SFT 像&quot;只教标准答案的填鸭式教育&quot;：只告诉模型什么是对的，不告诉它什么是错的。</p>
+<ul>
+<li><strong>容易产生幻觉</strong>：SFT 本质是行为克隆，教的是&quot;按这种方式回答&quot;。如果预训练没学过某个事实，模型为了完成指令也会编出一个看起来合理的答案。</li>
+<li><strong>缺乏负反馈</strong>：只用正样本学习，模型对模糊、误导性问题的辨别和自我纠错能力弱。这正是后续做 RLHF / DPO 的原因之一。</li>
+<li><strong>上限受数据限制</strong>：模型最多模仿到数据的水平，很难超越标注者；数据有错误或风格不一致，模型会照单全收。</li>
+<li><strong>容易学到表面模式</strong>：模型可能只学到格式和高频句式，而不是背后的推理；数据单一时输出会越来越模板化。</li>
+<li><strong>灾难性遗忘</strong>：在单一垂直数据上过度拟合，会损害预训练形成的通用知识和泛化能力。</li>
+<li><strong>许多任务没有唯一标准答案</strong>：开放问答、写作等场景，SFT 只能学&quot;像数据一样答&quot;，没法直接优化&quot;哪种回答更好&quot;。</li>
+</ul></div></article><article class="q" id="q9"><h3><a class="q-link" href="#q9">SFT 的灾难性遗忘如何缓解？</a></h3><div class="a"><p class="lead">灾难性遗忘是指模型在新任务数据上微调后，原有的通用能力明显下降。只能缓解，不能完全消除，常用手段从数据、方法、正则、超参数四方面入手：</p>
+<ul>
+<li><strong>数据混合（最有效）</strong>：在垂直领域数据中混入一定比例的高质量通用指令数据（常见做法是一到两成，具体比例按评估结果调整），让模型在学习新任务时&quot;复习&quot;通用能力。</li>
+<li><strong>参数高效微调（PEFT）</strong>：用 LoRA / QLoRA 代替全量微调，冻结基座权重，只训练少量低秩参数，可训练的自由度小，遗忘通常比全量微调轻。但只要挂上或合并了 Adapter，模型的输出分布就变了，同样会有遗忘。只有卸掉 Adapter 才能回到原模型，所以 LoRA 是<strong>降低遗忘</strong>而非<strong>消除遗忘</strong>，仍需配合数据混合和超参数控制。</li>
+<li><strong>正则化约束</strong>：在损失中加入与原模型输出分布的 KL 散度惩罚，或用 EWC 等方法限制重要参数的变化幅度，约束模型不偏离基座太远。</li>
+<li><strong>训练超参数</strong>：用较小的学习率（全量 SFT 常用 1e-5 量级，比预训练小约一个数量级；LoRA 常用 1e-4 到 2e-4），epoch 控制在 1–3 轮，配合验证集和 Early Stopping，同时监控通用基准（如 MMLU、C-Eval）上的得分。</li>
+<li><strong>知识类需求换方案</strong>：大量新知识用增量预训练（同样混合通用语料）或 RAG，而不是硬塞进 SFT。</li>
+</ul></div></article><article class="q" id="q10"><h3><a class="q-link" href="#q10">为什么很多企业最终采用&quot;RAG + 微调 + Agent&quot;组合方案？</a></h3><div class="a"><p class="lead">因为三者解决的是不同层面的问题，单一技术无法覆盖真实业务。</p>
+<ul>
+<li><strong>RAG 解决知识问题</strong>：企业制度、产品文档、业务规则经常变化，放在知识库里检索，比塞进模型参数更易更新、可溯源。</li>
+<li><strong>微调解决行为问题</strong>：输出格式、行业话术、任务流程、工具调用习惯，需要通过微调让模型更稳定可控。</li>
+<li><strong>Agent 解决执行问题</strong>：真实业务不是单轮问答，而是要查数据库、调接口、走审批、生成报告、发消息，需要 Agent 做任务规划、工具调用和多步编排。</li>
+</ul>
+<p>一句话：RAG 让模型知道企业最新的知识，微调让模型按企业要求稳定输出，Agent 让模型能真正执行业务动作。三者结合，系统从&quot;问答&quot;升级为&quot;能干活的业务助手&quot;。</p></div></article></section><section class="grp has-core" id="g3"><h2 class="grp-title">LoRA 与参数高效微调 <span class="cnt"><span class="n-all">7</span><span class="n-core">高频 2</span></span></h2><article class="q core" id="q11"><h3><a class="q-link" href="#q11">什么是 LoRA？核心原理是什么？为什么只训练低秩矩阵就有效？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">LoRA（Low-Rank Adaptation）是最常用的参数高效微调方法：<strong>冻结预训练权重 W0，在旁边加一条低秩旁路，只训练旁路参数；推理时把旁路合并回原权重，不增加推理延迟。</strong></p>
+<p><img src="images/Java+AI%E5%85%AB%E8%82%A1-image-25.png" alt=""></p>
+<p><strong>公式</strong>：全量微调是学习一个与 W0 同样大小的更新 ΔW，即 W = W0 + ΔW。LoRA 把 ΔW 分解为两个小矩阵的乘积：</p>
+<pre><code class="language-text">h = W0·x + (α/r)·B·A·x
+B ∈ R^{d×r}，A ∈ R^{r×k}，r ≪ min(d, k)
+</code></pre>
+<ul>
+<li><strong>初始化</strong>：A 随机初始化（高斯或 Kaiming 均匀分布），B 初始化为 0，所以训练开始时 BA = 0，模型的输出和原模型完全一致，训练从原模型平滑起步。</li>
+<li><strong>参数量</strong>：单层可训练参数从 d×k 降到 r×(d+k)。例如 d = k = 4096、r = 8 时，从约 1677 万降到约 6.6 万，约为原来的 0.4%。</li>
+<li><strong>缩放</strong>：α/r 控制旁路更新的强度，这样调整 r 时不必大幅重调学习率。</li>
+<li><strong>合并</strong>：训练完成后计算 W = W0 + (α/r)·BA，得到与原模型结构完全相同的单个矩阵，部署时没有额外计算开销。也可以不合并，动态加载 Adapter，方便一个基座挂多个任务。</li>
+</ul>
+<p><strong>为什么低秩就有效</strong>：</p>
+<ul>
+<li>研究发现预训练模型适配下游任务时，存在很低的&quot;内在维度&quot;：只需在一个低维子空间里调整就能达到接近全量微调的效果。LoRA 论文据此假设<strong>权重更新量 ΔW 本身是低秩的</strong>，并在实验中验证了很小的 r 也有效。</li>
+<li>直观理解：模型的通用能力已在预训练中学到，下游任务只需要在少数几个方向上做调整（回答风格、任务格式、领域表达），不需要重新学习所有能力。</li>
+</ul></div></article><article class="q" id="q12"><h3><a class="q-link" href="#q12">LoRA 一般插在哪些层？rank 和 alpha 有什么作用？</a></h3><div class="a"><p class="lead">LoRA 一般挂在 Transformer 的<strong>线性层</strong>上：注意力的 <code>q_proj</code>、<code>k_proj</code>、<code>v_proj</code>、<code>o_proj</code>，以及 MLP 的 <code>gate_proj</code>、<code>up_proj</code>、<code>down_proj</code>。Embedding 和 LayerNorm 一般不挂。</p>
+<ul>
+<li><strong>插哪些层</strong>：LoRA 原始论文只在 q、v 上做了实验，资源最省；现在常用做法（QLoRA 论文和多数框架推荐）是挂到<strong>所有线性层</strong>，效果通常更好，接近全量微调，代价是可训练参数多一些。</li>
+<li><strong>rank（r）</strong>：低秩矩阵的秩，决定 LoRA 的容量。r 越大可训练参数越多、表达能力越强，但显存占用和过拟合风险也越高。常取 8–64，简单的格式、风格类任务 8–16 就够，复杂任务可以更大。</li>
+<li><strong>alpha（α）</strong>：缩放系数，实际作用在更新量上的缩放是 <strong>α/r</strong>，决定 LoRA 更新对原模型的影响强度。常取 α = r 或 α = 2r。</li>
+<li><strong>调参注意</strong>：改 r 时 α/r 也跟着变，所以要一起看。r 很大时 α/r 会变小、学习变慢，rsLoRA 提出用 α/√r 缩放来缓解。</li>
+<li><strong>其他常用超参数</strong>：<code>lora_dropout</code>（常取 0.05–0.1，防过拟合）、学习率（常用 1e-4 到 2e-4，比全量微调大一个数量级左右）。</li>
+</ul>
+<p>一句话：rank 决定 LoRA 能学多少，alpha 决定 LoRA 对原模型影响多大。生产中不要盲目把 rank 调很大，要根据任务复杂度、数据量和验证集效果逐步调。</p></div></article><article class="q" id="q13"><h3><a class="q-link" href="#q13">LoRA 为什么能降低显存占用？</a></h3><div class="a"><p class="lead"><strong>因为冻结的参数不需要梯度和优化器状态，LoRA 省的正是这两块；基座权重本身仍然要全部加载进显存。</strong></p>
+<p>训练显存主要由四部分组成：模型参数、梯度、优化器状态、激活值。</p>
+<ul>
+<li><strong>全量微调</strong>：每个参数都要存梯度和 Adam 的一阶、二阶动量，混合精度下每个参数约 16 字节（不含激活），7B 模型约 112GB。</li>
+<li><strong>LoRA</strong>：基座参数冻结，只占权重本身（BF16 下每参数 2 字节，7B 约 14GB），不存梯度和优化器状态；只有 LoRA 参数（通常不到总参数的 1%）需要梯度和优化器状态，这部分几乎可以忽略。</li>
+<li><strong>激活值</strong>：仍然需要保存用于反向传播（梯度要穿过冻结层传到 LoRA 参数），所以长序列时激活依然占大头，需要配合 Gradient Checkpointing。</li>
+</ul>
+<p>结果：7B 模型 LoRA 微调通常一张 24GB 显卡就能跑，而全量微调需要多卡加 ZeRO 切分。另外每个任务只需保存几十 MB 的 Adapter，而不是一份完整模型。</p></div></article><article class="q" id="q14"><h3><a class="q-link" href="#q14">为什么现在更倾向用 LoRA 而不是全量微调？LoRA 和全量微调有什么区别？</a></h3><div class="a"><p class="lead">核心原因是<strong>成本、效率和可维护性</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>全量微调</th>
+<th>LoRA</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>训练参数</td>
+<td>全部参数</td>
+<td>只训练新增的低秩矩阵，通常不到 1%</td>
+</tr>
+<tr>
+<td>显存</td>
+<td>极高，需要多卡 + ZeRO / FSDP</td>
+<td>低，7B 单卡可训，QLoRA 更低</td>
+</tr>
+<tr>
+<td>存储与部署</td>
+<td>每个任务一份完整模型（7B 约 14GB）</td>
+<td>每个任务一个 Adapter（几 MB 到几百 MB），共享同一个基座</td>
+</tr>
+<tr>
+<td>多任务切换</td>
+<td>需要加载不同模型</td>
+<td>只换 Adapter，不换底座；vLLM 等框架支持同时服务多个 LoRA</td>
+</tr>
+<tr>
+<td>遗忘风险</td>
+<td>较高</td>
+<td>较低（但仍存在）</td>
+</tr>
+<tr>
+<td>效果上限</td>
+<td>自由度最大，大规模数据或需要重塑能力时更好</td>
+<td>多数领域适配、格式对齐任务接近全量微调</td>
+</tr>
+</tbody>
+</table>
+<p><strong>为什么适合企业</strong>：企业需求大多不是从头训练通用模型，而是让现有模型快速适配某个行业的术语、问答风格或具体任务，数据规模不大、资源有限、目标明确。LoRA 训练快、成本低、对底座侵入小，同一个基座可以给不同业务线挂不同 LoRA，版本管理和回滚也简单。</p>
+<p><strong>什么时候仍用全量微调</strong>：数据量很大、需要大幅改变模型能力（如继续预训练、训练全新语言或领域基座），且资源充足时。</p></div></article><article class="q core" id="q15"><h3><a class="q-link" href="#q15">什么是 QLoRA？和 LoRA 有什么区别？为什么更省显存？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">QLoRA = <strong>4-bit 量化的冻结基座 + LoRA</strong>。LoRA 省的是梯度和优化器状态，QLoRA 进一步把基座权重本身压缩到 4 bit，省下加载基座的显存。</p>
+<p><strong>三项关键技术</strong>：</p>
+<ul>
+<li><strong>4-bit NormalFloat（NF4）</strong>：预训练权重近似服从均值为 0 的正态分布。NF4 按标准正态分布的分位数来划分 16 个量化点，使每个量化区间落入的权重数量大致相等，对正态分布数据在信息论意义上是最优的，精度优于普通的 INT4 / FP4。量化按块（block size 64）进行，每块存一个缩放常数。</li>
+<li><strong>双重量化（Double Quantization）</strong>：每 64 个参数就有一个 FP32 量化常数，摊到每个参数约 0.5 bit。把这些量化常数再做一次 8-bit 量化（每 256 个常数一组），开销降到约 0.127 bit / 参数，7B 模型可再省约 0.3GB。</li>
+<li><strong>分页优化器（Paged Optimizers）</strong>：利用 NVIDIA 统一内存，在显存不足时把优化器状态自动换页到 CPU 内存，需要更新时再换回 GPU，避免长序列、梯度检查点导致的显存峰值引起 OOM。</li>
+</ul>
+<p><strong>计算方式</strong>：基座以 NF4 存储，前向、反向时按块<strong>反量化成 BF16</strong> 再参与计算（compute dtype 是 BF16）；梯度穿过冻结的基座，只更新 LoRA 参数，LoRA 参数本身保持 BF16。</p>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>LoRA</th>
+<th>QLoRA</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>基座精度</td>
+<td>BF16 / FP16（每参数 2 字节）</td>
+<td>NF4（每参数约 0.5 字节）</td>
+</tr>
+<tr>
+<td>7B 基座权重显存</td>
+<td>约 14GB</td>
+<td>约 3.5–4GB</td>
+</tr>
+<tr>
+<td>训练速度</td>
+<td>较快</td>
+<td>通常更慢，多了反量化开销</td>
+</tr>
+<tr>
+<td>效果</td>
+<td>基准</td>
+<td>论文中与 16-bit LoRA 接近</td>
+</tr>
+</tbody>
+</table>
+<p>QLoRA 论文用单张 48GB 显卡微调了 65B 模型。它特别适合单卡、低显存环境；显存够用时 LoRA 速度更快。</p></div></article><article class="q" id="q16"><h3><a class="q-link" href="#q16">什么是 AdaLoRA？</a></h3><div class="a"><p class="lead">AdaLoRA 是 LoRA 的改进方法，核心是<strong>按重要性动态分配秩</strong>：LoRA 给所有模块使用相同且固定的秩，而不同层、不同矩阵对任务的重要性并不一样。</p>
+<ul>
+<li><strong>做法</strong>：把增量矩阵参数化为类似 SVD 的形式 P·Λ·Q（Λ 是奇异值对角阵），训练中评估每个奇异值的重要性，把不重要的奇异值剪掉，从而动态降低该模块的秩，把参数预算让给更重要的模块。</li>
+<li><strong>正则</strong>：对 P、Q 加正交约束，保证分解的稳定性。</li>
+<li><strong>本质</strong>：在总参数预算固定的情况下，把有限的可训练参数优先分配给更重要的权重矩阵，从而提升效果。</li>
+<li><strong>代价</strong>：实现和调参比 LoRA 复杂，训练开销略大，实际工程中用得不如 LoRA 普遍。</li>
+</ul></div></article><article class="q" id="q17"><h3><a class="q-link" href="#q17">还有哪些参数高效微调（PEFT）方法？</a></h3><div class="a"><p class="lead">除 LoRA 系列外，经典方法有 Adapter、Prefix Tuning、Prompt Tuning、P-Tuning 等，实际工程中远不如 LoRA 常用，了解原理即可。</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>做法</th>
+<th>推理开销</th>
+<th>现状</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LoRA / QLoRA</td>
+<td>线性层旁路低秩矩阵</td>
+<td>合并后为零</td>
+<td>主流</td>
+</tr>
+<tr>
+<td>Adapter</td>
+<td>每层插入&quot;降维 - 激活 - 升维 + 残差&quot;的瓶颈模块</td>
+<td>串行模块有额外延迟，不能合并回权重</td>
+<td>较少使用</td>
+</tr>
+<tr>
+<td>Prefix Tuning</td>
+<td>每层注意力的 K、V 前拼接可训练前缀，常用 MLP 重参数化</td>
+<td>占用上下文，训练不太稳定</td>
+<td>较少使用</td>
+</tr>
+<tr>
+<td>Prompt Tuning</td>
+<td>只在输入嵌入层前拼软提示，参数最少；模型越大越接近全量微调</td>
+<td>占用上下文</td>
+<td>较少使用</td>
+</tr>
+</tbody>
+</table>
+<p><img src="images/Java+AI%E5%85%AB%E8%82%A1-image-26.png" alt=""></p>
+<ul>
+<li><strong>P-Tuning / v2</strong>：P-Tuning 用小型 LSTM / MLP 生成软提示；v2 把提示加到每一层，接近 Prefix Tuning，中小模型上效果更好。</li>
+<li><strong>LoRA 变体</strong>：QLoRA（量化基座）、AdaLoRA（动态秩）、DoRA（权重分解为幅度和方向分别学习）、rsLoRA（改用 α/√r 缩放）。</li>
+</ul></div></article></section><section class="grp has-core" id="g4"><h2 class="grp-title">微调实战 <span class="cnt"><span class="n-all">5</span><span class="n-core">高频 1</span></span></h2><article class="q" id="q18"><h3><a class="q-link" href="#q18">讲一下一个完整的大模型微调流程</a></h3><div class="a"><p class="lead">微调不只是&quot;把数据丢进去训练&quot;，而是从目标定义、数据工程、训练、评估到上线的完整流程。</p>
+<ol>
+<li><strong>明确目标</strong>：要提升格式遵循、领域话术、抽取还是工具调用；先确认 Prompt 和 RAG 是否已够用；定好上线指标。</li>
+<li><strong>选基座</strong>：看中文能力、上下文长度、规模、推理成本和许可证，中文常用 Qwen，一般选 Instruct 版本做 SFT。</li>
+<li><strong>构造数据</strong>：instruction / input / output 或多轮 messages 格式，覆盖正常、边界、异常和拒答；来源有人工标注、业务日志、强模型生成后人工审核。</li>
+<li><strong>数据清洗</strong>：去重、去错误和低质样本、脱敏、检查分布，按需混入通用数据防遗忘。</li>
+<li><strong>选方式</strong>：通常 LoRA / QLoRA，资源充足、数据量大才全量；框架如 LLaMA-Factory、ms-swift、TRL + PEFT，多卡用 DeepSpeed ZeRO 或 FSDP。</li>
+<li><strong>调参</strong>：learning rate、batch size（配合梯度累积）、epoch、rank、alpha、target modules、warmup、cosine 调度，开启 BF16 和 Gradient Checkpointing。</li>
+<li><strong>评估</strong>：不能只看 loss，要用独立测试集评估准确率和格式正确率，配合人工或 LLM-as-a-Judge，并回归测试通用能力。</li>
+<li><strong>上线</strong>：合并 LoRA 或动态加载 Adapter，可再量化（AWQ、GPTQ），vLLM 部署，灰度、监控、回滚，持续收集 bad case 迭代。</li>
+</ol></div></article><article class="q core" id="q19"><h3><a class="q-link" href="#q19">微调数据一般怎么构造？为什么数据质量比数据量更重要？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead"><strong>格式</strong>：单轮任务常用 Alpaca 格式（<code>instruction</code>、<code>input</code>、<code>output</code>）；对话任务用 messages 格式（<code>system</code>、<code>user</code>、<code>assistant</code> 多轮），训练时套入模型对应的 Chat Template；带工具调用的数据还要包含工具定义和 <code>tool_calls</code>、工具返回结果。</p>
+<p><strong>构造要点</strong>：</p>
+<ul>
+<li><strong>覆盖真实分布</strong>：从真实业务问题出发，包含正常问题、边界问题、异常输入和应该拒答的问题。</li>
+<li><strong>多样性</strong>：问法、长度、难度、子任务类型要多样，避免模型只学会少数句式。</li>
+<li><strong>一致性</strong>：同类问题的输出格式、风格、口径统一，否则模型会混乱。</li>
+<li><strong>来源</strong>：人工标注、业务日志挖掘、用强模型蒸馏生成后人工抽检（注意遵守模型的使用协议）。</li>
+</ul>
+<p><strong>为什么质量比数量更重要</strong>：</p>
+<ul>
+<li>微调本质是让模型模仿数据中的目标行为，数据里有错误答案、风格混乱、格式不一致，模型会直接学进去。</li>
+<li>业界经验（如 LIMA 论文用约 1000 条精选数据取得了很好的对齐效果）表明，<strong>几千条高质量数据的效果常常优于几十万条低质量数据</strong>。</li>
+<li>低质量、重复的数据还会加剧过拟合和灾难性遗忘。</li>
+</ul>
+<p>所以应重点关注准确性、一致性、多样性和边界覆盖，而不是盲目堆数量。</p></div></article><article class="q" id="q20"><h3><a class="q-link" href="#q20">微调时为什么容易过拟合？怎么解决？</a></h3><div class="a"><p class="lead"><strong>原因</strong>：大模型参数量大、记忆能力强，而下游任务数据量通常较小；如果再加上 epoch 过多、学习率过大、数据重复率高或多样性不足，模型就会记住训练样本，而不是学到可泛化的规律。</p>
+<p><strong>表现</strong>：训练 loss 持续下降但验证集 loss 上升、指标下降；回答越来越模板化，出现固定话术；训练集上的问题回答很好，换一种问法或真实用户问题就变差。</p>
+<p><strong>解决方法</strong>：</p>
+<ul>
+<li><strong>数据层面</strong>：去重、增加数据量和多样性（改写问法、覆盖更多场景），混入通用数据。</li>
+<li><strong>训练层面</strong>：降低学习率、减少 epoch（一般 1–3 轮），用验证集做 Early Stopping 并选最优 checkpoint。</li>
+<li><strong>模型层面</strong>：降低 LoRA rank、减少挂载的模块、增大 <code>lora_dropout</code>，或加 weight decay。</li>
+<li><strong>评估层面</strong>：验证集必须与训练集分布一致但内容不重叠，避免&quot;看起来效果好&quot;。</li>
+</ul></div></article><article class="q" id="q21"><h3><a class="q-link" href="#q21">Loss 一直下降，但模型效果不好，可能是什么原因？</a></h3><div class="a"><p class="lead">Loss 下降只说明模型在拟合训练数据，不代表业务效果好。常见原因：</p>
+<ul>
+<li><strong>数据质量问题</strong>：答案本身有错、风格混乱，模型把错误也学会了。</li>
+<li><strong>训练目标和业务目标不一致</strong>：loss 优化的是逐 token 预测，业务关心的是格式正确率、事实准确率、任务完成率，两者并不等价。</li>
+<li><strong>过拟合</strong>：训练 loss 下降，验证集表现变差，泛化能力下降。</li>
+<li><strong>验证集设计不合理</strong>：验证集与训练集太相似甚至重叠，看起来效果好，真实场景却不行。</li>
+<li><strong>数据模板或 Loss Mask 错误</strong>：例如没有对 user 部分做掩码，模型学会了续写用户的话；训练用的 Chat Template 和推理时不一致；结束符没加，导致回答停不下来。</li>
+<li><strong>推理参数不合适</strong>：temperature 过高导致输出不稳定，<code>max_tokens</code> 太小导致截断，重复惩罚设置不当。</li>
+<li><strong>灾难性遗忘</strong>：任务指标提升，但通用能力（理解、推理）下降，整体体验变差。</li>
+</ul>
+<p>所以评估不能只看 loss，要结合验证集指标、人工评测、自动化评测和真实业务指标，并抽样查看模型输出。</p></div></article><article class="q" id="q22"><h3><a class="q-link" href="#q22">你做过大模型微调吗？调过哪些模型？</a></h3><div class="a"><p class="lead">这是项目经验题，回答时先说清楚<strong>业务目标</strong>，再说<strong>模型、方法、数据、评估、部署</strong>几个环节，不要只说&quot;跑过训练&quot;。</p>
+<p>可以按这个结构组织：</p>
+<ul>
+<li><strong>目标</strong>：微调要解决什么问题，例如让客服模型稳定输出指定 JSON 结构，或提升工具调用参数的准确率，并说明为什么 Prompt 和 RAG 不够。</li>
+<li><strong>基座模型</strong>：常用开源模型有 Qwen、LLaMA、DeepSeek、GLM 等系列，中文场景 Qwen 用得较多，因为中文能力、工具调用能力和生态（vLLM、LLaMA-Factory 支持）都比较成熟。说明选择的规模和理由（效果与推理成本的平衡）。</li>
+<li><strong>方法</strong>：一般用 LoRA 或 QLoRA，给出关键超参数（rank、alpha、学习率、epoch、target modules）以及硬件配置。</li>
+<li><strong>数据</strong>：数据量、来源、清洗方式、是否混入通用数据。</li>
+<li><strong>评估与结果</strong>：用哪些指标、提升了多少（如格式正确率从 85% 提升到 98%），以及有没有检查通用能力退化。</li>
+<li><strong>部署</strong>：合并权重还是动态加载 Adapter，使用什么推理框架。</li>
+</ul>
+<p>核心观点：决定效果的不是模型大小本身，而是数据质量、任务边界和评估体系。</p></div></article></section><section class="grp has-core" id="g5"><h2 class="grp-title">显存估算与精度 <span class="cnt"><span class="n-all">5</span><span class="n-core">高频 3</span></span></h2><article class="q core" id="q23"><h3><a class="q-link" href="#q23">大模型训练为什么这么吃显存？显存主要消耗在哪几部分？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">训练不仅要存模型参数，还要存<strong>梯度、优化器状态和中间激活值</strong>，所以训练显存远高于推理。</p>
+<p>以<strong>混合精度 + Adam</strong> 全量训练为例，每个参数约 <strong>16 字节</strong>（不含激活）：</p>
+<table>
+<thead>
+<tr>
+<th>部分</th>
+<th>精度</th>
+<th>每参数字节</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>模型权重（参与前向反向）</td>
+<td>FP16 / BF16</td>
+<td>2</td>
+</tr>
+<tr>
+<td>梯度</td>
+<td>FP16 / BF16</td>
+<td>2</td>
+</tr>
+<tr>
+<td>FP32 主权重（master weights，用于精确更新）</td>
+<td>FP32</td>
+<td>4</td>
+</tr>
+<tr>
+<td>Adam 一阶动量 m</td>
+<td>FP32</td>
+<td>4</td>
+</tr>
+<tr>
+<td>Adam 二阶动量 v</td>
+<td>FP32</td>
+<td>4</td>
+</tr>
+<tr>
+<td>合计</td>
+<td></td>
+<td>16</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>例子</strong>：7B 模型全量微调约 7 × 16 ≈ <strong>112GB</strong>（不含激活），单张 80GB 显卡放不下，需要用 ZeRO / FSDP 把优化器状态、梯度、参数切分到多卡，或者改用 LoRA / QLoRA。</li>
+<li><strong>优化器状态是大头</strong>：Adam 的 m、v 加上 FP32 主权重共 12 字节，占了 3/4。ZeRO-1 切分优化器状态，ZeRO-2 再切梯度，ZeRO-3 连参数也切分。</li>
+<li><strong>激活值</strong>：前向的中间结果要保留给反向使用，大小与 batch size、序列长度、hidden size、层数成正比；标准注意力的注意力矩阵还与序列长度的平方成正比（FlashAttention 不存完整注意力矩阵，可大幅降低这部分）。长序列训练时激活往往是最大的开销，用 Gradient Checkpointing 缓解。</li>
+<li><strong>其他</strong>：CUDA 上下文、通信缓冲区、显存碎片等，通常额外预留 10%–20%。</li>
+</ul></div></article><article class="q" id="q24"><h3><a class="q-link" href="#q24">什么是 Gradient Accumulation 和 Gradient Checkpointing？为什么能省显存？</a></h3><div class="a"><p class="lead">两者解决的问题不同：<strong>梯度累积用时间换 batch size，梯度检查点用重算换激活显存。</strong></p>
+<p><strong>Gradient Accumulation（梯度累积）</strong>：</p>
+<ul>
+<li>用多个小 batch 模拟一个大 batch。例如显存只放得下 batch size = 2，想要等效 batch size = 16，就连续做 8 次前向和反向，把梯度累加起来（loss 通常除以累积步数），第 8 次后再执行一次 <code>optimizer.step()</code> 和清零梯度。</li>
+<li>每次只需要放一个小 batch 的激活，所以能在不增加显存的情况下获得大 batch 的训练效果（更稳定的梯度）。代价是一次参数更新的时间变长。</li>
+<li>等效 batch size = 单卡 batch × 累积步数 × GPU 数。注意 BatchNorm 类的统计量不受累积影响，但 LLM 用的是 LayerNorm / RMSNorm，所以没有这个问题。</li>
+</ul>
+<p><strong>Gradient Checkpointing（梯度检查点 / 激活重计算）</strong>：</p>
+<ul>
+<li>正常训练要保存所有中间激活用于反向传播。开启后，前向只保存部分关键节点（通常每个 Transformer 层的输入），其余激活丢弃；反向传播时再从检查点重新执行一次前向，把需要的激活算出来。</li>
+<li>激活显存可以大幅降低：按层设置检查点时，只需常驻每层的输入，层内的大量中间激活只在反向计算该层时临时重建。代价是多做约一次前向计算，训练速度通常慢 20%–30%。</li>
+<li>长序列、大模型微调时几乎都会开启。</li>
+</ul></div></article><article class="q core" id="q25"><h3><a class="q-link" href="#q25">FP16 和 BF16 有什么区别？为什么 BF16 更稳定？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">两者都是 16 位浮点数，用来降低显存、提高计算速度，区别在于<strong>指数位和尾数位的分配</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>格式</th>
+<th>符号位</th>
+<th>指数位</th>
+<th>尾数位</th>
+<th>最大值</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FP32</td>
+<td>1</td>
+<td>8</td>
+<td>23</td>
+<td>约 3.4×10^38</td>
+<td>基准</td>
+</tr>
+<tr>
+<td>FP16</td>
+<td>1</td>
+<td>5</td>
+<td>10</td>
+<td>65504</td>
+<td>精度较高，范围小</td>
+</tr>
+<tr>
+<td>BF16</td>
+<td>1</td>
+<td>8</td>
+<td>7</td>
+<td>约 3.4×10^38</td>
+<td>范围与 FP32 相同，精度较低</td>
+</tr>
+</tbody>
+</table>
+<p><strong>为什么 BF16 更稳定</strong>：</p>
+<ul>
+<li>BF16 的指数位与 FP32 一样是 8 位，<strong>数值范围和 FP32 相同</strong>，大的激活值、loss 不会上溢变成 inf，小的梯度也不容易下溢变成 0。</li>
+<li>FP16 只有 5 位指数，最大约 65504，训练中很容易溢出，必须配合 <strong>loss scaling</strong>（先把 loss 放大，反向后再把梯度缩回来）才能避免梯度下溢，还要处理出现 inf/NaN 时跳过更新。BF16 一般不需要 loss scaling。</li>
+<li>代价是 BF16 尾数只有 7 位（约 2–3 位十进制有效数字），精度低于 FP16（10 位尾数）。但在深度学习训练中，<strong>数值范围通常比尾数精度更重要</strong>，而且混合精度训练会保留 FP32 主权重来做参数更新，弥补精度损失。</li>
+<li>BF16 和 FP32 之间转换很简单（直接截断低 16 位尾数），兼容性好。</li>
+</ul>
+<p><strong>硬件支持</strong>：BF16 需要 NVIDIA Ampere 及以后的 GPU（A100、RTX 30 系列、H100 等）；V100、T4 等老卡只能用 FP16。现在的大模型训练基本都用 BF16；FP16 在推理中仍然常用。</p></div></article><article class="q core" id="q26"><h3><a class="q-link" href="#q26">推理阶段的显存消耗如何计算？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">推理显存主要由<strong>模型权重 + KV Cache</strong> 两部分组成，另外还有少量激活和框架开销。</p>
+<p><strong>模型权重</strong> = 参数量 × 每参数字节数：</p>
+<table>
+<thead>
+<tr>
+<th>精度</th>
+<th>每参数字节</th>
+<th>7B 模型权重</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FP16 / BF16</td>
+<td>2</td>
+<td>约 14GB</td>
+</tr>
+<tr>
+<td>INT8</td>
+<td>1</td>
+<td>约 7GB</td>
+</tr>
+<tr>
+<td>INT4</td>
+<td>0.5</td>
+<td>约 3.5GB</td>
+</tr>
+</tbody>
+</table>
+<p><strong>KV Cache</strong>：自回归生成时，每层都要缓存历史 token 的 Key 和 Value，避免重复计算。</p>
+<pre><code class="language-text">KV Cache = 2 × batch × seq_len × layers × n_kv_heads × head_dim × bytes
+（2 表示 K 和 V；MHA 时 n_kv_heads × head_dim = hidden_size）
+</code></pre>
+<ul>
+<li><strong>MHA 例子（LLaMA-1/2 7B）</strong>：32 层，hidden = 4096，FP16。每个 token：2 × 32 × 4096 × 2 = 524288 字节 ≈ <strong>0.5MB</strong>；2048 个 token 约 1GB，4096 个 token 约 2GB；batch = 8、长度 4096 时约 16GB，已经超过权重本身。</li>
+<li><strong>GQA 例子（LLaMA-3-8B）</strong>：32 个注意力头中只有 8 个 KV head，head_dim = 128，n_kv_heads × head_dim = 1024。每个 token：2 × 32 × 1024 × 2 = 131072 字节 ≈ <strong>128KB</strong>，只有同尺寸 MHA 的 1/4。</li>
+<li>所以 KV Cache 与 batch size 和序列长度<strong>线性增长</strong>，长上下文、高并发时往往成为显存瓶颈。GQA / MQA、MLA（DeepSeek-V2/V3 把 KV 压缩成低维潜向量）、KV Cache 量化（FP8 / INT8）都是为了压缩这部分。</li>
+</ul>
+<p><strong>估算总结</strong>：推理显存 ≈ 权重 + KV Cache + 少量激活与框架开销（额外预留 10%–20%）。训练显存则另算：混合精度 + Adam 全量训练约每参数 16 字节再加激活，7B 约 112GB 以上。</p></div></article><article class="q" id="q27"><h3><a class="q-link" href="#q27">为什么传统方式下 KV Cache 的显存利用率很低？如何优化？</a></h3><div class="a"><p class="lead">传统推理系统为每个请求分配一块<strong>连续的</strong> KV Cache 显存，vLLM 论文测得这种方式下 KV Cache 实际利用率只有约 20%–40%，60%–80% 被浪费。原因有三：</p>
+<ul>
+<li><strong>按最大长度预分配</strong>：事先不知道回答会生成多长，只能按最大序列长度（如 2048 或 4096）预留空间。大多数请求远达不到上限，预留部分一直空着（预留浪费）。</li>
+<li><strong>占用时间长，限制并发</strong>：请求一开始就占满预分配的空间，直到生成结束才释放，即使其中大部分还没用到。剩余显存不足以接纳新请求，batch 上不去，吞吐量低。</li>
+<li><strong>显存碎片</strong>：不同请求的长度不同，连续分配和释放后会产生内部碎片（分配了但没用到）和外部碎片（零散空闲块太小，放不下一个新请求）。</li>
+</ul>
+<p><strong>优化方案：PagedAttention（vLLM）</strong>：</p>
+<ul>
+<li>借鉴操作系统的<strong>虚拟内存分页</strong>：把 KV Cache 切成固定大小的块（block，如每块 16 个 token），通过块表把逻辑上连续的序列映射到物理上不连续的块。</li>
+<li><strong>按需分配</strong>：生成一个块用完再分配下一个，浪费只发生在每个序列的最后一个块里，整体浪费降到 4% 以下。</li>
+<li><strong>支持共享</strong>：并行采样、beam search 或相同前缀的多个请求可以共享 KV 块，采用写时复制（copy-on-write）。</li>
+<li>再配合 <strong>Continuous Batching</strong>（请求级别动态加入和退出 batch），吞吐量可以比传统 Hugging Face 推理提升数倍到数十倍。</li>
+</ul>
+<p>其他相关优化：Prefix Caching 复用公共 system prompt 的 KV；KV Cache 量化；GQA / MLA 从模型结构上减少 KV 大小；把 KV 卸载到 CPU 内存或分层存储。</p></div></article></section><section class="grp has-core" id="g6"><h2 class="grp-title">强化学习与偏好对齐 <span class="cnt"><span class="n-all">10</span><span class="n-core">高频 3</span></span></h2><article class="q" id="q28"><h3><a class="q-link" href="#q28">强化学习（对齐微调）和 SFT 有什么区别？</a></h3><div class="a"><p class="lead"><strong>SFT 是在固定的标注数据上做监督学习，学会&quot;模仿&quot;；强化学习是让模型自己生成、根据奖励反馈调整策略，学会&quot;优化&quot;。</strong></p>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>SFT</th>
+<th>强化学习（RLHF / GRPO 等）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数据来源</td>
+<td>人工标注或构造的标准答案，静态数据集</td>
+<td>模型自己采样生成（on-policy），由奖励模型、规则或环境打分</td>
+</tr>
+<tr>
+<td>优化目标</td>
+<td>在给定数据分布上最小化交叉熵（最大化标准答案的似然）</td>
+<td>在模型自身生成的分布上最大化期望奖励</td>
+</tr>
+<tr>
+<td>数据分布</td>
+<td>固定不变</td>
+<td>随策略更新而变化</td>
+</tr>
+<tr>
+<td>监督信号</td>
+<td>逐 token 的明确标签，信号强</td>
+<td>通常是整条回答的一个标量奖励，信号弱、延迟、可能有噪声</td>
+</tr>
+<tr>
+<td>负反馈</td>
+<td>只有正样本</td>
+<td>低分回答会被抑制，有负反馈</td>
+</tr>
+<tr>
+<td>训练过程</td>
+<td>一次性训练，稳定</td>
+<td>生成、打分、更新循环迭代，不稳定、成本高</td>
+</tr>
+<tr>
+<td>能力上限</td>
+<td>受限于标注数据质量</td>
+<td>有机会超越示范数据</td>
+</tr>
+</tbody>
+</table></div></article><article class="q" id="q29"><h3><a class="q-link" href="#q29">为什么大模型在 SFT 后还要做强化学习？</a></h3><div class="a"><p class="lead">因为 <strong>SFT 解决&quot;学会模仿&quot;，强化学习进一步解决&quot;学会优化&quot;</strong>：从拟合标准答案，变成根据反馈不断调整行为。</p>
+<ul>
+<li><strong>很多任务没有唯一标准答案</strong>：开放问答、写作、对话，很难写出唯一正确的输出，但人可以判断哪个回答更好。RL 可以直接优化&quot;哪种回答更好&quot;。</li>
+<li><strong>偏好对齐</strong>：有帮助、诚实、无害这类目标很难写成标准答案，但可以通过偏好或奖励信号来优化。</li>
+<li><strong>引入负反馈</strong>：SFT 只教对的，RL 会惩罚差的回答，有助于减少幻觉和不安全输出。</li>
+<li><strong>降低标注成本</strong>：比较两个回答哪个好，比从零写出高质量答案容易得多；对于数学、代码等任务，甚至可以用规则自动判分（答案是否正确、单元测试是否通过）。</li>
+<li><strong>优化最终结果而不是模仿过程</strong>：RL 关注答案对不对、代码能不能跑、任务有没有完成，适合推理、规划、工具调用这类多步任务。DeepSeek-R1 证明了基于可验证奖励的 RL 可以显著提升长链推理能力。</li>
+<li><strong>突破数据上限</strong>：模型在自己的生成分布上探索，有机会找到比示范数据更好的解法。</li>
+</ul></div></article><article class="q core" id="q30"><h3><a class="q-link" href="#q30">RLHF 的整体流程是什么？Reward Model 是干什么的？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">RLHF（Reinforcement Learning from Human Feedback，基于人类反馈的强化学习）的目标是让模型不仅会回答，而且回答得更符合人类偏好。InstructGPT 提出的经典流程分三步：</p>
+<ol>
+<li><strong>SFT</strong>：在预训练模型上用高质量指令数据做监督微调，得到具备指令遵循能力的 SFT 模型。</li>
+<li><strong>训练 Reward Model（RM）</strong>：对同一个 prompt 让模型生成多个回答，由人工标注排序或两两比较。RM 通常用 SFT 模型初始化，把最后的语言模型头换成输出标量分数的线性头。训练时用 Bradley-Terry 成对排序损失：<code>loss = -log σ(r(x, y_w) - r(x, y_l))</code>，让被偏好回答 y_w 的分数高于较差回答 y_l。</li>
+<li><strong>强化学习优化</strong>：用 PPO 优化 SFT 模型（Actor），奖励来自 RM，同时减去与参考模型之间的 KL 惩罚：<code>reward = r_RM(x, y) - β·KL(π_θ || π_ref)</code>，防止模型为了刷分而偏离原始语言分布太远。</li>
+</ol>
+<p><strong>Reward Model 的作用</strong>：把人类偏好转化成可计算的标量奖励信号。人类不可能对 RL 训练中的每一次采样都打分，所以用 RM 来近似模拟人类的评价标准，作为 RL 的奖励来源。</p>
+<p><strong>RLHF 奖励的特点（相对传统 RL）</strong>：</p>
+<ul>
+<li>奖励不是环境直接给出的，而是由人类反馈训练出的模型提供，适合文本生成这类难以手写奖励函数的任务。</li>
+<li>人类只需要比较或排序，不需要写标准答案，门槛低、更易扩展，非专家也能参与。</li>
+<li>通常是整条回答结束后才给一个分数（稀疏奖励），在 token 级别上还会叠加 KL 惩罚。</li>
+<li>RM 只是人类偏好的近似，会有误差，策略可能钻 RM 的漏洞获取高分而质量并没提升，即 <strong>reward hacking</strong>，所以需要 KL 约束和持续更新 RM。</li>
+</ul></div></article><article class="q" id="q31"><h3><a class="q-link" href="#q31">RLHF-PPO 的核心思想是什么？如何训练？有哪些优缺点？</a></h3><div class="a"><p class="lead"><strong>核心思想</strong>：用 Reward Model 把人类偏好转成奖励信号，再用 PPO 优化语言模型，让它生成更符合偏好的回答；同时用 KL 约束防止模型偏离 SFT 模型太远。</p>
+<p><strong>四个模型</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>作用</th>
+<th>是否训练</th>
+<th>初始化</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Actor（策略模型）</td>
+<td>生成回答，最终要得到的模型</td>
+<td>训练</td>
+<td>SFT 模型</td>
+</tr>
+<tr>
+<td>Critic（价值模型）</td>
+<td>估计每个位置的期望回报 V(s)，用于计算优势</td>
+<td>训练</td>
+<td>通常用 Reward Model 初始化</td>
+</tr>
+<tr>
+<td>Reward Model（奖励模型）</td>
+<td>给完整回答打分</td>
+<td>冻结</td>
+<td>偏好数据训练得到</td>
+</tr>
+<tr>
+<td>Reference（参考模型）</td>
+<td>提供 KL 约束的基准</td>
+<td>冻结</td>
+<td>SFT 模型</td>
+</tr>
+</tbody>
+</table>
+<p><strong>一轮训练流程</strong>：</p>
+<ol>
+<li><strong>采样</strong>：Actor 对一批 prompt 生成回答（rollout），记录每个 token 的对数概率。</li>
+<li><strong>打分</strong>：RM 给完整回答打分，Reference 算每个 token 的对数概率用于 KL 惩罚。奖励通常是 <code>r_RM - β·KL</code>，KL 按 token 计算，RM 分数加在最后一个 token 上。</li>
+<li><strong>估计优势</strong>：Critic 给出每个位置的价值，用 <strong>GAE</strong> 计算每个 token 的优势 A。</li>
+<li><strong>PPO 更新</strong>：同一批数据做若干轮小批量更新，Actor 目标 <code>min(ratio·A, clip(ratio, 1-ε, 1+ε)·A)</code>，<code>ratio = π_new / π_old</code>，ε 常取 0.2；Critic 用均方误差拟合回报。</li>
+</ol>
+<p>易混点：<strong>优势由 Reward 和 Critic 用 GAE 算出，与旧策略无关；和旧策略比较的是 ratio，它与 clip 一起限制更新幅度。</strong></p>
+<p><strong>优点</strong>：clip 限制策略突变，比普通策略梯度稳定、比 TRPO 简单；on-policy 在线探索，效果上限高，适合多维度复杂对齐；一批数据可复用多轮更新。</p>
+<p><strong>缺点</strong>：</p>
+<ul>
+<li>4 个模型、2 个要训练，显存算力开销大，工程复杂。</li>
+<li>对超参数敏感（ε、β、GAE 的 λ 和 γ、学习率），容易不稳定。</li>
+<li>Critic 在长序列、稀疏奖励下很难训准。</li>
+<li>容易 reward hacking（钻 RM 的漏洞）。</li>
+</ul></div></article><article class="q core" id="q32"><h3><a class="q-link" href="#q32">DPO 是什么？和 PPO / RLHF 最大的区别是什么？为什么越来越流行？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">DPO（Direct Preference Optimization，直接偏好优化，2023）的核心是：<strong>不训练显式的 Reward Model，也不做在线强化学习，而是直接用 <code>(prompt, chosen, rejected)</code> 偏好对，提高模型对 chosen 回答的相对概率、降低对 rejected 回答的相对概率。</strong></p>
+<p><strong>原理</strong>：RLHF 的目标是&quot;最大化奖励 - β·KL&quot;。DPO 推导出这个目标的最优策略有闭式解，从而反过来把奖励表示成策略的函数：隐式奖励 <code>r(x, y) = β·log(πθ(y|x) / πref(y|x))</code>。把它代入 Bradley-Terry 偏好模型，就得到只依赖策略模型的损失：</p>
+<pre><code class="language-text">L_DPO = -log σ( β·[ log(πθ(y_w|x) / πref(y_w|x)) - log(πθ(y_l|x) / πref(y_l|x)) ] )
+</code></pre>
+<p>y_w 是 chosen，y_l 是 rejected，πref 是冻结的参考模型（通常是 SFT 模型）。<strong>β 越大约束越强</strong>，常取 0.1 左右。</p>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>RLHF-PPO</th>
+<th>DPO</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>奖励模型</td>
+<td>需要单独训练 RM</td>
+<td>不需要，策略本身隐式充当奖励模型</td>
+</tr>
+<tr>
+<td>训练方式</td>
+<td>在线采样 + 强化学习</td>
+<td>离线，在固定偏好数据上类监督训练</td>
+</tr>
+<tr>
+<td>模型数量</td>
+<td>4 个（Actor、Critic 训练，RM、Ref 冻结）</td>
+<td>2 个（Actor 训练，Ref 冻结）</td>
+</tr>
+<tr>
+<td>稳定性和成本</td>
+<td>不稳定、超参数多、成本高</td>
+<td>稳定、超参数少、成本低</td>
+</tr>
+<tr>
+<td>探索能力</td>
+<td>有在线探索，上限更高</td>
+<td>无探索，受限于偏好数据的覆盖和质量</td>
+</tr>
+</tbody>
+</table>
+<p><strong>为什么流行</strong>：实现简单、稳定、开销低，很多对话对齐任务上效果接近 PPO，企业已有&quot;好 / 差回答&quot;数据时容易落地。</p>
+<p><strong>缺点</strong>：依赖高质量偏好数据；离线数据不是当前模型生成的，存在分布偏移；易过拟合；chosen 概率可能一起下降。</p>
+<p><strong>怎么选</strong>：已有偏好数据、要低成本对齐风格、指令跟随、安全性，选 DPO；奖励可验证（数学、代码）、要在线试错突破上限，选 PPO / GRPO。也可用当前模型重新采样构造偏好对（Online / Iterative DPO）缓解分布偏移。</p></div></article><article class="q" id="q33"><h3><a class="q-link" href="#q33">为什么 DPO 训练中正样本（chosen）的概率也会下降？如何解决？</a></h3><div class="a"><p class="lead"><strong>原因</strong>：DPO 优化的是 chosen 与 rejected 相对参考模型的对数概率比之<strong>差</strong>，而不是单独让 chosen 概率上升。只要 rejected 下降得比 chosen 更快，差值变大，loss 仍然会下降。所以训练中经常看到两者的隐式奖励都在下降，只是 margin 在变大。</p>
+<ul>
+<li><strong>相似回答的梯度耦合</strong>：chosen 和 rejected 往往有大量相同的 token（只有部分内容不同），压低 rejected 时，共享部分的概率也被一起压低。</li>
+<li><strong>没有显式约束</strong>：原始 DPO 损失中没有任何一项要求 chosen 的绝对概率上升。</li>
+<li><strong>数据噪声</strong>：偏好标注有错误、正负样本差异太小时更容易发生。</li>
+</ul>
+<p><strong>影响</strong>：chosen 概率下降意味着概率质量流向了偏好数据之外的回答，模型生成高质量回答的可能性降低，严重时输出质量恶化、回答变长或重复，甚至胡言乱语。</p>
+<p><strong>解决思路</strong>：不仅要拉开正负样本差距，还要显式保护正样本的概率。</p>
+<ul>
+<li><strong>加 SFT 损失</strong>：在 DPO 损失上加一项 chosen 回答的负对数似然（NLL），如 RPO 的做法，直接鼓励 chosen 概率上升。</li>
+<li><strong>改进损失函数</strong>：DPOP（DPO-Positive）在 chosen 概率低于参考模型时加惩罚；IPO 用平方损失避免过度优化；SimPO 去掉参考模型，用长度归一化的对数概率并引入目标 margin。</li>
+<li><strong>数据工程</strong>：清洗偏好数据，保证正负样本有明显质量差异，减少噪声；尽量用当前策略模型采样生成偏好对（on-policy 数据）。</li>
+<li><strong>调超参数</strong>：降低学习率、适当调整 β、减少 epoch 并 early stop，同时监控 chosen 的对数概率（rewards/chosen）曲线。</li>
+</ul></div></article><article class="q core" id="q34"><h3><a class="q-link" href="#q34">GRPO 是什么？原理是什么？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">GRPO（Group Relative Policy Optimization，组相对策略优化）<strong>最早在 DeepSeekMath（2024 年 2 月）论文中提出</strong>，用于提升数学推理能力；之后 DeepSeek-V3 的后训练和 DeepSeek-R1 / R1-Zero 都沿用了它，R1 让它广为人知。</p>
+<p><strong>核心思想</strong>：对同一个问题采样一组回答，<strong>用组内的相对得分代替 Critic 估计的价值作为基线</strong>，从而去掉 PPO 中的价值模型，更轻量地完成强化学习。</p>
+<p><strong>训练流程</strong>：</p>
+<ol>
+<li>每个 prompt 用旧策略采样 G 个回答（如 8、16、64）。</li>
+<li>用 RM 或规则（答案对错、格式、代码能否通过测试）打分 r_1 … r_G。</li>
+<li><strong>组内归一化得优势</strong>：<code>A_i = (r_i - mean(r)) / std(r)</code>，高于均值被强化、低于被抑制，同一回答内所有 token 共享该优势。</li>
+<li>和 PPO 一样用 ratio + clip 的代理目标更新，但 KL 惩罚直接加在损失里（PPO 是加进奖励）。</li>
+</ol>
+<p><strong>与 PPO 的区别</strong>：不需要 Critic，省掉一个与 Actor 同规模的模型；优势是组内统计的序列级优势，而非 Critic + GAE 的 token 级优势；模型只有 Actor + Reference，再加奖励来源（推理任务常用规则奖励）。</p>
+<p><strong>适合场景</strong>：数学、代码、逻辑等可验证奖励的推理任务（RLVR）。</p>
+<p><strong>问题</strong>：</p>
+<ul>
+<li>每个 prompt 多次采样，rollout 成本高。</li>
+<li>一组全对或全错时 std 为 0，优势全 0，没有梯度。</li>
+<li>按回答长度归一化 loss 带来<strong>长度偏差</strong>：错误长回答每个 token 罚得更轻，模型越写越长；按 std 归一化也让过难或过易题权重偏高。Dr. GRPO、DAPO 做了修正。</li>
+<li>token 级重要性比率噪声大，长序列和 MoE 上可能不稳定。</li>
+</ul></div></article><article class="q" id="q35"><h3><a class="q-link" href="#q35">DeepSeek-R1 为什么要在 RL 前做冷启动？</a></h3><div class="a"><p class="lead">DeepSeek-R1-Zero 直接在 Base 模型上做纯 RL（GRPO + 规则奖励），已经涌现出长链推理和自我反思能力，但存在<strong>可读性差、中英文混杂</strong>等问题，而且从 Base 模型直接开始 RL，前期训练不稳定。因此 DeepSeek-R1 在 RL 之前先用<strong>数千条高质量长 CoT 数据</strong>做 SFT，这就是冷启动。</p>
+<ul>
+<li><strong>提升可读性</strong>：冷启动数据规定了清晰的输出格式（推理过程 + 总结），让模型从一开始就输出规范、易读的内容。</li>
+<li><strong>减少语言混杂</strong>：先把输出风格和语言形式拉到稳定状态；R1 在 RL 阶段还额外加入了语言一致性奖励。</li>
+<li><strong>更好的起点</strong>：初始策略太差时 RL 探索混乱、收敛慢；有了冷启动，推理导向的 RL 更稳定、收敛更快，效果也更好。</li>
+</ul>
+<p>R1 的完整流程大致是：冷启动 SFT → 面向推理的 RL（GRPO）→ 拒绝采样生成新数据并混合通用数据再做一轮 SFT → 覆盖所有场景的 RL（推理任务用规则奖励，通用任务用偏好奖励模型）。</p></div></article><article class="q" id="q36"><h3><a class="q-link" href="#q36">对比 PPO、DPO、GRPO 三种算法</a></h3><div class="a"><p class="lead"><strong>PPO 和 GRPO 都是在线强化学习，区别在于&quot;优势&quot;怎么估计；DPO 不做在线强化学习，而是直接用偏好数据做离线优化。</strong></p>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>PPO</th>
+<th>DPO</th>
+<th>GRPO</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>类型</td>
+<td>在线 RL</td>
+<td>离线偏好优化</td>
+<td>在线 RL</td>
+</tr>
+<tr>
+<td>模型</td>
+<td>Actor、Critic、Reward、Reference（4 个）</td>
+<td>Actor、Reference（2 个）</td>
+<td>Actor、Reference，加奖励模型或规则</td>
+</tr>
+<tr>
+<td>优势 / 信号</td>
+<td>Reward 加 Critic 价值估计，用 GAE 计算 token 级优势</td>
+<td>偏好对中 chosen 与 rejected 的对数概率比之差</td>
+<td>组内多个回答的奖励减均值、除以标准差</td>
+</tr>
+<tr>
+<td>数据</td>
+<td>在线采样的 prompt</td>
+<td>离线 <code>(prompt, chosen, rejected)</code></td>
+<td>在线采样，每个 prompt 生成 G 个回答</td>
+</tr>
+<tr>
+<td>成本</td>
+<td>最高</td>
+<td>最低</td>
+<td>中等（省了 Critic，但要多次采样）</td>
+</tr>
+<tr>
+<td>适合</td>
+<td>通用对话、多维度复杂对齐</td>
+<td>已有偏好数据、低成本快速对齐</td>
+<td>数学、代码等可验证奖励的推理任务</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>PPO</strong>：生成回答 → RM 打分 → Critic 估计价值并用 GAE 算出优势 → 用新旧策略概率比加 clip 限制更新幅度，并用 KL 约束不偏离参考模型。</li>
+<li><strong>GRPO</strong>：对同一问题采样一组回答并打分，<strong>和同组样本比</strong>，高于组均值的被强化、低于的被抑制，不需要 Critic。</li>
+<li><strong>DPO</strong>：不走&quot;生成、打分、RL 更新&quot;的在线路径，直接在现成的偏好对上提高 chosen、降低 rejected 的相对概率。</li>
+</ul></div></article><article class="q" id="q37"><h3><a class="q-link" href="#q37">PPO、DPO、GRPO、DAPO、GSPO 是怎么发展的？各自解决什么问题？</a></h3><div class="a"><p class="lead">整体脉络是：<strong>PPO 太重 → DPO 去掉 RM 和在线 RL，最简单 → GRPO 保留在线 RL 但去掉 Critic → DAPO、GSPO 等修复 GRPO 在大规模、长推理训练中的稳定性问题。</strong></p>
+<table>
+<thead>
+<tr>
+<th>算法</th>
+<th>提出</th>
+<th>需要的模型</th>
+<th>核心改进</th>
+<th>主要问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PPO</td>
+<td>OpenAI（2017），InstructGPT 用于 RLHF</td>
+<td>Actor、Critic、RM、Ref</td>
+<td>clip 限制更新幅度 + KL 约束</td>
+<td>显存大、超参数敏感、不稳定</td>
+</tr>
+<tr>
+<td>DPO</td>
+<td>斯坦福（2023）</td>
+<td>Actor、Ref</td>
+<td>隐式奖励，把 RLHF 变成离线的偏好分类损失</td>
+<td>无在线探索，依赖偏好数据，chosen 概率可能下降</td>
+</tr>
+<tr>
+<td>GRPO</td>
+<td>DeepSeekMath（2024）</td>
+<td>Actor、Ref（+ 奖励来源）</td>
+<td>组内相对优势替代 Critic</td>
+<td>长度偏差、全对或全错组无梯度、token 级比率噪声大</td>
+</tr>
+<tr>
+<td>DAPO</td>
+<td>字节 Seed（2025）</td>
+<td>Actor（+ 规则奖励），去掉了 KL 项，不需要 Ref</td>
+<td>解耦裁剪、动态采样、token 级 loss、超长奖励整形</td>
+<td>超参数更多</td>
+</tr>
+<tr>
+<td>GSPO</td>
+<td>阿里 Qwen 团队（2025）</td>
+<td>与 GRPO 类似</td>
+<td>重要性比率和裁剪从 token 级改为序列级</td>
+<td>对序列中局部步骤的错误不够敏感</td>
+</tr>
+</tbody>
+</table>
+<p><strong>DAPO</strong> 是 GRPO 的改进版在线 RL（不是偏好对齐方法）：</p>
+<ul>
+<li><strong>Clip-Higher</strong>：解耦 clip 上下界、调高上界，让低概率 token 有空间上涨，防止<strong>熵塌缩</strong>。</li>
+<li><strong>动态采样</strong>：过滤全对或全错、优势为 0 的组并补采，保证每个 batch 有有效梯度。</li>
+<li><strong>token 级 loss 平均</strong>：所有 token 一起平均，缓解长度偏差。</li>
+<li><strong>超长奖励整形</strong>：对截断的超长回答软惩罚。</li>
+<li>推理任务分布本就会大幅偏离初始模型，所以<strong>去掉 KL</strong>，不需要 Reference。</li>
+</ul>
+<p><strong>GSPO</strong>：GRPO 的 token 级重要性比率与序列级奖励粒度不匹配，长序列噪声累积，MoE 上尤其易崩。GSPO 改用按长度归一化的序列级似然比，并在序列级裁剪，更稳定，Qwen3 的 RL 训练采用了它。</p></div></article></section><nav class="pager"><a href="llm.html" class="prev"><small>上一章</small>大模型基础</a><a href="rag.html" class="next"><small>下一章</small>RAG</a></nav>
+  </div>
+</main>
+<div class="backdrop" id="backdrop"></div>
+<button class="to-top" id="to-top" aria-label="回到顶部">↑</button>
+<script id="outline" type="application/json">[{"id":"g1","title":"训练阶段总览","n":4,"core":1},{"id":"g2","title":"SFT 与选型","n":6,"core":1},{"id":"g3","title":"LoRA 与参数高效微调","n":7,"core":2},{"id":"g4","title":"微调实战","n":5,"core":1},{"id":"g5","title":"显存估算与精度","n":5,"core":3},{"id":"g6","title":"强化学习与偏好对齐","n":10,"core":3}]</script>
+<script src="assets/app.js?v=ab30056e"></script>
+</body>
+</html>

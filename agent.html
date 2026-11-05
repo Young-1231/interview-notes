@@ -1,0 +1,1097 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="darkreader-lock">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent · 八股笔记</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' font-weight='bold' fill='white' text-anchor='middle'%3E八%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css?v=ab30056e">
+<script>
+  (function () {
+    var t = localStorage.getItem('iv.theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+</head>
+<body data-part="ai" data-sec="agent">
+<header class="site-header">
+  <button class="icon-btn menu-btn" id="menu-btn" aria-label="目录">☰</button>
+  <a href="index.html" class="brand"><span class="dot">●</span> 八股笔记</a>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="search">
+    <input id="search" type="search" placeholder="搜索题目  /" autocomplete="off" aria-label="搜索题目">
+    <span id="search-info"></span>
+    <div class="search-pop" id="search-pop" hidden></div>
+  </div>
+  <button class="icon-btn" id="theme-toggle" aria-label="切换主题">◐</button>
+</header>
+<aside class="side" id="side"><nav id="toc"></nav></aside>
+<main class="main">
+  <div id="article">
+<header class="page-head"><div class="crumb">AI &amp; Agent</div><h1>Agent <span class="cnt">53 题</span></h1><div class="tools"><button type="button" class="tool" id="t-core" aria-pressed="false">只看高频 <b>33</b></button><button type="button" class="tool" id="t-quiz" aria-pressed="false">自测模式</button><a class="tool resume" id="t-resume" hidden></a><span class="kbd-hint"><kbd>j</kbd>/<kbd>k</kbd> 上下题 · 自测时 <kbd>空格</kbd> 看答案 · <kbd>/</kbd> 搜索</span></div><nav class="overview"><div class="ov-groups"><a href="#g1">Agent 概念与架构<span><span class="n-all">7</span><span class="n-core">1</span></span></a><a href="#g2">Agent 与 Workflow<span><span class="n-all">4</span><span class="n-core">3</span></span></a><a href="#g3">Agent 范式<span><span class="n-all">11</span><span class="n-core">8</span></span></a><a href="#g4">任务规划与 TodoList<span><span class="n-all">7</span><span class="n-core">3</span></span></a><a href="#g5">工具调用与 Function Call<span><span class="n-all">10</span><span class="n-core">8</span></span></a><a href="#g6">上下文与 Harness Engineering<span><span class="n-all">8</span><span class="n-core">7</span></span></a><a href="#g7">多智能体与工程化<span><span class="n-all">3</span><span class="n-core">1</span></span></a><a href="#g8">失败案例与效果评估<span><span class="n-all">3</span><span class="n-core">2</span></span></a></div></nav></header><section class="grp has-core" id="g1"><h2 class="grp-title">Agent 概念与架构 <span class="cnt"><span class="n-all">7</span><span class="n-core">高频 1</span></span></h2><article class="q" id="q1"><h3><a class="q-link" href="#q1">谈谈你对 AI Agent 的理解？它和普通大模型调用有什么本质区别？</a></h3><div class="a"><p class="lead">AI Agent 是以大模型为&quot;大脑&quot;、能围绕目标自主规划并调用工具完成任务的系统。它不是某个模型，而是一套架构：LLM + 规划 + 记忆 + 工具 + 反馈循环。</p>
+<p><strong>和普通大模型调用的本质区别</strong></p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>普通 LLM 调用</th>
+<th>Agent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>驱动方式</td>
+<td>被动响应：Prompt → LLM → Response</td>
+<td>目标驱动：围绕最终目标持续行动</td>
+</tr>
+<tr>
+<td>能力来源</td>
+<td>主要依赖模型内部知识</td>
+<td>可调用搜索、数据库、代码执行、业务 API 等外部能力</td>
+</tr>
+<tr>
+<td>执行形态</td>
+<td>一次生成，没有执行闭环</td>
+<td>&quot;规划 → 行动 → 观察 → 反思&quot;循环，根据工具结果继续决策</td>
+</tr>
+<tr>
+<td>状态</td>
+<td>无状态，每次只看传入的上下文</td>
+<td>维护任务状态、短期 / 长期记忆</td>
+</tr>
+</tbody>
+</table>
+<p><strong>为什么现在能做 Agent</strong></p>
+<ul>
+<li>以前做&quot;智能体&quot;主要有两条路：规则系统（专家写规则，扩展性差、容错低）和强化学习（依赖大量交互数据，训练贵、通用性弱）。</li>
+<li>大模型在推理、规划、指令遵循和结构化输出（Function Calling）上足够强，才可以当作通用决策中枢。</li>
+</ul>
+<p><strong>三项核心能力</strong>：能思考（CoT、任务拆解）、能记忆（上下文与经验）、能行动（调用工具真正改变外部状态）。</p>
+<p><strong>人机关系的变化</strong>：SaaS + AI（AI 是功能模块，人主导）→ Copilot（AI 辅助人做事）→ Agent（人给目标，AI 规划和执行，人负责监督和反馈）。Agent 让 AI 从&quot;回答者&quot;变成&quot;执行者&quot;。</p></div></article><article class="q core" id="q2"><h3><a class="q-link" href="#q2">Agent 包含哪些核心模块？如果从 0 设计一个 Agent，核心模块有哪些？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">经典概括：<strong>Agent = LLM（规划决策）+ Memory（记忆）+ Tools（手脚）+ Feedback Loop（反馈纠错）</strong>。</p>
+<p><strong>四个基础模块</strong></p>
+<ul>
+<li><strong>规划（Planning）</strong>：LLM 作为决策中枢，判断是否需要多步、是否调用工具、调用顺序，把任务拆成子步骤。</li>
+<li><strong>记忆（Memory）</strong>：短期记忆保存当前会话和中间结果，保证多轮连贯；长期记忆沉淀用户偏好、历史经验和业务知识。</li>
+<li><strong>工具使用（Tool Use）</strong>：搜索、数据库、计算器、代码解释器、API 等，弥补模型在实时性、精确计算和执行操作上的不足。模型决定&quot;何时用什么工具&quot;，工具负责执行。</li>
+<li><strong>反馈循环（Feedback Loop）</strong>：根据中间结果自我校正，判断是否需要重试、重新规划或换工具。</li>
+</ul>
+<p><strong>从 0 设计时的工程化拆分</strong></p>
+<ol>
+<li>输入理解：解析用户意图、目标、约束和上下文。</li>
+<li>规划模块：把复杂任务拆成可执行、可验证的步骤。</li>
+<li>工具管理与调用：工具注册、描述、参数 Schema、鉴权、超时重试。</li>
+<li>执行器：按计划逐步执行，接收工具返回。</li>
+<li>记忆模块：短期上下文 + 长期记忆，按需检索注入。</li>
+<li>观察与反馈：每一步判断结果是否符合预期，不满足就调整策略。</li>
+<li>安全与权限：工具权限、数据访问权限、高风险操作人工确认。</li>
+<li>日志与监控：记录每步模型调用、工具调用、耗时、Token、失败原因，支撑排查和评估。</li>
+</ol>
+<p>一句话：Agent 的核心不是&quot;调一次大模型&quot;，而是形成&quot;理解目标 → 制定计划 → 调用工具 → 观察结果 → 持续修正&quot;的闭环。</p></div></article><article class="q" id="q3"><h3><a class="q-link" href="#q3">Agent 的架构设计是怎样的？</a></h3><div class="a"><p class="lead">一个可落地的 Agent 通常分五层。难点不在于模型&quot;能不能想&quot;，而在于&quot;想完能不能稳定执行&quot;。</p>
+<ul>
+<li><strong>任务入口层</strong>：接收用户问题和上下文，做输入清洗、标准化、鉴权。</li>
+<li><strong>决策层</strong>：意图识别、任务拆解、规划和工具选择，决定&quot;做什么、怎么做、用什么做&quot;。</li>
+<li><strong>执行层</strong>：调用工具、查询知识库、访问外部服务，把规划落地。</li>
+<li><strong>记忆与状态层</strong>：维护多轮上下文、历史执行结果和中间变量，让 Agent 知道&quot;做过什么、下一步做什么&quot;。</li>
+<li><strong>校验层</strong>：执行前校验参数合法性和权限，执行后校验返回结构和结果一致性。模型的规划和参数不一定总是对的，校验层是稳定执行的最后保障。</li>
+</ul>
+<p>横切能力：日志 / Trace、限流与超时、成本控制、人工确认。</p></div></article><article class="q" id="q4"><h3><a class="q-link" href="#q4">Agent 设计中你觉得最重要的部分是什么？</a></h3><div class="a"><p class="lead">最关键的是<strong>上下文工程（Context Engineering）</strong>：给模型正确的信息，而不是更多的信息。</p>
+<p>Agent 是持续决策的系统，每一步决策质量取决于模型此刻看到了什么：当前目标、约束、可用工具、历史状态、证据，以及它们的顺序和优先级。上下文做得好，模型像一个受控执行器；做得差，即使模型很强，也会出现目标漂移、工具误选、记忆污染、长对话失真。</p>
+<p><strong>上下文工程的关键点</strong></p>
+<ul>
+<li><strong>角色隔离</strong>：System、Developer、User、Tool Output、Memory 分区存放，明确来源和权威等级。外部文本（网页、工具返回）不能和系统规则混在一起，这也是防提示注入的基础。</li>
+<li><strong>信息裁剪</strong>：只保留与当前任务相关的历史、检索结果和工具说明，无关信息就是噪声。</li>
+<li><strong>格式控制</strong>：结构化优于纯自然语言。工具结果用 JSON，任务状态单独字段化，长历史做摘要。</li>
+<li><strong>可信度分层</strong>：冲突时系统规则 &gt; 用户输入，工具结果 &gt; 模型猜测，有证据 &gt; 无证据生成。</li>
+<li><strong>压缩与淘汰</strong>：长任务定期压缩、淘汰过期信息，避免旧状态污染新决策。</li>
+</ul></div></article><article class="q" id="q5"><h3><a class="q-link" href="#q5">RAG 接到 Agent 里一般怎么设计？</a></h3><div class="a"><p class="lead">RAG 在 Agent 里不应是固定的&quot;先查再答&quot;，而是一个<strong>决策节点</strong>：模型先判断是否需要外部知识，再决定怎么检索。</p>
+<ul>
+<li><strong>封装为工具</strong>：把检索做成独立工具（如 <code>search_knowledge_base</code>），由 Agent 决定是否调用、调用几次，而不是每轮强制检索。这种形态常被称为 Agentic RAG。</li>
+<li><strong>检索前处理查询</strong>：Query Rewrite 把多轮对话改写成独立可检索的查询；Query Decomposition 把复杂问题拆成多个子查询，可并发检索。</li>
+<li><strong>检索后处理结果</strong>：去重、截断、Rerank 重排、标注来源，不把原始召回结果直接塞给模型。</li>
+<li><strong>生成强约束</strong>：要求只基于检索证据回答并引用来源；证据不足时明确说不确定。这是降低幻觉的关键。</li>
+<li><strong>分层注入</strong>：检索结果放在独立的 Knowledge 上下文块，和 System 指令、用户原话隔离，模型能区分&quot;外部知识&quot;和&quot;用户说的话&quot;。</li>
+<li><strong>可迭代</strong>：结果不够时 Agent 可以换关键词或换知识源再检索，但要限制检索轮数。</li>
+</ul></div></article><article class="q" id="q6"><h3><a class="q-link" href="#q6">有哪些 Agent 开发平台？</a></h3><div class="a"><p class="lead">按形态分三类：低代码平台、开源应用平台 / 开发框架、多 Agent 框架。</p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>代表</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>低代码平台</td>
+<td>Coze（扣子，字节）、阿里云百炼、腾讯元器、文心智能体平台</td>
+<td>可视化编排、插件、工作流，一键发布；Coze 于 2025 年 7 月开源了 Coze Studio、Coze Loop</td>
+</tr>
+<tr>
+<td>开源应用平台</td>
+<td>Dify、FastGPT</td>
+<td>支持私有化部署；Dify 内置 RAG、工作流、Agent，FastGPT 侧重知识库问答</td>
+</tr>
+<tr>
+<td>开发框架</td>
+<td>LangChain、LangGraph</td>
+<td>LangChain 组件生态最广；LangGraph 把流程建模为有状态的图，支持循环、分支、持久化和人工介入</td>
+</tr>
+<tr>
+<td>多 Agent 框架</td>
+<td>CrewAI、AutoGen（微软）、MetaGPT、AgentScope（阿里）</td>
+<td>角色化协作、对话式协作、模拟软件公司分工等；AutoGen 后续与 Semantic Kernel 合并演进为 Microsoft Agent Framework</td>
+</tr>
+</tbody>
+</table>
+<p><strong>选型思路</strong></p>
+<ul>
+<li>快速上线、低运维：Coze、百炼等平台。</li>
+<li>私有化、深度定制：Dify、FastGPT；需要灵活编排用 LangChain / LangGraph（Java 技术栈可选 Spring AI、Spring AI Alibaba）。</li>
+<li>复杂多角色协作：CrewAI、AutoGen 等，或用 LangGraph 自行编排。</li>
+</ul></div></article><article class="q" id="q7"><h3><a class="q-link" href="#q7">OpenClaw 和 Hermes 有什么区别？</a></h3><div class="a"><p class="lead">两者都是开源、可自托管的个人 Agent，区别在于侧重点：OpenClaw 侧重&quot;网关 + 技能&quot;的多渠道助手，Hermes Agent（Nous Research）侧重内置学习闭环、越用越会做。</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>OpenClaw</th>
+<th>Hermes Agent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>核心定位</td>
+<td>以 Gateway 为中心，把 WhatsApp、Telegram、Slack 等消息渠道接到同一个 Agent</td>
+<td>Agent 运行时本身，强调自我改进</td>
+</tr>
+<tr>
+<td>能力扩展</td>
+<td>主要靠安装 / 编写 Skills，能力由人预先配置</td>
+<td>完成任务后可自动沉淀为可复用的 Skill，并在使用中改进</td>
+</tr>
+<tr>
+<td>记忆</td>
+<td>会话记忆 + 基于文件的记忆</td>
+<td>强调跨会话持久记忆和用户画像</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>多渠道接入、标准化的日常任务自动化</td>
+<td>长期使用的个人助理、编码与重复工作流自动化</td>
+</tr>
+</tbody>
+</table>
+<p>两者都能执行 Shell、读写文件，权限很大，部署时都要做沙箱隔离、命令审批和凭证保护。</p></div></article></section><section class="grp has-core" id="g2"><h2 class="grp-title">Agent 与 Workflow <span class="cnt"><span class="n-all">4</span><span class="n-core">高频 3</span></span></h2><article class="q core" id="q8"><h3><a class="q-link" href="#q8">Agent 和 Workflow 有什么区别？为什么 Agent 不等同于工作流？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">Workflow 是人按规则预先编排好的固定流程，系统照着执行；Agent 是人给出目标，由模型根据实时状态自主决定下一步的系统。</p>
+<ul>
+<li><strong>Workflow</strong>：步骤、分支、工具调用顺序都提前定义，分支由规则（如字段值）控制。流程不会因中间结果自我调整，没有自主判断和纠错能力，适合标准化、逻辑确定的重复任务。即使某个节点调用了 LLM，路径也仍然是人定的。</li>
+<li><strong>Agent</strong>：具备推理、规划、记忆和反思能力，通过&quot;思考 → 行动 → 观察&quot;循环，根据工具返回动态选择工具、调整路径，能处理目标明确但路径不确定的开放式任务。</li>
+</ul>
+<p><strong>为什么 Agent 不等于工作流</strong>：区别在于<strong>控制流归谁</strong>。工作流的控制流写在代码 / 配置里；Agent 的控制流由模型在运行时生成。工作流里放了 LLM 节点，仍然是工作流。</p>
+<p>两者常组合使用：Agent 做顶层规划，内部调用固定 Workflow 处理标准化子流程；或者 Workflow 做主干，在复杂节点嵌入 Agent。</p></div></article><article class="q core" id="q9"><h3><a class="q-link" href="#q9">Agent 和 Workflow 各有什么优缺点？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><table>
+<thead>
+<tr>
+<th></th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent</td>
+<td>自主决策，灵活；能根据中间结果调整路径；能处理未预见的情况和非标准化任务</td>
+<td>行为不可完全预控，输出不稳定，可能跑偏或循环；对模型能力要求高；延迟和 Token 成本高；调试和复现困难</td>
+</tr>
+<tr>
+<td>Workflow</td>
+<td>严格按预设执行，结果稳定可预期；易测试、监控、审计和复现；执行快、资源消耗低；适合标准化、批量化任务</td>
+<td>灵活性差，无法根据中间结果动态调整；遇到流程未覆盖的边界情况无法自主处理；扩展依赖人工改流程</td>
+</tr>
+</tbody>
+</table></div></article><article class="q core" id="q10"><h3><a class="q-link" href="#q10">如何根据业务场景选择 Agent 还是 Workflow（固定 DAG）？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">核心看流程是否确定：<strong>能提前写清楚的部分用 Workflow / DAG，只有无法提前确定的部分交给 Agent</strong>。实际落地很少二选一。</p>
+<table>
+<thead>
+<tr>
+<th>判断项</th>
+<th>Workflow / 固定 DAG</th>
+<th>Agent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>执行步骤</td>
+<td>提前确定</td>
+<td>运行时动态决定</td>
+</tr>
+<tr>
+<td>分支决策</td>
+<td>规则控制，分支有限</td>
+<td>模型根据目标、上下文、工具结果判断</td>
+</tr>
+<tr>
+<td>稳定性</td>
+<td>高</td>
+<td>有随机性</td>
+</tr>
+<tr>
+<td>可解释性 / 审计</td>
+<td>容易追踪</td>
+<td>需要记录完整执行轨迹</td>
+</tr>
+<tr>
+<td>容错要求</td>
+<td>适合出错代价大的场景</td>
+<td>适合允许探索、错误可发现可撤销的场景</td>
+</tr>
+<tr>
+<td>工具调用</td>
+<td>顺序固定（查库 → 总结 → 生成文件）</td>
+<td>工具多，需按问题动态选择</td>
+</tr>
+<tr>
+<td>成本和延迟</td>
+<td>模型调用次数可控</td>
+<td>多轮调用，成本更高，需设步数和预算上限</td>
+</tr>
+<tr>
+<td>异常恢复</td>
+<td>可预先设计重试、断点续跑</td>
+<td>情况更复杂</td>
+</tr>
+</tbody>
+</table>
+<p><strong>典型场景</strong></p>
+<ul>
+<li>Workflow：发票报销审批、订单退款、数据 ETL、定时同步、合同审核流程、客服分流、标准 RAG 问答。金融、医疗、审批等强合规场景优先。</li>
+<li>Agent：资料调研、竞品分析、代码排错、故障排查、复杂客服问题、跨系统信息查询和数据分析。</li>
+</ul>
+<p><strong>组合方式</strong>：主流程由 Workflow 编排，在需要复杂判断的节点调用 Agent，Agent 决策完再回到固定流程。这样既保留灵活性，又用 Workflow 控制执行边界和业务风险。一个简单判据：如果业务人员能提前画出流程图并枚举异常，就用 Workflow。</p></div></article><article class="q" id="q11"><h3><a class="q-link" href="#q11">哪些场景不应该用 Agent，而该用确定性工作流？</a></h3><div class="a"><p class="lead">规则能写清、异常能枚举的任务，都应优先用确定性工作流。具体包括：</p>
+<ul>
+<li>输入输出规则明确，步骤固定，几乎不会因中间结果改变。</li>
+<li>需要严格复现：同一输入必须得到同一输出。</li>
+<li>延迟和成本约束很严、请求量大，但单次任务很简单。</li>
+<li>可以直接用 SQL、普通代码或规则引擎完成。</li>
+<li>合规要求给出可验证的决策路径。</li>
+<li>缺少可靠的测试、监控和失败恢复机制。</li>
+<li>错误会造成不可逆损失，而系统又无法在动作前做校验或请求人工批准。</li>
+</ul>
+<p>Agent 适合规则无法穷举、执行路径依赖现场信息，并且错误能被发现、拦截或撤销的任务。</p></div></article></section><section class="grp has-core" id="g3"><h2 class="grp-title">Agent 范式 <span class="cnt"><span class="n-all">11</span><span class="n-core">高频 8</span></span></h2><article class="q core" id="q12"><h3><a class="q-link" href="#q12">Agent 有哪些主流范式？分别适合什么场景？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">最常考的三种是 <strong>ReAct、Plan-and-Execute、Reflection</strong>，再加上 Tool-Use 这一基础能力，以及多 Agent、路由等组织形态。</p>
+<p><img src="images/Java%E5%85%AB%E8%82%A1%EF%BC%88%E5%90%8E%E7%AB%AF)+Agent%E5%85%AB%E8%82%A18-image-5.png" alt=""></p>
+<table>
+<thead>
+<tr>
+<th>范式</th>
+<th>核心思想</th>
+<th>适合场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tool-Use / Function Calling</td>
+<td>模型选择工具并生成参数，单步或少量调用</td>
+<td>查天气、查订单等简单工具任务</td>
+</tr>
+<tr>
+<td>ReAct</td>
+<td>Thought → Action → Observation 交替循环，边想边做</td>
+<td>信息不完整、需要边查边判断：搜索问答、故障排查</td>
+</tr>
+<tr>
+<td>Plan-and-Execute</td>
+<td>先生成全局计划，再逐步执行，可重规划</td>
+<td>步骤可预判的长链路任务：调研报告、代码迁移、数据处理</td>
+</tr>
+<tr>
+<td>Reflection / Reflexion</td>
+<td>生成后自我评审、批改、重做</td>
+<td>正确率要求高：代码生成、文档审核、复杂推理</td>
+</tr>
+<tr>
+<td>Tree of Thoughts</td>
+<td>多条思路并行探索、评估、回溯</td>
+<td>规划、谜题、组合搜索等需要比较多方案的问题</td>
+</tr>
+<tr>
+<td>Self-Ask</td>
+<td>拆成子问题逐个回答（可配合搜索）</td>
+<td>多跳问答</td>
+</tr>
+<tr>
+<td>Multi-Agent</td>
+<td>多个角色分工协作（规划、检索、执行、审核）</td>
+<td>复杂企业级任务</td>
+</tr>
+<tr>
+<td>Router Agent</td>
+<td>按意图路由到不同专家 Agent 或工具</td>
+<td>智能客服、企业助手的统一入口</td>
+</tr>
+<tr>
+<td>Human-in-the-loop</td>
+<td>关键节点人工确认</td>
+<td>转账、审批、生产变更等高风险操作</td>
+</tr>
+</tbody>
+</table>
+<p>Reflection 通常不单独构成完整流程，而是叠加在 ReAct 或 Plan-and-Execute 之上的增强模块。</p></div></article><article class="q core" id="q13"><h3><a class="q-link" href="#q13">ReAct 范式的基本流程是什么？它是怎么实现“边思考边行动”的？有什么优缺点？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">ReAct = Reasoning + Acting（Yao et al., 2022），让模型在&quot;推理 → 行动 → 观察&quot;之间循环，根据真实的工具结果逐步决策，而不是一次性给答案。</p>
+<p><img src="images/Java%E5%85%AB%E8%82%A1%EF%BC%88%E5%90%8E%E7%AB%AF)+Agent%E5%85%AB%E8%82%A18-image-6.png" alt=""></p>
+<p><strong>流程</strong></p>
+<ol>
+<li><strong>Thought</strong>：分析当前缺什么信息、下一步该做什么、调用哪个工具。</li>
+<li><strong>Action</strong>：发起工具调用（搜索、接口、数据库、代码解释器等）。</li>
+<li><strong>Observation</strong>：拿到工具返回，追加到上下文。</li>
+<li>回到 Thought，继续推理，直到得出最终答案或触发终止条件。</li>
+</ol>
+<p><img src="images/Java%E5%85%AB%E8%82%A1%EF%BC%88%E5%90%8E%E7%AB%AF)+Agent%E5%85%AB%E8%82%A18-image-7.png" alt=""></p>
+<p>例：用户问&quot;北京明天要不要带伞&quot;，Agent 先想到需要查天气 → 调用天气工具 → 观察到降雨概率 80% → 回答需要带伞。</p>
+<p><strong>为什么经典</strong>：它把 CoT 的推理和外部行动结合起来。CoT 只在模型内部推理，可能凭空编造事实；ReAct 每一步都有 Observation 作为依据，推理和行动互相校正。生产中通常只记录动作、参数和观察结果，不必暴露完整推理文本。</p>
+<p><strong>优点</strong></p>
+<ul>
+<li>能根据环境反馈随时调整，适合信息不完整、结果不可预知的任务。</li>
+<li>有观察结果作依据，比一次性生成更少幻觉。</li>
+<li>工具调用轨迹清晰，便于调试和审计。</li>
+<li>实现直接，不需要先产出完整计划。</li>
+</ul>
+<p><strong>缺点</strong></p>
+<ul>
+<li>每一步都要调模型和工具，延迟和成本高。</li>
+<li>容易重复搜索、无效尝试或死循环。</li>
+<li>决策偏局部贪心，长任务中可能偏离整体目标。</li>
+<li>上下文不断累积，早期信息容易被稀释。</li>
+<li>工具返回的外部内容可能带来提示注入。</li>
+</ul>
+<p><strong>生产防护</strong>：最大迭代次数、明确停止条件、工具白名单、参数校验、超时、重复动作检测、Trace 日志、高风险动作人工确认。</p></div></article><article class="q core" id="q14"><h3><a class="q-link" href="#q14">ReAct 范式和 Agent Loop 有什么区别？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead"><strong>Agent Loop 是外壳，ReAct 是壳里的一种具体实现。</strong></p>
+<ul>
+<li><strong>Agent Loop</strong>：通用执行框架，只规定&quot;调用模型 → 若有工具调用就执行并把结果喂回 → 再调用模型 → 直到模型给出最终回复或达到上限&quot;这一循环结构，不规定每轮内部怎么思考。</li>
+<li><strong>ReAct</strong>：规定每一轮内部按&quot;先推理再行动、再观察&quot;运转的具体范式，是用 Agent Loop 思想构建的经典实例。</li>
+</ul>
+<p>同一个 Agent Loop 里也可以跑 Plan-and-Execute、Reflection 等其他策略。现代基于原生 Function Calling 的 Agent（如 Claude Code 这类 CLI Agent）本质上就是一个 Agent Loop，推理过程不一定显式输出成 &quot;Thought:&quot; 文本。</p></div></article><article class="q" id="q15"><h3><a class="q-link" href="#q15">为什么确定性强的流程不适合用 ReAct？</a></h3><div class="a"><p class="lead">因为 ReAct 的价值在于动态决策，而确定性流程不需要动态决策，只会白白引入成本和不确定性。</p>
+<ol>
+<li><strong>浪费</strong>：步骤完全已知，每一步仍让 LLM 推理，多出大量 Token 和延迟。</li>
+<li><strong>引入随机性</strong>：模型可能乱调工具、跳步骤、重复执行，破坏固定业务逻辑。</li>
+<li><strong>难以管控</strong>：审批、表单流转、固定计算要求 100% 标准化，自主决策会带来不可预期的分支，难测试、难审计。</li>
+<li><strong>额外工程成本</strong>：还得为 ReAct 写提示约束、终止判断、异常拦截，不如直接用代码或 Workflow 编排稳定。</li>
+</ol>
+<p>结论：确定性流程直接用 Workflow，只在不确定的节点引入模型。</p></div></article><article class="q core" id="q16"><h3><a class="q-link" href="#q16">Plan-and-Execute 范式是什么？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">Plan-and-Execute（也叫 Plan-Executor）是<strong>先拆任务、再逐步执行</strong>的范式：Planner 先产出全局计划，Executor 按计划执行每一步，必要时 Replanner 根据执行结果修改剩余计划。</p>
+<p><img src="images/Java%E5%85%AB%E8%82%A1%EF%BC%88%E5%90%8E%E7%AB%AF)+Agent%E5%85%AB%E8%82%A18-image-8.png" alt=""></p>
+<p><img src="images/Java%E5%85%AB%E8%82%A1%EF%BC%88%E5%90%8E%E7%AB%AF)+Agent%E5%85%AB%E8%82%A18-%E6%88%AA%E5%B1%8F2026-06-05%2017.52.37.png" alt=""></p>
+<p><strong>流程</strong>：用户目标 → Planner 生成步骤列表 → Executor 逐步执行（单步内部可以用 ReAct 调工具）→ 汇总结果 → 判断是否需要重规划 → 输出最终结果。</p>
+<p>例：做一份竞品分析报告，Planner 拆成&quot;确定竞品 → 收集信息 → 对比功能 → 分析价格 → 输出结论&quot;，Executor 依次完成。</p>
+<p><strong>要点</strong></p>
+<ul>
+<li><strong>优势</strong>：全局视角，结构清晰，计划可供人工审核；执行阶段可以用更便宜的模型，降低成本。</li>
+<li><strong>风险</strong>：初始计划错了，后续会沿错误方向走，因此需要<strong>重规划机制</strong>（每步或失败后回到 Planner 修订）。</li>
+<li><strong>Planner 和 Executor 不一定是两个模型</strong>：可以是同一模型扮演两个角色，也可以强模型做规划、小模型做执行。</li>
+</ul></div></article><article class="q" id="q17"><h3><a class="q-link" href="#q17">ReAct 和 Plan-and-Execute 有什么核心区别？</a></h3><div class="a"><p class="lead">ReAct 是试错式的边想边做，Plan-and-Execute 是先画全局蓝图再执行。</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>ReAct</th>
+<th>Plan-and-Execute</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>执行逻辑</td>
+<td>每步推理后行动，动态迭代</td>
+<td>先完整规划，再按步骤执行</td>
+</tr>
+<tr>
+<td>思考粒度</td>
+<td>细粒度，单步决策</td>
+<td>粗粒度，全局规划</td>
+</tr>
+<tr>
+<td>调整能力</td>
+<td>每步都可改思路、换工具、改路线</td>
+<td>依赖重规划，没有重规划就比较僵硬</td>
+</tr>
+<tr>
+<td>适合任务</td>
+<td>开放、信息未知、下一步依赖上一步结果</td>
+<td>步骤可预判、依赖关系稳定、目标明确</td>
+</tr>
+<tr>
+<td>成本</td>
+<td>每步都调用强模型，长任务成本高</td>
+<td>规划一次，执行可用小模型</td>
+</tr>
+<tr>
+<td>主要缺点</td>
+<td>链路长、易循环、易丢失全局目标</td>
+<td>遇到意外数据或分支时计划失效</td>
+</tr>
+</tbody>
+</table>
+<p><strong>选择方法</strong>：如果现在无法可靠预测第三步做什么，偏向 ReAct；如果能画出相对稳定的依赖图，偏向 Plan-and-Execute。实际常用混合：Plan-and-Execute 做全局，单步内部用 ReAct。</p></div></article><article class="q core" id="q18"><h3><a class="q-link" href="#q18">Reflection（反思机制）是什么？为什么能提升 Agent 效果？实际怎么实现？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">Reflection 是让 Agent 对自己的输出或执行过程做<strong>检查、批评、修正</strong>的机制：先生成，再评审，再改写，循环到满足标准或达到次数上限。</p>
+<p><img src="images/Java%E5%85%AB%E8%82%A1%EF%BC%88%E5%90%8E%E7%AB%AF)+Agent%E5%85%AB%E8%82%A18-image-9.png" alt=""></p>
+<p><img src="images/Java%E5%85%AB%E8%82%A1%EF%BC%88%E5%90%8E%E7%AB%AF)+Agent%E5%85%AB%E8%82%A18-%E6%88%AA%E5%B1%8F2026-06-05%2018.06.07.png" alt=""></p>
+<p><strong>为什么有效</strong>：模型第一次输出常有遗漏、逻辑漏洞、格式错误或幻觉。把&quot;生成&quot;和&quot;评审&quot;拆开，相当于多了一层 Review，评审时可以对照明确标准发现问题。Reflexion（Shinn et al., 2023）进一步把失败后的反思文本存入记忆，供下一次尝试参考，相当于用语言反馈代替梯度更新。</p>
+<p><strong>三种实现方式</strong></p>
+<ol>
+<li><strong>Self-Reflection</strong>：同一模型自评自改，成本最低。</li>
+<li><strong>独立 Critic / Reviewer</strong>：另一个角色或另一个模型评审，减少&quot;自己看不出自己的错&quot;。</li>
+<li><strong>规则 / 外部验证 + 模型</strong>：先用确定性手段检查（编译、单元测试、JSON Schema、字段校验、权限检查），再让模型检查语义和逻辑。关键任务应优先依赖外部验证器。</li>
+</ol>
+<p>例：代码生成后，先跑编译和测试，再让 Reviewer 检查空指针、事务边界、SQL 注入、性能问题，最后输出修订版。</p>
+<p><strong>风险与注意</strong></p>
+<ul>
+<li>增加模型调用次数，带来额外 Token 和延迟，适合高价值、高风险任务。</li>
+<li>没有明确评估标准时，可能&quot;自信地错误修正&quot;，把对的改成错的。</li>
+<li>必须设反思轮数上限，防止无限修改。</li>
+</ul></div></article><article class="q core" id="q19"><h3><a class="q-link" href="#q19">Tool-Use Agent 是什么？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">Tool-Use Agent 的重点不是模型自己多聪明，而是<strong>知道什么时候该用哪个工具、参数怎么填</strong>，把执行交给可靠的外部系统。</p>
+<p><img src="images/Java%E5%85%AB%E8%82%A1%EF%BC%88%E5%90%8E%E7%AB%AF)+Agent%E5%85%AB%E8%82%A18-image-10.png" alt=""></p>
+<p>工具可以是搜索引擎、数据库、代码解释器、浏览器、企业 API、邮件、CRM、订单系统等。例：把发票金额录入表格，模型不应靠猜，而应调用 OCR → 校验 → 表格写入工具。</p>
+<p><strong>常见追问</strong></p>
+<ul>
+<li><strong>Function Calling 和 Tool Use 的关系</strong>：Function Calling 是模型输出结构化工具调用的能力；Tool-Use Agent 是围绕目标决定何时、如何、按什么顺序调用工具，并处理结果的系统。</li>
+<li><strong>工具描述为什么重要</strong>：模型只能依据工具名、description 和参数 Schema 判断是否调用、怎么填参，描述不清或边界重叠会直接导致误用。</li>
+<li><strong>如何防止危险调用</strong>：最小权限、工具白名单、参数校验、限流超时、审计日志、高风险动作人工确认。</li>
+</ul></div></article><article class="q" id="q20"><h3><a class="q-link" href="#q20">Tree of Thoughts、Self-Ask 和 Plan-and-Solve 分别解决什么问题？</a></h3><div class="a"><ul>
+<li><strong>Tree of Thoughts（ToT）</strong>：在每一步生成多个候选思路，对中间状态打分，用 BFS / DFS 搜索并允许回溯。解决单一路径过早选错的问题，适合规划、谜题（如 24 点）、组合搜索。代价是分支数爆炸，需要限制深度、宽度和评估次数。Graph of Thoughts 进一步允许思路之间合并、聚合。</li>
+<li><strong>Self-Ask</strong>：模型先显式提出子问题（&quot;Follow up: ...&quot;），逐个回答（可交给搜索工具），再组合成最终答案。解决多跳问答中隐含步骤没被处理的问题。弱点是子问题拆错时，后面即使每个都答对也答不了原问题。</li>
+<li><strong>Plan-and-Solve</strong>：一种 Prompt 策略，先让模型列出解题计划，再按计划逐步求解（&quot;先理解问题并制定计划，再逐步执行&quot;）。用来减少 Zero-shot CoT 中的漏步骤、顺序混乱和计算错误。比 ToT 便宜，但只沿一套计划走，受初始计划质量影响。</li>
+</ul></div></article><article class="q core" id="q21"><h3><a class="q-link" href="#q21">不同 Agent 范式各有什么优缺点？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><table>
+<thead>
+<tr>
+<th>范式</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ReAct</td>
+<td>灵活，可根据每步 Observation 调整；适合搜索、问答、实时查询等动态任务；轨迹清晰，易调试解释</td>
+<td>多轮调用，延迟和成本高；局部贪心，缺少全局规划；长任务易走弯路、循环、丢失目标</td>
+</tr>
+<tr>
+<td>Plan-and-Execute</td>
+<td>任务拆解清晰，路径稳定；计划可人工审核；执行阶段可用小模型降本；适合代码重构、报告生成、数据处理</td>
+<td>计划在执行前生成，对中间变化适应差；某步失败或环境变化时后续步骤可能失效，需要重规划，否则一错到底</td>
+</tr>
+<tr>
+<td>Reflection</td>
+<td>自我评估和纠错，降低错误率、提升鲁棒性；适合代码生成、复杂推理、结果校验</td>
+<td>额外模型调用，成本和耗时增加；依赖评估标准，标准不清时可能无效反思甚至把对的改错</td>
+</tr>
+</tbody>
+</table></div></article><article class="q core" id="q22"><h3><a class="q-link" href="#q22">ReAct、Plan-and-Execute、Reflection 在实际项目中如何选型？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">按任务特征决策，并且通常是组合使用。</p>
+<p><img src="images/Java+AI%E5%85%AB%E8%82%A1-image-38.png" alt=""></p>
+<p><strong>决策步骤</strong></p>
+<ol>
+<li><strong>先判断要不要 Agent</strong>：流程 100% 固定、步骤已知 → 直接 Workflow。</li>
+<li><strong>单 Agent 内部选型</strong>
+<ul>
+<li>单次工具调用即可（查一次、算一次）：直接 Function Calling。</li>
+<li>路径不确定、需要边查边判断（智能问答、搜索增强、故障排查）：ReAct。</li>
+<li>任务复杂但能先拆成大步骤（调研报告、数据分析、代码重构）：Plan-and-Execute。</li>
+<li>正确率要求高、允许多花成本（代码生成、合同审查、关键决策）：叠加 Reflection。</li>
+</ul>
+</li>
+<li><strong>是否升级多 Agent</strong>：任务需要多个专业领域、上下文过大、需要并行或互相校验时再考虑。
+<ul>
+<li>有总指挥、任务分层：主从（Supervisor）架构。</li>
+<li>有固定工序（调研 → 写作 → 审核）：流水线。</li>
+<li>各 Agent 平级、需要协商或辩论：对等 / 辩论式架构。</li>
+<li>大型系统：主从 + 流水线混合。</li>
+</ul>
+</li>
+</ol>
+<p><strong>常见组合</strong>：Plan-and-Execute 做整体规划，每一步内部用 ReAct 调工具，关键步骤或最终结果用 Reflection 把关。</p></div></article></section><section class="grp has-core" id="g4"><h2 class="grp-title">任务规划与 TodoList <span class="cnt"><span class="n-all">7</span><span class="n-core">高频 3</span></span></h2><article class="q core" id="q23"><h3><a class="q-link" href="#q23">Agent 的 Planning 是如何实现的？大模型不擅长长链路规划，如何赋予它规划能力？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">Planning 是让 Agent 把目标拆解并逐步完成的能力。主流实现不是让模型完全自由规划，而是<strong>规则保证底线，模型提供灵活性</strong>：程序固定主干流程，模型在需要判断的环节做局部规划。</p>
+<p><strong>分工</strong></p>
+<ul>
+<li>强约束、高可靠的环节（身份验证、订单处理、售后规则）用代码硬编码。</li>
+<li>需要灵活性的环节（客服回复、调研、分析）用 Prompt 引导模型规划和生成。</li>
+</ul>
+<p><strong>增强长链路规划的手段</strong></p>
+<ol>
+<li><strong>独立 Planner</strong>：先输出结构化计划（如 JSON 任务列表），而不是直接执行。</li>
+<li><strong>分解模板</strong>：要求每个步骤写明目标、输入、工具、预期输出、校验标准。</li>
+<li><strong>状态机 / 任务 DAG 管理执行</strong>：由程序推进状态、维护依赖，模型不能随意跳步。</li>
+<li><strong>反馈与重规划</strong>：某步失败时把错误信息交回 Planner 修订剩余计划，而不是直接终止。</li>
+<li><strong>外部状态记录</strong>：用 TodoList / 进度文件保存计划和完成情况，避免长上下文中遗忘目标。</li>
+<li><strong>工程兜底</strong>：最大步数、工具权限、结果校验、关键节点人工确认，不完全信任模型的计划。</li>
+</ol>
+<p>典型闭环：目标识别 → 任务拆分 → 工具选择 → 执行 → 观察结果 → 判断是否完成 → 必要时重规划。</p></div></article><article class="q core" id="q24"><h3><a class="q-link" href="#q24">你了解哪些常见的 Planning 方法？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><ul>
+<li><strong>CoT（Chain of Thought）</strong>：引导模型逐步推理，把问题拆成中间步骤再得到答案。Few-shot CoT 给带推理过程的示例；Zero-shot CoT 只需在 Prompt 加&quot;Let's think step by step&quot;。提升算术、常识、逻辑推理效果，代价是输出更长、更慢。</li>
+<li><strong>ToT（Tree of Thoughts）</strong>：把 CoT 的单一路径扩展为树状搜索，每步生成多个候选并评估，结合 BFS / DFS 选择最优路径，可回溯。</li>
+<li><strong>ReAct</strong>：Thought → Action → Observation 循环，推理中穿插工具调用和环境交互，适合需要动态获取信息的任务，过程可解释。</li>
+<li><strong>Reflexion</strong>：在 ReAct 等方法基础上加入自我反思，任务失败后生成反思文本存入记忆，下次尝试时参考，类似一种不更新权重的&quot;语言强化学习&quot;。</li>
+<li><strong>Plan-and-Execute / Plan-and-Solve</strong>：先产出完整计划再执行，适合可预判步骤的长任务。</li>
+</ul></div></article><article class="q core" id="q25"><h3><a class="q-link" href="#q25">不同 Planning 方法的适用性如何？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">一句话：线性推理用 CoT，多方案搜索用 ToT，需要交互用 ReAct，需要多次尝试持续改进用 Reflexion。</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>适用任务</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CoT</td>
+<td>单路径、逻辑清晰的推理：算术、常识、简单多步问题</td>
+<td>实现简单，效果稳定</td>
+<td>只走一条路，中间错一步结果就错；推理开销增加</td>
+</tr>
+<tr>
+<td>ToT</td>
+<td>需要比较多方案的复杂决策：规划、博弈、谜题</td>
+<td>多路径探索，更可能找到全局较优解</td>
+<td>计算成本高、慢，工程实现复杂</td>
+</tr>
+<tr>
+<td>ReAct</td>
+<td>需要与外部环境交互或调用工具：搜索问答、代码执行</td>
+<td>能处理信息不完整的问题，动态调整</td>
+<td>链路长，依赖工具质量，错误可能多轮累积</td>
+</tr>
+<tr>
+<td>Reflexion</td>
+<td>允许多轮尝试的任务：代码生成（有测试反馈）、复杂推理</td>
+<td>通过反馈迭代提升质量</td>
+<td>多次迭代效率低，依赖可靠的评估信号和记忆机制</td>
+</tr>
+</tbody>
+</table></div></article><article class="q" id="q26"><h3><a class="q-link" href="#q26">复杂任务如何让 Agent 做任务拆分？为什么拆分后效果更好？</a></h3><div class="a"><p class="lead">先识别目标、约束和交付物，再拆成多个<strong>可验证</strong>的小步骤，由 Planner 输出结构化任务列表。</p>
+<p><strong>拆分方法</strong></p>
+<ul>
+<li>例：&quot;生成竞品分析报告&quot;拆成：确定分析维度 → 搜索竞品信息 → 提取核心数据 → 对比功能 → 分析优劣势 → 撰写报告 → 检查结论。</li>
+<li>每个子任务包含：目标、输入、所需工具、预期输出、校验标准、依赖关系。</li>
+<li>粒度以&quot;一个子任务能用一两次工具调用完成、结果能被检查&quot;为宜，过细会增加调度开销。</li>
+</ul>
+<p><strong>为什么效果更好</strong></p>
+<ol>
+<li><strong>降低单次推理难度</strong>：一次性完成复杂任务容易漏步、逻辑混乱；子任务上下文更聚焦。</li>
+<li><strong>每步可以用合适的工具或模型</strong>：检索用搜索，计算用代码执行，写作用生成模型。</li>
+<li><strong>便于检查纠错</strong>：每个子任务都有中间结果，可以及时发现问题、局部重试，而不是最后才发现整体错误。</li>
+<li><strong>可并行</strong>：无依赖的子任务可以并发执行，缩短总耗时。</li>
+</ol></div></article><article class="q" id="q27"><h3><a class="q-link" href="#q27">TodoList 是什么？</a></h3><div class="a"><p class="lead">TodoList 是 Agent 中 <strong>Planning 模块的具体落地形式</strong>：把模糊复杂的目标拆成一组按顺序或依赖关系组织的可执行子任务，并持续维护其状态。</p>
+<ul>
+<li><strong>任务拆解</strong>：把非结构化目标转成清晰、可执行的步骤，降低复杂度。</li>
+<li><strong>边界控制</strong>：每一步明确处理内容、可用工具和预期输出，让执行过程可控。</li>
+<li><strong>进度追踪</strong>：记录每项是待办、进行中还是已完成，避免长流程中偏离目标、重复执行或遗漏步骤。</li>
+</ul>
+<p>TodoList 通常作为外部状态保存（甚至写入文件），每轮重新注入上下文，相当于给模型一个&quot;复述目标&quot;的锚点。Claude Code 等编码 Agent 就通过 TodoWrite 类工具让模型显式维护待办列表。</p></div></article><article class="q" id="q28"><h3><a class="q-link" href="#q28">TodoItem 是什么，包含哪些元素？</a></h3><div class="a"><p class="lead">TodoItem 是 TodoList 中的基本执行单元，描述一个具体子任务。常见字段：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>task_id</code></td>
+<td>唯一标识，用于索引、追踪和依赖引用</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td>自然语言描述，说明这个子任务要做什么</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>状态：<code>pending</code>、<code>in_progress</code>、<code>completed</code>、<code>failed</code>、<code>skipped</code></td>
+</tr>
+<tr>
+<td><code>dependencies</code></td>
+<td>依赖的任务 ID，决定执行顺序</td>
+</tr>
+<tr>
+<td><code>priority</code></td>
+<td>优先级，多个可执行任务时决定先后</td>
+</tr>
+<tr>
+<td><code>tools_required</code></td>
+<td>需要调用的工具，提前约束执行方式</td>
+</tr>
+<tr>
+<td><code>input</code> / <code>output</code></td>
+<td>执行所需输入和产出结果，供后续任务使用</td>
+</tr>
+<tr>
+<td><code>retry_count</code></td>
+<td>失败重试次数，用于异常处理和上限控制</td>
+</tr>
+<tr>
+<td><code>created_at</code> / <code>updated_at</code></td>
+<td>生命周期时间，便于调度、排序和日志追踪</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-json">{
+  &quot;task_id&quot;: &quot;t3&quot;,
+  &quot;description&quot;: &quot;对比三款竞品的定价方案&quot;,
+  &quot;status&quot;: &quot;pending&quot;,
+  &quot;dependencies&quot;: [&quot;t1&quot;, &quot;t2&quot;],
+  &quot;priority&quot;: 2,
+  &quot;tools_required&quot;: [&quot;web_search&quot;],
+  &quot;input&quot;: {&quot;competitors&quot;: [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;]},
+  &quot;output&quot;: null,
+  &quot;retry_count&quot;: 0
+}
+</code></pre></div></article><article class="q" id="q29"><h3><a class="q-link" href="#q29">TodoList 属于 ReAct 等 Agent 框架中的哪个部分？</a></h3><div class="a"><p class="lead">TodoList 属于 <strong>Planning 部分</strong>，位于 Thought 到 Action 的转化环节，把思考结果落地为可执行、可追踪的任务。</p>
+<ul>
+<li><strong>在基础 ReAct 中</strong>：通常不显式存在，任务规划隐含在连续的 Thought-Action-Observation 里，模型边想边决定下一步，没有单独维护任务列表。</li>
+<li><strong>在更复杂的框架中</strong>：TodoList 是显式的任务管理模块。BabyAGI 有独立的 Task Creation、Task Prioritization 和 Execution Agent 维护任务队列；Plan-and-Execute 中计划本身就是 TodoList。</li>
+<li><strong>运行方式</strong>：调度器不断从 TodoList 取出优先级最高且依赖已满足的任务执行，根据结果更新状态，必要时追加新的子任务或重排，形成持续迭代的闭环。</li>
+</ul></div></article></section><section class="grp has-core" id="g5"><h2 class="grp-title">工具调用与 Function Call <span class="cnt"><span class="n-all">10</span><span class="n-core">高频 8</span></span></h2><article class="q core" id="q30"><h3><a class="q-link" href="#q30">Function Call 是干什么用的？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">Function Call（Function Calling / Tool Calling）让大模型能<strong>以结构化方式请求调用外部函数</strong>，解决模型只能生成文本、不能执行操作、拿不到实时数据的问题。</p>
+<ul>
+<li><strong>作用</strong>：把 LLM 从&quot;回答问题&quot;升级为&quot;执行任务&quot;，比如查实时数据、调业务接口、读写数据库、发邮件。</li>
+<li><strong>核心能力</strong>：把自然语言转换成结构化调用，即选出合适的函数，并按 Schema 生成 JSON 参数。</li>
+<li><strong>基本机制</strong>：开发者预先声明函数（名称、描述、参数 Schema）→ 模型判断需要时输出函数名和参数 → <strong>由应用程序真正执行函数</strong> → 结果再交回模型生成回答。</li>
+</ul>
+<p>模型本身从不执行函数，它只输出&quot;想调用什么、参数是什么&quot;，执行权和安全控制都在应用侧。</p></div></article><article class="q core" id="q31"><h3><a class="q-link" href="#q31">Function Call 的基本结构和格式是什么？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">函数定义一般用 JSON 描述，参数部分遵循 JSON Schema。三个关键字段：</p>
+<ul>
+<li><strong>name</strong>：函数唯一标识，执行层据此路由到具体实现。</li>
+<li><strong>description</strong>：函数功能和适用场景的自然语言描述，是模型<strong>判断是否调用、调用哪个</strong>的核心依据。</li>
+<li><strong>parameters</strong>：输入参数的 JSON Schema。
+<ul>
+<li><code>type</code>：通常为 <code>object</code>。</li>
+<li><code>properties</code>：每个参数的名称、类型（<code>string</code>、<code>integer</code>、<code>boolean</code>、<code>array</code>、<code>enum</code> 等）和含义说明。</li>
+<li><code>required</code>：必填参数列表，约束模型生成完整可执行的调用。</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;get_weather&quot;,
+  &quot;description&quot;: &quot;查询指定城市某一天的天气。用户询问天气、温度、是否下雨时使用&quot;,
+  &quot;parameters&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;properties&quot;: {
+      &quot;city&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;城市名称，例如：北京&quot;},
+      &quot;date&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;日期，格式 YYYY-MM-DD&quot;}
+    },
+    &quot;required&quot;: [&quot;city&quot;, &quot;date&quot;]
+  }
+}
+</code></pre>
+<p>不同厂商外层包装略有差异：OpenAI 是 <code>{&quot;type&quot;: &quot;function&quot;, &quot;function&quot;: {name, description, parameters}}</code>，Anthropic 是 <code>{name, description, input_schema}</code>，但内核都是 name + description + JSON Schema。模型返回的调用结果一般包含调用 ID、函数名和参数（arguments），应用执行后要带着同一个 ID 回传结果。</p></div></article><article class="q core" id="q32"><h3><a class="q-link" href="#q32">大模型调用 Function Call 的流程是什么？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">本质是一个&quot;模型请求 → 应用执行 → 结果回传&quot;的循环。</p>
+<ol>
+<li><strong>发送请求</strong>：应用把用户消息和可用工具列表（函数定义）一起发给模型。</li>
+<li><strong>模型决策</strong>：模型判断能否直接回答。需要工具时，返回一个或多个工具调用（函数名 + JSON 参数），而不是最终文本。</li>
+<li><strong>应用执行</strong>：应用解析函数名和参数，做校验和权限检查后调用真实服务（如天气 API）。</li>
+<li><strong>结果回传</strong>：把执行结果作为 tool 消息（带上对应的调用 ID）追加到对话，再次请求模型。</li>
+<li><strong>继续生成</strong>：模型根据结果决定再调下一个工具，或输出最终自然语言回答。</li>
+<li><strong>循环直到结束</strong>：只要模型还返回工具调用就继续执行；返回普通文本时流程结束。</li>
+</ol>
+<p>例：&quot;查明天上海天气，然后发邮件告诉张三&quot;：</p>
+<pre><code class="language-json">{&quot;name&quot;: &quot;get_weather&quot;, &quot;arguments&quot;: {&quot;city&quot;: &quot;上海&quot;, &quot;date&quot;: &quot;2026-11-07&quot;}}
+</code></pre>
+<p>应用返回 <code>{&quot;temperature&quot;: &quot;18°C&quot;, &quot;condition&quot;: &quot;晴&quot;}</code> 后，模型再发起：</p>
+<pre><code class="language-json">{&quot;name&quot;: &quot;send_email&quot;, &quot;arguments&quot;: {&quot;to&quot;: &quot;zhangsan@example.com&quot;, &quot;content&quot;: &quot;明天上海晴，18°C&quot;}}
+</code></pre>
+<p>执行完成后模型输出&quot;已查询并发送邮件&quot;。主流 API 也支持一次返回多个并行工具调用，应用可并发执行后一起回传。</p></div></article><article class="q core" id="q33"><h3><a class="q-link" href="#q33">大模型是如何获得 Function Call 能力的？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">Function Call 能力不是预训练天然具备的，而是在具备较强指令遵循和结构化输出能力的基础模型上，<strong>通过 SFT（常再加 RLHF / RL）专门训练出来的</strong>。</p>
+<p><strong>要学会的两件事</strong></p>
+<ul>
+<li><strong>意图识别 / 调用决策</strong>：判断该直接回答，还是需要调工具；该调哪个工具。</li>
+<li><strong>参数抽取与格式化</strong>：从用户输入中准确抽取参数，按 Schema 生成合法 JSON。</li>
+</ul>
+<p><strong>SFT 过程</strong></p>
+<ol>
+<li><strong>数据构建</strong>：每条样本包含可用函数描述、对话历史、当前用户输入，以及期望输出（函数调用或直接回答）。多轮样本还要包含工具返回和基于结果的后续回复。</li>
+<li><strong>基础模型选择</strong>：选指令理解强的模型，如 Qwen、Llama、GLM 等。</li>
+<li><strong>格式组织</strong>：用模型的 Chat Template 把工具描述放进 system 或专门的工具区，工具调用用特殊 token 或固定标签包裹（如 <code>&lt;tool_call&gt;...&lt;/tool_call&gt;</code>），使模型学会稳定的调用格式。</li>
+<li><strong>微调</strong>：全参或 LoRA 微调，通常只对 assistant 输出部分计算 loss。</li>
+</ol>
+<p><strong>训练数据的基本结构</strong></p>
+<ul>
+<li>系统提示 / 全局指令（可选）：角色、能力边界。</li>
+<li>可用工具描述区：每个函数的结构化定义。</li>
+<li>对话历史：user、assistant、tool 消息交替。</li>
+<li>生成触发位：提示模型开始输出的位置（如 assistant 起始标记）。</li>
+</ul>
+<p>推理阶段还可以用<strong>约束解码</strong>（JSON Schema / 语法约束）保证输出一定是合法 JSON，这是工程层面的补充，不改变模型的决策能力。</p></div></article><article class="q core" id="q34"><h3><a class="q-link" href="#q34">如何提高大模型调用 Function Call 的能力？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">从模型、提示、Schema、工程四个层面入手。</p>
+<ul>
+<li><strong>高质量训练数据（SFT）</strong>：覆盖真实场景，重点加入该调 / 不该调的对比样本、缺参追问、多工具串联、工具失败等边界样本，提升意图识别和参数准确率。</li>
+<li><strong>优化函数描述</strong>：description 写清功能、适用场景和<strong>不适用场景</strong>，参数说明给出格式和示例，消除工具之间的语义重叠。</li>
+<li><strong>Prompt 设计</strong>：在 system prompt 中写明工具使用规则、优先级、何时应先追问用户，并配 few-shot 示例。</li>
+<li><strong>严格的 Schema</strong>：明确类型、必填项、枚举值、格式约束，必要时开启 strict / 结构化输出模式，减少非法参数。</li>
+<li><strong>结果校验与重试</strong>：校验 JSON 合法性、参数完整性和业务规则，失败时把具体错误信息回传给模型让它修正，限制重试次数。</li>
+<li><strong>工具路由（Tool Routing）</strong>：工具很多时先按意图或向量检索筛出少量候选工具再交给模型，缩小选择范围。</li>
+<li><strong>控制工具数量与粒度</strong>：合并语义相近的工具，避免一次性暴露几十上百个工具。</li>
+</ul></div></article><article class="q core" id="q35"><h3><a class="q-link" href="#q35">LLM 怎么匹配工具参数？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">模型基于工具 Schema 理解每个参数的含义，从对话上下文中抽取并规范化值，再由应用侧校验。分四步：</p>
+<ol>
+<li><strong>读取工具定义</strong>：工具名、参数名、类型、必填 / 选填、枚举和取值范围、描述与示例。这些都在 Prompt 中提供给模型。</li>
+<li><strong>理解意图并抽取值</strong>：从用户 query 和历史对话中抽取时间、地点、ID、关键词等实体，映射到对应参数。</li>
+<li><strong>对齐与类型转换</strong>：把文本转成要求的类型和格式，如&quot;明天&quot;转成具体日期、&quot;五百&quot;转成 <code>500</code>、口语表达映射到枚举值；未提及的选填参数用默认值。</li>
+<li><strong>校验与纠错</strong>：应用侧检查必填项、类型、范围和业务合法性。缺参或歧义时不应让模型猜，而是反问用户补充；校验失败则把错误回传给模型重新生成。</li>
+</ol>
+<p>关键原则：参数缺失时追问而不是编造，参数校验必须在执行前由代码完成。</p></div></article><article class="q core" id="q36"><h3><a class="q-link" href="#q36">Agent 线上频繁选错工具，如何排查？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">按&quot;<strong>工具定义 → 路由候选集 → Prompt 与示例 → 回放 Trace → 执行前校验</strong>&quot;的顺序排查。选错工具很多时候不是模型能力问题，而是候选构造、描述边界或上下文把它带偏了。</p>
+<ol>
+<li><strong>检查工具描述和 Schema</strong>：描述是否清晰，工具职责是否重叠，参数能否区分场景。两个工具写得很像、参数语义太泛，模型自然容易选错。</li>
+<li><strong>检查路由层</strong>：是否一次给了太多候选工具，导致噪声竞争；路由粒度是否太粗，把不相关的相似工具放进了同一候选集。</li>
+<li><strong>检查 Prompt 和 few-shot</strong>：提示词是否有误导，示例是否把相似场景映射到了错误工具，最近是否改过 system prompt 或工具描述。</li>
+<li><strong>回放 Trace</strong>：看模型选工具前到底看到了什么，包括候选工具列表、历史记忆、用户输入和中间状态。判断是否有记忆污染、输入歧义或无关信息混入。按错误类型聚类统计，看是集中在某几个工具对，还是普遍现象。</li>
+<li><strong>检查执行前二次校验</strong>：是否有参数与工具匹配校验、意图与工具一致性检查。没有这一层，第一步选偏就会直接放大到执行层。</li>
+</ol>
+<p><strong>修复措施</strong></p>
+<ul>
+<li>短期：补负样本示例、收紧 Schema 和描述边界、修正路由规则。</li>
+<li>长期：语义持续接近的工具合并成一个工具，内部按参数路由；把线上 bad case 沉淀成评测集做回归；必要时用这些数据微调。</li>
+</ul>
+<p><strong>延伸：如何训练工具调用能力</strong></p>
+<p>目标是让模型不仅会调，还知道什么时候不调、参数怎么补齐、失败后怎么处理。</p>
+<ul>
+<li><strong>正样本</strong>：该调用的场景，包括单工具和多工具串并联，覆盖&quot;选择 → 填参 → 执行 → 整合结果&quot;的完整轨迹。</li>
+<li><strong>负样本</strong>：闲聊、模型自身知识可答、工具无法解决的任务，教模型克制调用。</li>
+<li><strong>边界样本</strong>：缺参时追问、工具返回空或报错时降级、多个工具都可用时按优先级选择。</li>
+</ul>
+<p>数据来源：人工标注轨迹（质量最高、成本最高）、线上日志回放清洗、模板规则合成（快速扩量）、强模型生成轨迹再人工抽检修正（效率与质量折中）。</p></div></article><article class="q core" id="q37"><h3><a class="q-link" href="#q37">（追问）构造工具调用数据集遇到过什么难点，怎么解决？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">最大的问题往往不是数据量不够，而是<strong>数据不真实</strong>：人工构造的样本过于标准，用户表达完整、参数齐全、工具永远成功，上线后用户一句话没说全，模型就不会处理了。</p>
+<p><strong>常见难点和解法</strong></p>
+<ul>
+<li><strong>分布偏离线上</strong>：引入真实线上 query，按意图、复杂度、缺参情况、歧义程度分桶统计，针对薄弱桶补数据。</li>
+<li><strong>标注一致性差</strong>：同一问题不同标注人员给出不同工具路径。先统一 Schema、工具选择规范和决策标准，写标注指南，做交叉标注和一致性抽检。</li>
+<li><strong>长尾样本少</strong>：用模板改写、同义改写、对抗生成和人工补充边界案例，优先覆盖最容易出事故的场景（缺参、歧义、工具失败、不该调用）。</li>
+<li><strong>工具结果缺失</strong>：只有调用没有真实返回会导致模型不会处理异常。用 Mock 或沙箱真实执行，补充返回空、超时、报错的样本。</li>
+<li><strong>工具变更后数据过期</strong>：数据与工具 Schema 版本绑定，工具变更时重新生成或迁移样本。</li>
+</ul></div></article><article class="q" id="q38"><h3><a class="q-link" href="#q38">Agent CLI 是什么？为什么要用 CLI？</a></h3><div class="a"><p class="lead">Agent CLI 是<strong>运行在终端里的 Agent</strong>：用户用自然语言或命令下达任务，Agent 直接读文件、执行 Shell 命令、改代码、跑测试并返回结果。典型产品有 Claude Code、Codex CLI、Gemini CLI 等。</p>
+<p><strong>为什么用 CLI</strong></p>
+<ol>
+<li><strong>天然适合自动化</strong>：CLI 是文本输入、文本输出，模型容易生成命令、读取输出、决定下一步，比操作 GUI 简单可靠得多。</li>
+<li><strong>直接连接真实工作环境</strong>：文件系统、<code>git</code>、构建工具、测试命令、脚本、容器、远程服务都能直接用，可以闭环完成&quot;读代码 → 改文件 → 跑测试 → 看报错 → 继续修&quot;。</li>
+<li><strong>可组合、可脚本化</strong>：能接管道、脚本和 CI/CD，例如 <code>git diff</code> 交给 Agent 审查，把日志 pipe 给 Agent 分析，或用非交互模式在流水线里自动执行任务。</li>
+<li><strong>复用现有生态</strong>：海量工具已有成熟 CLI，Agent 不必为每个能力单独封装 API；模型对常用命令也有大量训练语料。</li>
+<li><strong>执行可观测、可控</strong>：命令、输出、文件 Diff 都可见；可接入权限确认、沙箱、Hooks 和审计日志。</li>
+<li><strong>适合长链路任务</strong>：网页对话适合解释概念，IDE 补全适合边写边提示，CLI Agent 适合自主跑完一整段流程，如批量重构、修复测试、代码审查、运维巡检。</li>
+</ol></div></article><article class="q" id="q39"><h3><a class="q-link" href="#q39">CLI 命令行调用的优缺点是什么？</a></h3><div class="a"><p class="lead">CLI 调用直接、轻量、能力强，适合本地开发和自动化；短板是安全边界弱、输出不结构化、依赖环境。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>优点</td>
+<td>调用直接：<code>git</code>、<code>npm test</code>、<code>python script.py</code> 无需额外封装服务</td>
+</tr>
+<tr>
+<td></td>
+<td>生态成熟：大量开发工具自带 CLI，可直接复用</td>
+</tr>
+<tr>
+<td></td>
+<td>易自动化：天然支持脚本、管道、CI/CD 编排</td>
+</tr>
+<tr>
+<td></td>
+<td>执行能力强：读写文件、构建、测试、查日志，适合代码修复和运维排查</td>
+</tr>
+<tr>
+<td></td>
+<td>上下文开销小：不必把大量工具 Schema 塞进上下文，按需用 <code>--help</code> 学习</td>
+</tr>
+<tr>
+<td>缺点</td>
+<td>安全风险高：权限大，错误命令可能删文件、改环境、泄露凭证，需要权限确认、沙箱、命令白名单和审计</td>
+</tr>
+<tr>
+<td></td>
+<td>输出不结构化：<code>stdout</code> / <code>stderr</code> 是文本，需要模型自行解析，稳定性不如结构化 API（可优先用 <code>--json</code> 等结构化输出选项）</td>
+</tr>
+<tr>
+<td></td>
+<td>依赖本地环境：工具版本、环境变量、路径、权限不同会导致结果不一致</td>
+</tr>
+<tr>
+<td></td>
+<td>参数无统一 Schema：模型可能拼错命令或误用参数，交互式命令还可能卡住</td>
+</tr>
+<tr>
+<td></td>
+<td>输出过长：大量日志会挤占上下文，需要截断或过滤</td>
+</tr>
+</tbody>
+</table></div></article></section><section class="grp has-core" id="g6"><h2 class="grp-title">上下文与 Harness Engineering <span class="cnt"><span class="n-all">8</span><span class="n-core">高频 7</span></span></h2><article class="q" id="q40"><h3><a class="q-link" href="#q40">上下文很长时，为什么模型仍会遗忘信息？</a></h3><div class="a"><p class="lead">上下文窗口决定模型最多能看到多少，注意力分配和上下文组织决定模型能真正用好多少。</p>
+<p>模型没有像人一样&quot;记住&quot;整段对话，它每次只是基于当前输入预测下一个 Token。信息在窗口里，不等于模型能准确关注到它。</p>
+<p><strong>常见原因</strong></p>
+<ul>
+<li><strong>信息被稀释</strong>：大量无关内容分散注意力，有效信息占比下降。</li>
+<li><strong>Lost in the Middle</strong>：模型通常对开头和结尾的信息更敏感，对中间部分利用较差（Liu et al., 2023）。</li>
+<li><strong>相似指令互相干扰</strong>：多条相近或冲突的要求让模型抓错重点，旧指令可能覆盖新指令。</li>
+<li><strong>上下文已被截断或摘要</strong>：框架为控制长度做了裁剪或压缩，细节其实已经丢失。</li>
+<li><strong>有效长度小于标称长度</strong>：长上下文评测（如 RULER）显示，许多模型在远低于标称窗口的长度上就开始明显退化，这种现象也被称为 context rot。</li>
+</ul>
+<p><strong>工程对策</strong>：不把历史原样全塞进去，而是保留最近对话 + 滚动摘要 + RAG 按需检索 + 结构化状态（任务、进度、关键决策单独存放）+ 长期记忆；关键约束放在 system prompt 或靠近末尾的位置重复强调。</p></div></article><article class="q core" id="q41"><h3><a class="q-link" href="#q41">什么是 Harness Engineering？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">Harness 原意是马具、挽具。Harness Engineering 指<strong>设计和优化模型之外的运行环境</strong>，用工程机制约束、引导和保护 Agent，提升其稳定性、可控性和可靠性。常见的说法是 Agent = Model + Harness：除模型权重外的一切都属于 Harness。</p>
+<ul>
+<li><strong>关注对象</strong>：Agent Loop、工具体系、权限与沙箱、Hooks、上下文管理与压缩、状态与进度持久化、子 Agent 编排、验证（测试、Linter）、异常处理与回滚、可观测性。</li>
+<li><strong>核心目标</strong>：不只靠 Prompt 提醒模型少犯错，而是把关键约束固化为机制，让系统从机制上避免出错。</li>
+<li><strong>软约束 vs 硬约束</strong>：Prompt 是概率性的软约束，模型可能听也可能不听；Harness 提供确定性的硬约束，如权限隔离、调用校验、流程限制、测试门禁、失败回滚，让 Agent 只能按规则做。</li>
+<li><strong>思路转变</strong>：Agent 出问题时，不是反复改 Prompt 让它&quot;下次记住&quot;，而是改环境和机制，让同类错误没有机会再发生。比如 Agent 总忘跑测试，就加一个提交前自动跑测试的 Hook。</li>
+</ul></div></article><article class="q core" id="q42"><h3><a class="q-link" href="#q42">Harness、Prompt、Context 工程有什么关系？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">三者是 Agent 工程关注点逐层外扩的演进：从&quot;怎么跟模型说&quot;，到&quot;给模型看什么&quot;，再到&quot;模型在什么环境里运行&quot;。可以概括为：<strong>教会 AI、喂给 AI、管住 AI</strong>。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Prompt Engineering</th>
+<th>Context Engineering</th>
+<th>Harness Engineering</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>核心问题</td>
+<td>怎么把任务说清楚</td>
+<td>每一步给模型放哪些信息</td>
+<td>模型运行在什么环境、受什么约束</td>
+</tr>
+<tr>
+<td>手段</td>
+<td>角色设定、指令、few-shot、CoT、输出格式</td>
+<td>RAG、记忆注入、工具结果裁剪、摘要压缩、上下文隔离</td>
+<td>Agent Loop、工具与权限、沙箱、Hooks、状态持久化、验证与回滚</td>
+</tr>
+<tr>
+<td>约束性质</td>
+<td>软约束，依赖模型理解</td>
+<td>提升相关性和准确性，仍是输入层优化</td>
+<td>硬约束，由机制保证</td>
+</tr>
+<tr>
+<td>作用范围</td>
+<td>单次调用</td>
+<td>多轮、多步的信息流</td>
+<td>整个系统的执行边界</td>
+</tr>
+</tbody>
+</table>
+<p><strong>关系</strong>：不是替代，而是包含与协作。Prompt 是 Context 的一部分，Context 管理又是 Harness 的一个组成。Prompt 负责激发能力，Context 负责提供任务所需信息，Harness 负责守住系统边界和执行底线。</p></div></article><article class="q core" id="q43"><h3><a class="q-link" href="#q43">Harness Engineering 的设计边界在哪里？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">边界是<strong>只约束真正需要约束的部分</strong>：守住底线、拦住高风险错误，而不是替模型规定每一步。约束过多会降低灵活性和效率，随着模型变强还会变成负担。</p>
+<p><strong>不该做的</strong></p>
+<ul>
+<li><strong>不约束模型能自己发现的问题</strong>：命名、格式、风格交给 Linter、Formatter、类型检查，把结果反馈给模型即可，不在 Harness 里写大量细则。</li>
+<li><strong>不预设所有情况</strong>：异常无法穷举，与其为每种错误写一个 Hook，不如设计通用的报错反馈、重试和回滚机制。</li>
+<li><strong>不写死执行路径</strong>：约束目标、边界和验收标准，不规定具体步骤，否则就退化成 Workflow，压缩了模型的规划能力。</li>
+</ul>
+<p><strong>原则</strong></p>
+<ul>
+<li><strong>少而精</strong>：重点放在安全、合规、稳定性和关键结果正确性。</li>
+<li><strong>渐进式</strong>：先建立最基本的约束，根据线上暴露的问题逐步补充。</li>
+<li><strong>定期收敛</strong>：模型升级后重新审视哪些约束已不必要，及时删除。</li>
+</ul></div></article><article class="q core" id="q44"><h3><a class="q-link" href="#q44">Anthropic Harness 架构包含哪些核心组件？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">以 Anthropic 关于长时运行 Agent 的工程实践（Effective harnesses for long-running agents，2025 年 11 月）为代表，核心是让 Agent 能<strong>跨多个上下文窗口持续、增量地推进一个大任务</strong>，并且每一步可观测、可验证。</p>
+<ul>
+<li><strong>需求规格</strong>：用户给出的高层需求（App Spec），定义要做什么和验收标准。</li>
+<li><strong>Initializer Agent（初始化 Agent）</strong>：只在第一个会话运行，负责搭建环境：生成详细的功能清单（feature list，JSON 格式，每项初始标记为未通过）、编写 <code>init.sh</code> 启动脚本、创建进度文件、做首次 git 提交。不负责具体功能实现。</li>
+<li><strong>Coding Agent（编码循环 Agent）</strong>：之后每个会话运行，每次只做一个功能：读取进度文件和 git log 了解现状 → 跑起项目做冒烟测试 → 实现一个功能 → 测试通过后更新功能清单状态 → 提交 git 并写进度说明，保证会话结束时代码处于干净可交接状态。</li>
+<li><strong>外部记忆</strong>：功能清单、进度文件（如 <code>claude-progress.txt</code>）和 git 历史，承载跨会话的状态，弥补上下文窗口不能延续的问题。</li>
+<li><strong>确定性验证</strong>：用测试和浏览器自动化（如 Puppeteer MCP）做端到端验证，功能是否完成由测试结果判断，而不是模型自述。</li>
+<li><strong>隔离环境</strong>：Agent 在沙箱 / 独立环境中运行，允许试错而不影响真实系统；git 提供随时回滚的能力。</li>
+</ul>
+<p>特点：职责拆分、状态外置、增量推进、结果可验证。</p></div></article><article class="q core" id="q45"><h3><a class="q-link" href="#q45">Anthropic Harness 工程实践有哪些关键要点？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">Anthropic 公开的 Agent 工程文章（Building effective agents、Effective context engineering for AI agents、长时运行 Agent harness 等）反复强调的要点可以归纳为：</p>
+<ul>
+<li><strong>从简单开始</strong>：先用最简单的方案（单次调用、Workflow），确有必要才上自主 Agent；优先用可组合的简单模式，而不是复杂框架。</li>
+<li><strong>重视工具设计（ACI）</strong>：像设计人机界面一样设计 Agent-Computer Interface，工具描述写清楚、参数难以误用（poka-yoke），返回信息精简有用。</li>
+<li><strong>上下文工程</strong>：把上下文当有限资源，用压缩（compaction）、结构化笔记（进度文件、TODO）、子 Agent 隔离上下文、按需检索（just-in-time）来管理长任务。</li>
+<li><strong>增量推进</strong>：一次只做一个功能，每次结束都留下可工作的状态和交接说明，避免一次性做太多导致半成品和上下文耗尽。</li>
+<li><strong>状态外置与交接</strong>：功能清单、进度文件、git 提交在会话之间传递状态，新会话可以快速接手。</li>
+<li><strong>确定性验证</strong>：用测试、Linter、端到端自动化检查结果，防止 Agent 未验证就宣布完成。</li>
+<li><strong>护栏与检查点</strong>：权限控制、沙箱、Hooks 在关键操作前后拦截；检查点支持回退到之前的状态。</li>
+<li><strong>子 Agent / 多 Agent</strong>：复杂任务由主 Agent 协调、子 Agent 在独立上下文中并行处理，主 Agent 只接收压缩后的结果。</li>
+<li><strong>Human-in-the-loop</strong>：关键决策和高风险操作由人确认，其余逐步放权。</li>
+<li><strong>透明</strong>：让 Agent 展示计划和执行步骤，便于人理解和纠偏。</li>
+</ul>
+<p>这些实践的目的不是让模型更聪明，而是让系统更稳、更可管、更不容易出错。</p></div></article><article class="q core" id="q46"><h3><a class="q-link" href="#q46">Anthropic 的 Human-in-the-loop 有什么特别之处？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">特别之处在于不把人当成&quot;最后兜底的审核员&quot;，而是<strong>人和 Agent 共享控制权</strong>：人只在真正重要的节点介入，信任随表现逐步建立，同时保留随时中断和事后追溯的能力。</p>
+<ul>
+<li><strong>关键决策点暴露</strong>：不是所有操作都要人工审批，而是把高风险、不可逆、影响范围大的操作（删除、发布、对外发送、写生产数据）暴露给人确认。</li>
+<li><strong>渐进授权</strong>：早期确认多，系统表现稳定后，常见操作可以加入允许列表自动执行，最终走向&quot;Agent 自主执行、人类抽查&quot;。Claude Code 的权限模式（逐次确认、自动接受编辑、按规则 allow / deny）就是这种思路。</li>
+<li><strong>可解释的决策</strong>：Agent 先给出计划、说明为什么这样做，人可以在执行前审阅和修改（如 Plan 模式），而不是被动点&quot;确认&quot;。</li>
+<li><strong>随时可中断、可回退</strong>：人可以在执行中打断并纠偏，检查点让操作可以撤回。可撤销往往比事先阻止体验更好。</li>
+<li><strong>事后审计</strong>：自动执行的操作同样保留完整日志，人可以事后复盘。</li>
+<li><strong>减少打扰</strong>：确认太多会让人疲劳、机械点通过，反而降低安全性，因此要用允许列表、沙箱隔离等手段减少不必要的确认。</li>
+</ul></div></article><article class="q core" id="q47"><h3><a class="q-link" href="#q47">如何评估 Harness 系统的设计质量？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">看它是否让 Agent 更可靠，同时不拖累效率，并且自身易观察、易扩展、易维护。</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>关注问题</th>
+<th>参考指标</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>可靠性</td>
+<td>能否防住关键错误</td>
+<td>上线前后事故率、高风险操作拦截率、任务成功率</td>
+</tr>
+<tr>
+<td>可用性</td>
+<td>是否影响正常工作效率</td>
+<td>平均任务完成时间、误拦截率、人工介入频率</td>
+</tr>
+<tr>
+<td>可观测性</td>
+<td>出问题能否快速发现和定位</td>
+<td>Trace / 日志覆盖率、问题定位时间、审计信息完整性</td>
+</tr>
+<tr>
+<td>可扩展性</td>
+<td>新增工具和规则的成本</td>
+<td>新规则接入耗时、规则冲突率、配置复杂度</td>
+</tr>
+<tr>
+<td>可维护性</td>
+<td>是否变成技术负担</td>
+<td>过时规则占比、规则重复度、文档完整性</td>
+</tr>
+<tr>
+<td>成本</td>
+<td>额外开销是否可接受</td>
+<td>单任务 Token 和耗时、验证环节的额外成本</td>
+</tr>
+</tbody>
+</table>
+<p>可靠性和可用性需要平衡：约束越多越安全，但会降低效率、增加人工打扰。还可以用固定评测集对比&quot;同一模型、不同 Harness&quot;的成功率，直接衡量 Harness 本身的贡献。</p></div></article></section><section class="grp has-core" id="g7"><h2 class="grp-title">多智能体与工程化 <span class="cnt"><span class="n-all">3</span><span class="n-core">高频 1</span></span></h2><article class="q core" id="q48"><h3><a class="q-link" href="#q48">单智能体和多智能体有什么区别？Agent 如何分类？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">按结构可以分为三类，核心区别是<strong>任务由一个 Agent 完成，还是多个 Agent 协作完成</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>结构</th>
+<th>优点</th>
+<th>缺点</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>单智能体</td>
+<td>一个 Agent 负责理解、拆解、调工具、生成结果</td>
+<td>结构简单、成本低、易调试、上下文一致</td>
+<td>复杂任务下上下文膨胀、能力瓶颈</td>
+<td>流程清晰、复杂度中低的任务</td>
+</tr>
+<tr>
+<td>多智能体</td>
+<td>多个 Agent 承担规划、执行、校验等不同角色</td>
+<td>分工专业化、可并行、互相校验更可靠</td>
+<td>通信协调复杂，Token 成本高，错误会在 Agent 间传播</td>
+<td>跨领域、可并行拆分的复杂任务</td>
+</tr>
+<tr>
+<td>混合（主从）</td>
+<td>主 Agent 控制流程，关键环节调用子 Agent</td>
+<td>结构清晰、易扩展，子 Agent 隔离上下文</td>
+<td>主 Agent 成为瓶颈，需要设计好任务交接</td>
+<td>实际应用中最常见</td>
+</tr>
+</tbody>
+</table>
+<p><strong>选择建议</strong>：先用单 Agent 把问题做好，只有在上下文放不下、需要并行、需要不同专业能力或独立校验时才拆成多 Agent。多 Agent 不是越多越好，每多一个 Agent 都会增加协调和成本。</p></div></article><article class="q" id="q49"><h3><a class="q-link" href="#q49">多个 Agent 之间如何协作？如何设计动态路由与切换机制？</a></h3><div class="a"><p class="lead">优先选择<strong>显式协调</strong>（中心调度或共享状态）而不是 Agent 之间的自由对话。显式协调让每个 Agent 的输入输出、责任和超时都清楚，否则协作最终会变成没人负责。</p>
+<p><strong>常见协作模式</strong></p>
+<ul>
+<li><strong>中心调度（Supervisor / Orchestrator-Worker）</strong>：Manager Agent 拆分和分发任务，Worker 只执行子任务，结果汇总回 Manager。</li>
+<li><strong>流水线</strong>：上一个 Agent 的输出是下一个的输入，如检索 → 分析 → 写作 → 审核。</li>
+<li><strong>专家路由</strong>：按意图路由到财务、法务、运维等专家 Agent。</li>
+<li><strong>协商 / 辩论</strong>：多个 Agent 给出方案或互相质疑，由仲裁 Agent 选择最终答案。</li>
+<li><strong>共享黑板</strong>：Agent 读写同一份共享状态，调度器根据状态决定谁来处理下一步。</li>
+</ul>
+<p><strong>动态路由设计</strong></p>
+<ol>
+<li><strong>Agent Registry</strong>：每个 Agent 注册能力描述、工具列表、权限范围、适用场景和输入输出格式。</li>
+<li><strong>路由决策</strong>：先做意图识别，再按任务类型、所需工具、权限和历史上下文匹配 Agent。可规则路由（快、稳定）、语义 / LLM 路由（灵活），或两者结合。</li>
+<li><strong>动态切换（Handoff）</strong>：执行中发现缺少权限、工具不匹配或结果置信度低时，转交给更合适的 Agent，并携带结构化的交接信息（目标、已完成部分、关键结论）。</li>
+</ol>
+<p><strong>必须的约束</strong></p>
+<ul>
+<li>转交层数上限、超时、失败后由谁兜底，提前定义清楚，防止互相甩锅或无限递归转交。A2A 这类 Agent 间协议同样需要这些边界。</li>
+<li>结果冲突时由调度器按可信度、时效性或预设优先级裁决。</li>
+<li>每个任务有明确的责任 Agent，调度器记录完整转交链，出问题能追溯到每一步。</li>
+</ul></div></article><article class="q" id="q50"><h3><a class="q-link" href="#q50">设计企业级 AI Agent 系统要重点考虑哪些工程问题？</a></h3><div class="a"><p class="lead">企业级 Agent 的重点不是&quot;更智能&quot;，而是<strong>可控、可靠、安全、可观测、可落地</strong>。</p>
+<ul>
+<li><strong>权限控制</strong>：用户、Agent、工具三层权限边界；Agent 继承调用用户的权限，遵循最小权限原则。</li>
+<li><strong>数据安全</strong>：敏感数据脱敏后才进入 Prompt，租户隔离，防范提示注入和数据外泄，遵守数据出境与合规要求。</li>
+<li><strong>工具治理</strong>：工具统一注册、鉴权、限流、超时、重试、降级和版本管理；写操作做幂等。</li>
+<li><strong>可观测性</strong>：每次模型调用、工具调用、Token、耗时、错误都进入 Trace，支持按会话回放。</li>
+<li><strong>成本控制</strong>：语义缓存和 Prompt 缓存、模型分层（简单任务用小模型）、上下文压缩、调用预算。</li>
+<li><strong>稳定性</strong>：超时、最大步数、循环检测、模型服务降级和多供应商兜底、失败重试与断点续跑。</li>
+<li><strong>结果可追溯</strong>：记录 Agent 用了哪些数据、调了哪些工具、依据是什么，满足审计要求。</li>
+<li><strong>人机协同</strong>：删除数据、发邮件、审批、转账等高风险操作必须人工确认。</li>
+<li><strong>评测与发布</strong>：离线评测集 + 线上指标，Prompt、工具、模型变更走灰度和回归测试。</li>
+</ul></div></article></section><section class="grp has-core" id="g8"><h2 class="grp-title">失败案例与效果评估 <span class="cnt"><span class="n-all">3</span><span class="n-core">高频 2</span></span></h2><article class="q core" id="q51"><h3><a class="q-link" href="#q51">Agent 为什么容易死循环？长任务中如何避免无限推理？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">死循环通常不是模型单方面的问题，而是<strong>状态、停止条件和异常处理没有设计完整</strong>。Agent 每一步都由模型决定下一步，只要停止条件不清楚，就可能反复做同一件事。</p>
+<p><strong>典型场景</strong>：工具一直返回&quot;未找到&quot;，Prompt 又要求&quot;必须找到答案&quot;，Agent 就不断改写搜索词、重复调用同一个工具。</p>
+<p><strong>常见原因</strong></p>
+<ul>
+<li>没有明确的完成条件。</li>
+<li>工具报错信息模糊，模型不知道该重试还是换方案。</li>
+<li>没记录已经尝试过的动作和参数。</li>
+<li>模型误判工具结果，以为任务没完成。</li>
+<li>Prompt 中目标互相冲突。</li>
+<li>工具有副作用，系统没有状态检查和幂等控制，重试导致状态越来越乱。</li>
+</ul>
+<p><strong>防护手段</strong></p>
+<ul>
+<li><strong>最大步数</strong>：最基础的硬上限。简单任务设低（如 5 轮），多步检索和复杂任务适当放宽（如 20–50 轮），但不能无限大。</li>
+<li><strong>明确终止条件</strong>：拿到最终答案、工具返回明确结果、状态满足预定义完成条件就结束，避免&quot;答完了还在转&quot;。</li>
+<li><strong>重复行为检测</strong>：连续多次调用同一工具且参数相同、输出高度相似或状态无变化时提前中断或强制换策略。</li>
+<li><strong>资源预算</strong>：限制总时长、Token、工具调用次数和费用，超阈值即停止。</li>
+<li><strong>错误处理与回退</strong>：工具错误返回清晰、可操作的信息；重试次数设上限，多次失败后返回兜底答案或失败原因。</li>
+<li><strong>记录尝试历史</strong>：把已尝试的工具和参数放入状态，提示模型不要重复。</li>
+<li><strong>人工兜底</strong>：高风险或高成本任务在不收敛时转人工确认。</li>
+</ul></div></article><article class="q core" id="q52"><h3><a class="q-link" href="#q52">如何防止 Agent 在复杂任务里跑偏？如何解决幻觉、循环调用等常见问题？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">核心是<strong>减少不可逆错误</strong>：不要让模型在错误假设上不断叠加操作。复杂任务需要的不是更多上下文，而是更干净的信息和更明确的检查点。</p>
+<p>常见问题：幻觉、循环调用、工具误用、任务跑偏、结果不可控、成本过高、权限风险。</p>
+<p><strong>防跑偏</strong></p>
+<ul>
+<li><strong>目标锚定</strong>：Prompt 中写明目标、边界、输出格式和禁止事项；每一步执行前重新对齐当前阶段目标（如每轮注入 TodoList），防止做完子任务忘了主目标。</li>
+<li><strong>阶段检查点</strong>：分析后确认关键信息，执行前检查参数和目标对象，执行后校验结果是否符合预期。</li>
+<li><strong>偏离即回滚</strong>：检查点发现偏离时，回到最近的正确状态重新开始或触发重规划，而不是硬着头皮继续。</li>
+<li><strong>上下文压缩与状态清理</strong>：每完成一个阶段做局部摘要，只保留后续需要的信息，避免上下文污染。</li>
+<li><strong>减少不可逆操作</strong>：发消息、写库、调外部接口等有副作用的操作前加校验或人工确认。</li>
+</ul>
+<p><strong>防幻觉</strong></p>
+<ul>
+<li>用 RAG 或工具查询真实数据，而不是依赖模型记忆。</li>
+<li>要求引用来源或给出依据。</li>
+<li>关键结果做规则校验或独立模型二次审核。</li>
+<li>允许回答&quot;不确定&quot;，不强行生成。</li>
+</ul>
+<p><strong>防循环调用</strong>：最大步数、最大工具调用次数、超时，记录已调用的工具和参数，多次得到相同结果就终止并返回失败原因（详见上一题）。</p>
+<p>总体思路：把 Agent 当作一个不完全可靠的执行者来设计，用权限、规则、监控、审计和人工确认把风险控制住。</p></div></article><article class="q" id="q53"><h3><a class="q-link" href="#q53">如何评估一个 Agent 系统的效果？</a></h3><div class="a"><p class="lead">不能只看回答是否流畅，而要看任务有没有真正完成。一般从四个层面评估：</p>
+<table>
+<thead>
+<tr>
+<th>层面</th>
+<th>关注点</th>
+<th>指标示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>回答质量</td>
+<td>结果是否准确、完整、有依据</td>
+<td>正确率、忠实度（是否基于证据）、幻觉率</td>
+</tr>
+<tr>
+<td>工具质量</td>
+<td>工具选得对不对、参数对不对、调用是否成功</td>
+<td>工具选择准确率、参数正确率、调用成功率、无效调用占比</td>
+</tr>
+<tr>
+<td>任务质量</td>
+<td>用户目标是否达成</td>
+<td>任务完成率、平均步数、追问轮数、人工接管率</td>
+</tr>
+<tr>
+<td>系统质量</td>
+<td>工程表现</td>
+<td>端到端延迟、Token 与成本、错误率、稳定性</td>
+</tr>
+</tbody>
+</table>
+<p><strong>评估方法</strong></p>
+<ul>
+<li><strong>离线评测集</strong>：覆盖典型、边界和历史 bad case，含标准答案或可执行的验证（如单元测试、数据库最终状态）。</li>
+<li><strong>轨迹评估</strong>：不只看最终答案，还检查中间步骤是否合理、是否有冗余调用。</li>
+<li><strong>LLM-as-Judge + 人工抽检</strong>：开放式结果用模型按评分标准打分，并定期人工校准。</li>
+<li><strong>多次运行</strong>：Agent 有随机性，同一任务跑多次看成功率分布（如 pass@k、pass^k）。</li>
+<li><strong>线上指标</strong>：用户满意度、任务转化率、人工介入率，配合 A/B 测试评估变更。</li>
+</ul></div></article></section><nav class="pager"><a href="rag.html" class="prev"><small>上一章</small>RAG</a><a href="agent-memory.html" class="next"><small>下一章</small>记忆与上下文</a></nav>
+  </div>
+</main>
+<div class="backdrop" id="backdrop"></div>
+<button class="to-top" id="to-top" aria-label="回到顶部">↑</button>
+<script id="outline" type="application/json">[{"id":"g1","title":"Agent 概念与架构","n":7,"core":1},{"id":"g2","title":"Agent 与 Workflow","n":4,"core":3},{"id":"g3","title":"Agent 范式","n":11,"core":8},{"id":"g4","title":"任务规划与 TodoList","n":7,"core":3},{"id":"g5","title":"工具调用与 Function Call","n":10,"core":8},{"id":"g6","title":"上下文与 Harness Engineering","n":8,"core":7},{"id":"g7","title":"多智能体与工程化","n":3,"core":1},{"id":"g8","title":"失败案例与效果评估","n":3,"core":2}]</script>
+<script src="assets/app.js?v=ab30056e"></script>
+</body>
+</html>

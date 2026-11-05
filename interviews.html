@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="darkreader-lock">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>大厂面经 · 八股笔记</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' font-weight='bold' fill='white' text-anchor='middle'%3E八%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css?v=ab30056e">
+<script>
+  (function () {
+    var t = localStorage.getItem('iv.theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+</head>
+<body data-part="more" data-sec="interviews">
+<header class="site-header">
+  <button class="icon-btn menu-btn" id="menu-btn" aria-label="目录">☰</button>
+  <a href="index.html" class="brand"><span class="dot">●</span> 八股笔记</a>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="search">
+    <input id="search" type="search" placeholder="搜索题目  /" autocomplete="off" aria-label="搜索题目">
+    <span id="search-info"></span>
+    <div class="search-pop" id="search-pop" hidden></div>
+  </div>
+  <button class="icon-btn" id="theme-toggle" aria-label="切换主题">◐</button>
+</header>
+<aside class="side" id="side"><nav id="toc"></nav></aside>
+<main class="main">
+  <div id="article">
+<header class="page-head"><div class="crumb">场景 &amp; 真题</div><h1>大厂面经 <span class="cnt">35 场</span></h1><nav class="overview"><div class="ov-groups"><a href="#g1" class="no-core">腾讯 · 后端 · CSIG(2026.02)</a><a href="#g2" class="no-core">腾讯 · 后端 IEG · 一面(2026.02)</a><a href="#g3" class="no-core">腾讯 · 后端 · 二面(秋招)</a><a href="#g4" class="no-core">腾讯 · 后端 TEG · 一面(秋招)</a><a href="#g5" class="no-core">腾讯 · 后端 · 一面(秋招)</a><a href="#g6" class="no-core">腾讯 · 后端 · 一面(秋招,另一场)</a><a href="#g7" class="no-core">腾讯 · 后端 · 三面(暑期实习)</a><a href="#g8" class="no-core">腾讯 · 后端 · 一面(暑期实习)</a><a href="#g9" class="no-core">字节跳动 · 后端 成都中国交易与广告 · 三面(2026.03)</a><a href="#g10" class="no-core">字节跳动 · 后端 成都中国交易与广告 · 二面(2026.02.13)</a><a href="#g11" class="no-core">字节跳动 · 后端 国际化广告 · 一面(2026.02.10)</a><a href="#g12" class="no-core">字节跳动 · 后端 中国交易与广告 · 面试(2026.02)</a><a href="#g13" class="no-core">字节跳动 · 后端 TikTok 生服 · 二面(2026.02)</a><a href="#g14" class="no-core">字节跳动 · 后端 TikTok 生服 · 一面(2026.02.03)</a><a href="#g15" class="no-core">字节跳动 · 后端 成都生活服务 · 一面(2026.01)</a><a href="#g16" class="no-core">字节跳动 · 后端 · 二面(秋招)</a><a href="#g17" class="no-core">字节跳动 · 后端 · 一面(秋招)</a><a href="#g18" class="no-core">字节跳动 · 后端 · 一面(秋招,另一场)</a><a href="#g19" class="no-core">字节跳动 · 后端 · 二面(暑期实习)</a><a href="#g20" class="no-core">字节跳动 · 后端 · 一面(暑期实习)</a><a href="#g21" class="no-core">百度 · Java 后端 · 二面(2026.02.08)</a><a href="#g22" class="no-core">百度 · Java 实习 数据方向 · 面试(2026.02)</a><a href="#g23" class="no-core">百度 · Java 后端 · 一面(2026.02)</a><a href="#g24" class="no-core">百度 · Java 后端 · 二面(2026.01.23)</a><a href="#g25" class="no-core">百度 · Java 后端 · 一面(2026.01.20)</a><a href="#g26" class="no-core">百度 · Java 后端 · 二面(秋招)</a><a href="#g27" class="no-core">美团 · Java 后端 履约技术部 · 面试(2026.02)</a><a href="#g28" class="no-core">美团 · Java 后端 交易方向 · 一面(2026.01.22)</a><a href="#g29" class="no-core">京东 · 后端 jdy · 一面(2026.01)</a><a href="#g30" class="no-core">京东 · 后端 · 一面(秋招)</a><a href="#g31" class="no-core">快手 · 后端 增长方向 · 一面(2026.01.26)</a><a href="#g32" class="no-core">快手 · 后端 · 二面(秋招)</a><a href="#g33" class="no-core">小红书 · 后端 · 一面(2026.01.14)</a><a href="#g34" class="no-core">蔚来 · 后端 · 面试(2026.03.23)</a><a href="#g35" class="no-core">小米 · 后端 · 一面(2026.01)</a></div></nav></header><section class="grp" id="g1"><h2 class="grp-title">腾讯 · 后端 · CSIG(2026.02) </h2><article class="q" id="q1"><h3><a class="q-link" href="#q1">面试题</a></h3><div class="a"><ol>
+<li>介绍一下你的成果:两篇论文和发明专利分别做了什么?</li>
+<li>项目中用布隆过滤器拦截无效查询,讲一下它的原理。</li>
+<li>两个项目中遇到过哪些问题或挑战?怎么解决的?</li>
+<li>API 请求进来后会先发到消息队列吗?</li>
+<li>秒杀场景下,前端怎么判断用户抢到了还是没抢到?</li>
+<li>Agent 项目的需求是从哪里来的?</li>
+<li>产品的预警功能对用户是透明的还是不可见的?</li>
+<li>简历中提到邮件送达率 98%,为什么是 98%?</li>
+<li>基于 LoRA 微调心理咨询模型,识别准确率提升到 85%,具体是怎么做的?</li>
+<li>准确率九十多指的是什么指标、针对什么目标?</li>
+<li>为什么选择 MCP?使用中遇到过什么问题?</li>
+<li>你觉得 MCP 机制本身有什么问题?</li>
+<li>写 Excel 和发邮件这两个工具具体是怎么用的?</li>
+<li>这两个工具对应的提示词怎么写,怎么和 MCP 配合?</li>
+<li>项目中与大模型交互的提示词是怎么设计的?</li>
+<li>结合用户 query 和示例判断是否为心理问题时,你希望大模型输出什么?</li>
+<li>怎么通过 MCP 给大模型加入基于置信度的预警功能?</li>
+<li>RAG 的分块大小是怎么确定的?用什么指标评估,最终如何选定?</li>
+<li>算法:解压缩字符串并输出。</li>
+</ol></div></article><article class="q" id="q2"><h3><a class="q-link" href="#q2">要点</a></h3><div class="a"><ul>
+<li>几乎全程深挖 Agent 项目(LoRA 微调、MCP、提示词、RAG),基础题只有布隆过滤器。</li>
+<li>微调效果评估:讲清标注测试集、4 分类标签、微调前后在同一测试集上的准确率对比,以及微调了哪些层。</li>
+<li>MCP 的价值与缺陷:工具与应用解耦、可动态发现;缺陷是 stdio/SSE 链路难调试,流式生成中途调用工具的状态管理复杂。</li>
+<li>分块大小:对比 256/512/1024 等候选,以 Top-K 检索命中率和响应延迟为指标选平衡点。</li>
+</ul></div></article></section><section class="grp" id="g2"><h2 class="grp-title">腾讯 · 后端 IEG · 一面(2026.02) </h2><article class="q" id="q3"><h3><a class="q-link" href="#q3">面试题</a></h3><div class="a"><ol>
+<li>先更新数据库再删缓存,如果数据库更新成功但删除 Redis 缓存失败,怎么处理?</li>
+<li>删除本地缓存的网络请求在集群节点间乱序到达,会引发什么问题?</li>
+<li>广播更新只能做到最终一致,如果要求秒级延迟甚至强一致怎么办?</li>
+<li>恶意用户构造大量哈希冲突的 key 插入 HashMap,会导致什么后果?</li>
+<li>用户提交订单后立刻刷新列表,可能读不到刚下的单,除了等待还有哪些缓解方案?</li>
+<li>了解回表吗?怎么通过 EXPLAIN 的 Extra 字段判断是否发生回表?</li>
+<li>一张 1 亿数据的表,一次回表大概会增加多少毫秒延迟?</li>
+<li>B 树非叶子节点也存数据,这对范围查询和插入性能有什么影响?</li>
+<li>ThreadLocal 会有什么问题?代码里怎么解决的?</li>
+<li>ThreadLocal 的 key 是弱引用、value 是强引用,内存泄漏的完整引用链是什么?</li>
+<li>MySQL 的事务回滚是怎么实现的?</li>
+<li>undo log 为什么能保证原子性?它是怎么参与实现 MVCC 的?</li>
+<li>秒杀商品缓存失效瞬间有百万请求打向数据库,如何设计分布式互斥锁,保证只有一个请求重建缓存、其余请求等待?</li>
+<li>为 Agent 设计的提示词通常包含哪些组成部分?与 RAG 提示词的核心区别是什么?</li>
+<li>Docker 的常用命令有哪些?</li>
+<li>如何实现查询附近 3 公里内评分最高且正在营业的店铺?</li>
+<li>Spring Security 如何实现管理员与用户的角色隔离?权限控制细化到 API 接口,还是知识库的具体文档?</li>
+<li>用 Flux 构建流式会话接口,传输中如何确保数据流完整、如何处理网络中断?</li>
+<li>高风险学生的识别标准是什么?由模型输出后规则判断,还是模型直接在输出中标识?</li>
+<li>预警触发机制如何与 MCP 邮件服务联动?</li>
+<li>自动知识库构建具体指什么?定时爬取、监听文件变动,还是管理员手动触发?</li>
+<li>算法:数组中第 K 大的元素(先讲两种思路,再选一种写代码)。</li>
+</ol></div></article><article class="q" id="q4"><h3><a class="q-link" href="#q4">要点</a></h3><div class="a"><ul>
+<li>问题偏刁钻,在缓存一致性、ThreadLocal、MySQL 日志上连续追问到底层。</li>
+<li>删除消息乱序:较早的删除晚到,可能与旧数据回填交错产生脏数据;用版本号或时间戳比较,或按 key 顺序消费。</li>
+<li>读不到刚下的单:属于读己之写一致性,下单后短时间内强制读主库,或先把新订单写入缓存/前端本地状态。</li>
+<li>ThreadLocal 泄漏链:Thread → ThreadLocalMap → Entry → value;key 被回收后 value 仍被线程强引用,线程池场景必须 remove。</li>
+<li>附近店铺:Redis GEO(GEOSEARCH)按距离筛选,再按营业状态过滤、按评分排序。</li>
+</ul></div></article></section><section class="grp" id="g3"><h2 class="grp-title">腾讯 · 后端 · 二面(秋招) </h2><article class="q" id="q5"><h3><a class="q-link" href="#q5">面试题</a></h3><div class="a"><ol>
+<li>C 端应用 QPS 约 6 万、部署两个集群,部分请求打到集群 A 时 A 挂了,流量全部切到 B,之前失败的请求怎么补偿?</li>
+<li>A 的流量切到 B 后 B 扛不住,怎么办?</li>
+<li>一个比价系统该如何优化?</li>
+</ol></div></article><article class="q" id="q6"><h3><a class="q-link" href="#q6">要点</a></h3><div class="a"><ul>
+<li>全部是场景设计题,考容灾、补偿和系统设计。</li>
+<li>失败补偿:客户端或网关重试加接口幂等(requestId 去重);关键写请求先落库或写 MQ 标记 pending,由补偿任务扫描重放。</li>
+<li>B 扛不住:每个集群按全量流量预留冗余,兜底靠限流、降级非核心功能、逐步切流加熔断。</li>
+<li>比价系统:搜索、比价、采集服务拆分,价格异步采集并按热度分级刷新,多级缓存,历史价格用时序或列式存储。</li>
+</ul></div></article></section><section class="grp" id="g4"><h2 class="grp-title">腾讯 · 后端 TEG · 一面(秋招) </h2><article class="q" id="q7"><h3><a class="q-link" href="#q7">面试题</a></h3><div class="a"><ol>
+<li>如何实现在搜索框中展示搜索次数最高的词条?</li>
+<li>线上排查 GC 问题的思路是什么?</li>
+<li>还熟悉哪些垃圾回收器?G1 会不会有碎片问题,优点在哪?</li>
+<li>Full GC 时与用户线程是串行还是并行执行?</li>
+<li>你们的容灾方案是什么?</li>
+<li>HTTP 服务线上突然没有流量了,怎么排查?</li>
+</ol></div></article><article class="q" id="q8"><h3><a class="q-link" href="#q8">要点</a></h3><div class="a"><ul>
+<li>从实习经历中的 GC 排查切入,再追问容灾和线上排障。</li>
+<li>热搜词条:前缀树存词条,节点维护热度 Top-K,配合计数与小顶堆。</li>
+<li>G1:Region 化加复制整理,基本无碎片,可设停顿目标;Full GC 会 STW,用户线程全部暂停。</li>
+<li>流量归零:从 DNS、负载均衡、网关到服务实例由外向内逐层确认,结合监控和日志定位。</li>
+</ul></div></article></section><section class="grp" id="g5"><h2 class="grp-title">腾讯 · 后端 · 一面(秋招) </h2><article class="q" id="q9"><h3><a class="q-link" href="#q9">面试题</a></h3><div class="a"><ol>
+<li>实习项目中,如果不用 Redis 只用 MySQL 会有什么问题?</li>
+<li>如何避免 MySQL 的并发问题?</li>
+<li>MySQL 有哪几种事务隔离级别?哪种会引起幻读?</li>
+<li>Java 的 GC 是怎么做的?</li>
+<li>边缘触发和水平触发的区别?</li>
+<li>还了解哪些更先进的 IO 多路复用模型?</li>
+<li>一个 TCP 服务正常结束后,为什么短时间内另一个服务无法监听同一端口?</li>
+<li>Linux 下有什么办法可以立即复用这个端口?</li>
+<li>多进程模型和多线程模型有什么区别?</li>
+<li>什么是段错误?</li>
+<li>给客户端发送 1MB 文件,要求一次发完、IO 次数尽量少、速度尽量快,用 TCP 还是 UDP?</li>
+<li>Nginx 多进程监听同一端口时,连接是怎么分配的?同一个数据包会被多个进程拿到吗?</li>
+<li>了解哪些限流算法?</li>
+<li>算法:LeetCode 985 变形。</li>
+<li>算法:多线程交替打印。</li>
+</ol></div></article><article class="q" id="q10"><h3><a class="q-link" href="#q10">要点</a></h3><div class="a"><ul>
+<li>偏操作系统与网络,围绕端口复用、进程模型、Nginx 连续追问。</li>
+<li>端口无法立即监听:主动关闭方处于 TIME_WAIT(2MSL),通过 SO_REUSEADDR 可以立即绑定。</li>
+<li>Nginx 多 worker:共享监听 socket 时一个连接只会被一个 worker accept(惊群用 accept_mutex 或 EPOLLEXCLUSIVE 缓解);SO_REUSEPORT 由内核按哈希分发。</li>
+<li>更先进的模型:io_uring(提交/完成队列的异步 IO),以及 Reactor/Proactor 模式。</li>
+</ul></div></article></section><section class="grp" id="g6"><h2 class="grp-title">腾讯 · 后端 · 一面(秋招,另一场) </h2><article class="q" id="q11"><h3><a class="q-link" href="#q11">面试题</a></h3><div class="a"><ol>
+<li>什么是 MySQL 回表?</li>
+<li>TCP 服务端出现大量 CLOSE_WAIT 状态,怎么解决?</li>
+<li>TCP 四次挥手中 TIME_WAIT 持续多长时间?</li>
+<li>联合索引 (a, b, c) 中 a 的值全部相同,<code>SELECT * FROM t WHERE b = 1 AND c = 1</code> 能走索引吗?</li>
+</ol></div></article><article class="q" id="q12"><h3><a class="q-link" href="#q12">要点</a></h3><div class="a"><ul>
+<li>题量少但偏细节,集中在 MySQL 索引和 TCP 状态。</li>
+<li>大量 CLOSE_WAIT:服务端收到 FIN 后没有调用 close,重点查异常路径漏关连接,并加空闲/读写超时。</li>
+<li>TIME_WAIT 为 2MSL,Linux 上固定约 60 秒。</li>
+<li>(a, b, c) 缺最左列:常规情况下不能按 b、c 定位,但 MySQL 8.0.13+ 在 a 区分度极低时可以用 Skip Scan,否则只能全索引扫描或全表扫描,以 EXPLAIN 为准。</li>
+</ul></div></article></section><section class="grp" id="g7"><h2 class="grp-title">腾讯 · 后端 · 三面(暑期实习) </h2><article class="q" id="q13"><h3><a class="q-link" href="#q13">面试题</a></h3><div class="a"><ol>
+<li>介绍一下实习经历。</li>
+<li>组内 GC 问题的排查思路是什么?</li>
+<li>GC 发生很正常,为什么要想办法减少 Full GC 次数?</li>
+<li>MySQL 为什么用 B+ 树?和红黑树相比有什么好处?</li>
+<li>B+ 树的扇出很大是好事还是坏事?</li>
+<li>讲一下 Redis 的跳表。</li>
+<li>TCP 为什么是三次握手、四次挥手?</li>
+<li>把三次握手改成两次会有什么问题?</li>
+<li>讲一下 IO 多路复用模型。一台服务器开 60000 个端口,最多能建立多少个 TCP 连接?</li>
+<li>算法:LRU 缓存、LFU 缓存、合并 K 个有序链表。</li>
+</ol></div></article><article class="q" id="q14"><h3><a class="q-link" href="#q14">要点</a></h3><div class="a"><ul>
+<li>问题比较刁钻,从实习的 GC 优化追问到数据结构和网络细节;算法量大。</li>
+<li>减少 Full GC:Full GC 停顿长,直接影响接口 RT 和吞吐,频繁出现通常意味着内存泄漏或参数不合理。</li>
+<li>扇出大是好事:树更矮、磁盘 IO 次数更少,代价是单节点更大、页分裂成本更高。</li>
+<li>两次握手:无法确认客户端的接收能力,历史 SYN 会让服务端建立无效连接并浪费资源。</li>
+<li>连接数:TCP 连接由四元组标识,服务端连接上限取决于内存和文件描述符,而不是端口数。</li>
+</ul></div></article></section><section class="grp" id="g8"><h2 class="grp-title">腾讯 · 后端 · 一面(暑期实习) </h2><article class="q" id="q15"><h3><a class="q-link" href="#q15">面试题</a></h3><div class="a"><ol>
+<li>实习中遇到最多的问题是什么?有什么收获和成长?</li>
+<li>实习负责的业务相关问题。</li>
+<li>说几个 Java 集合,并讲一下底层实现。</li>
+<li>算法:合并两个有序链表。</li>
+<li>算法:找出数组中最小的 K 个数。</li>
+</ol></div></article><article class="q" id="q16"><h3><a class="q-link" href="#q16">要点</a></h3><div class="a"><ul>
+<li>整体偏基础,以实习经历和集合底层为主。</li>
+<li>集合底层:HashMap 数组加链表/红黑树、ArrayList 动态数组扩容、ConcurrentHashMap 的 CAS 加 synchronized。</li>
+<li>最小 K 个数:大小为 K 的大顶堆 O(n log k),或快速选择平均 O(n)。</li>
+</ul></div></article></section><section class="grp" id="g9"><h2 class="grp-title">字节跳动 · 后端 成都中国交易与广告 · 三面(2026.03) </h2><article class="q" id="q17"><h3><a class="q-link" href="#q17">面试题</a></h3><div class="a"><ol>
+<li>完整讲一下第二个项目的流程和技术栈。</li>
+<li>微调数据集有没有划分?评估效果时怎么评估、怎么保存效果最好的参数?</li>
+<li>项目加了意图判断,如果不加可以怎么做?</li>
+<li>动态路由 RAG 比普通 RAG 强在哪?</li>
+<li>这个项目最大的难点是什么?最后怎么解决的?</li>
+<li>邮件送达率 98%,没送达的 2% 是什么原因?</li>
+<li>遇到过大模型的幻觉问题吗?</li>
+<li>Spring Security 的作用是什么?</li>
+<li>微调的测试数据集是怎么来的?</li>
+<li>标注这 1000 条数据大概花了多长时间?</li>
+<li>心理领域数据比较敏感,有没有做数据脱敏?</li>
+<li>具体用的是哪个大模型?</li>
+<li>微调时的设备配置是什么?微调大概花了多久?</li>
+</ol></div></article><article class="q" id="q18"><h3><a class="q-link" href="#q18">要点</a></h3><div class="a"><ul>
+<li>全程深挖 Agent 项目的真实性与细节,无手撕。</li>
+<li>数据集划分:训练/验证/测试分开,按验证集指标选择最优 checkpoint,避免在测试集上调参。</li>
+<li>动态路由 RAG:先判断意图再决定是否检索、检索哪个库,减少无效召回和噪声上下文。</li>
+<li>数据脱敏:去除姓名、学号等标识,对话中的敏感实体做掩码,数据只在本地训练。</li>
+</ul></div></article></section><section class="grp" id="g10"><h2 class="grp-title">字节跳动 · 后端 成都中国交易与广告 · 二面(2026.02.13) </h2><article class="q" id="q19"><h3><a class="q-link" href="#q19">面试题</a></h3><div class="a"><ol>
+<li>用的什么本地缓存框架?</li>
+<li>了解缓存穿透、缓存雪崩吗?</li>
+<li>秒杀项目是不是只是调 API?有哪些是你自己做的?</li>
+<li>用的哪个消息队列?怎么保证消息不丢失?</li>
+<li>第二个项目(Agent)是你自己做的,还是只调了 API?</li>
+<li>第二个项目中异常中断和客户端重连是怎么处理的?</li>
+<li>支持多轮对话,上下文管理是怎么做的?</li>
+<li>Chroma 处理文本向量的流程是什么?</li>
+<li>Embedding 模型用的哪个?为什么选 text-embedding-3-small 而不是别的?</li>
+<li>微调数据集是哪来的?是你自己标注的吗?</li>
+<li>开源数据集有多大?有没有做数据清洗?最终用于微调的数据量是多少?</li>
+<li>微调的参数是怎么设置的?</li>
+<li>微调后识别准确率提升到 90% 是怎么做到的?评估指标是什么?</li>
+<li>写 Excel 具体是什么流程?</li>
+<li>为什么要做意图判断?</li>
+<li>SQL:用户表和订单表关联,统计 2025 年已支付订单(order_status = 1),输出用户 ID、用户名、总支付订单数、总支付金额、最大单笔金额、首次支付时间;只保留总金额 ≥ 1000 且订单数 ≥ 2 的用户,按总金额降序,未下单用户不展示。</li>
+</ol></div></article><article class="q" id="q20"><h3><a class="q-link" href="#q20">要点</a></h3><div class="a"><ul>
+<li>面试官反复确认项目是否只是调 API,需要讲清自己实现的部分。</li>
+<li>流式中断与重连:会话状态和已生成内容持久化到 Redis,客户端带会话 ID 和偏移量重连续传。</li>
+<li>微调参数:LoRA 的 rank、alpha、dropout、目标模块,以及学习率、epoch、batch size。</li>
+<li>SQL 题:INNER JOIN 加 WHERE 过滤年份和状态,GROUP BY 后用 COUNT/SUM/MAX/MIN 聚合,HAVING 过滤,ORDER BY 降序。</li>
+</ul></div></article></section><section class="grp" id="g11"><h2 class="grp-title">字节跳动 · 后端 国际化广告 · 一面(2026.02.10) </h2><article class="q" id="q21"><h3><a class="q-link" href="#q21">面试题</a></h3><div class="a"><ol>
+<li>本地缓存和 Redis 怎么协同工作?什么情况下优先用本地缓存?如何保证两级缓存的一致性?</li>
+<li>商户信息变化时,布隆过滤器怎么更新?</li>
+<li>布隆过滤器的初始大小和误判率怎么设定?</li>
+<li>先更新数据库后删除缓存,如果删除失败怎么办?</li>
+<li>Function Calling 定义了哪些具体函数?</li>
+<li>会话数据在 Redis 中的存储结构是怎样的?</li>
+<li>本地缓存的最大容量和淘汰策略怎么配置?</li>
+<li>用户通过大模型查询商户信息时,是实时查数据库还是基于知识库?</li>
+<li>有没有做整体限流?</li>
+<li>做过压测吗?QPS 能达到多少?瓶颈在哪里?</li>
+<li>Spring AI 如何抽象 Ollama 和 OpenAI 的差异?新增一个模型需要改哪些代码?</li>
+<li>为什么用 Flux 构建流式会话?响应式编程在流式传输中有什么好处?</li>
+<li>知识库文档是怎么分块和向量化的?</li>
+<li>Chroma 的持久化是怎么配置的?</li>
+<li>管理员和用户的权限怎么划分?用的是 RBAC 模型吗?</li>
+<li>微调数据来源是什么?数据量多大?微调时选择了哪些层?</li>
+<li>MCP 服务是自己开发的微服务,还是遵循某种协议?</li>
+<li>怎么保证 Excel 写入的并发安全?写入失败有没有回滚或记录?</li>
+<li>除了 LoRA 微调,是否还用提示词工程引导模型行为?</li>
+<li>算法:二叉树中的最大路径和。</li>
+</ol></div></article><article class="q" id="q22"><h3><a class="q-link" href="#q22">要点</a></h3><div class="a"><ul>
+<li>两个项目逐行拷打,题目几乎都来自简历上的具体技术点。</li>
+<li>布隆过滤器不支持删除:可以定期重建、换计数布隆过滤器,或配合空值缓存兜底。</li>
+<li>Spring AI 抽象:统一的 ChatModel/ChatClient 接口,各厂商实现自己的适配,新增模型主要是加依赖和改配置。</li>
+<li>Excel 并发写:单写线程或文件锁串行化,失败时记录到重试表或消息队列补偿。</li>
+</ul></div></article></section><section class="grp" id="g12"><h2 class="grp-title">字节跳动 · 后端 中国交易与广告 · 面试(2026.02) </h2><article class="q" id="q23"><h3><a class="q-link" href="#q23">面试题</a></h3><div class="a"><ol>
+<li>介绍一下第二个项目具体做了什么,用了哪些技术框架。</li>
+<li>整个项目的流程是怎样的?</li>
+<li>MCP 解决的是什么问题?在这个项目中起什么作用?</li>
+<li>为什么通过 MCP 比较方便?不用 MCP 可以怎么实现?</li>
+<li>在大模型调用工具这一块,MCP 和 Skills 有什么区别?</li>
+<li>生活服务平台项目用到了哪些技术栈?</li>
+<li>WebSocket 在项目中的使用场景是什么?</li>
+<li>分布式锁解决什么问题?是怎么实现的?</li>
+<li>任务执行完释放锁时,Redis 出问题导致释放失败,怎么办?</li>
+<li>一人一单之外,有没有整体单量的限制?</li>
+<li>拿到锁并下单后释放锁失败,这一单算不算?</li>
+<li>Java 的 HashMap、Hashtable 底层存储是怎么实现的?</li>
+<li>红黑树的查询和插入效率是多少?</li>
+<li>Hashtable 是线程安全的吗?哈希结构想要线程安全怎么做?</li>
+<li>CAS 和 synchronized 分别用来做什么?</li>
+<li>synchronized 是怎么实现可重入的?</li>
+<li>volatile 解决什么问题?从内存角度讲,为什么值一变更所有线程都能看到最新值,没有它时为什么不可见?</li>
+<li>JVM 内存是怎么划分的?每一代主要存什么?</li>
+<li>OOM 一般发生在哪里?堆和栈的 OOM 分别是怎么发生的?</li>
+<li>Spring IOC 是做什么的?依赖注入怎么实现?加了注解之后是怎么完成 IOC 的?</li>
+<li>AOP 一般怎么用?如果要实现一个记录日志的 AOP 怎么做?</li>
+<li>为什么加了 @Transactional 就能开启事务?</li>
+<li>数据库的隔离级别有哪几种?</li>
+<li>怎么理解 ACID?MySQL 是怎么实现事务、保证 ACID 的?</li>
+<li>算法:单链表奇数位节点递增、偶数位节点递减,把整个链表调整为递增。</li>
+<li>算法:最长连续序列。</li>
+</ol></div></article><article class="q" id="q24"><h3><a class="q-link" href="#q24">要点</a></h3><div class="a"><ul>
+<li>前半段讲 MCP 和项目,后半段是 Java 基础、JVM、Spring、MySQL 的标准八股。</li>
+<li>MCP 与 Skills:MCP 是统一的工具调用协议,Skills 是在其上封装的任务流程和业务知识。</li>
+<li>锁释放失败:锁有过期时间会自动释放;订单是否成立以数据库事务结果为准,锁只负责互斥。</li>
+<li>链表题:按奇偶拆成两条链表,反转偶数链,再合并两条有序链表。</li>
+</ul></div></article></section><section class="grp" id="g13"><h2 class="grp-title">字节跳动 · 后端 TikTok 生服 · 二面(2026.02) </h2><article class="q" id="q25"><h3><a class="q-link" href="#q25">面试题</a></h3><div class="a"><ol>
+<li>使用 Redis 加本地缓存,在集群环境下本地缓存的数据一致性怎么保证?具体怎么实现?</li>
+<li>RocketMQ 怎么保证消息不丢失?</li>
+<li>ThreadLocal 里存了哪些信息?怎么保证用完后清理?</li>
+<li>登录态怎么刷新?怎么注销?</li>
+<li>Agent 是怎么实现的?大模型 API 怎么调用?RAG 和 MCP 是怎么接入的?</li>
+<li>RAG 和 Agent 的提示词有什么区别?</li>
+<li>如果要在 Agent 上增加功能,需要改哪些部分的代码?</li>
+<li>项目上线后流量增加 100 倍,现有架构在哪里会出问题?你会怎么重构?</li>
+<li>数据库主键是怎么生成的?插入时由数据库自动生成吗?</li>
+<li>Spring Boot 中的 Bean 是单例吗?单例会不会有线程安全问题?怎么解决?</li>
+<li>synchronized 和 ReentrantLock 的区别。</li>
+<li>某个接口很慢,原因是表设计或 SQL 有问题,怎么解决?</li>
+<li>EXPLAIN 的结果中怎么看是否用到索引、是否回表?</li>
+<li>在二级索引上查完一遍,为什么还要再去聚簇索引查一遍?</li>
+<li>一张 MySQL 表存多少数据比较合适?</li>
+<li>网络方面了解哪些?Java 为什么要用 NIO 做网络编程?</li>
+<li>第二个项目最难、最复杂的地方在哪?</li>
+<li>什么是大模型微调?具体怎么做的?网上方案很多,你是怎么选择的?</li>
+<li>如果系统是集群化的分布式系统,线上会出现各种问题,你会怎么设计?</li>
+<li>算法:用给定数字组成小于 n 的最大整数。</li>
+</ol></div></article><article class="q" id="q26"><h3><a class="q-link" href="#q26">要点</a></h3><div class="a"><ul>
+<li>项目深挖加开放式架构题(扩容 100 倍、分布式设计),考察整体设计能力。</li>
+<li>本地缓存一致性:数据变更后通过 MQ 广播让各节点失效本地缓存,并设置较短 TTL 兜底。</li>
+<li>流量 100 倍:先找第一个瓶颈(通常是数据库连接和单点 Redis),再讲读写分离、分库分表、Redis 集群、服务无状态化加水平扩容、限流降级。</li>
+<li>小于 n 的最大整数:贪心逐位取不超过当前位的最大数字,一旦取了更小的数,后续位全部填最大数字;无解时回退,或位数减一并全部填最大数字。</li>
+</ul></div></article></section><section class="grp" id="g14"><h2 class="grp-title">字节跳动 · 后端 TikTok 生服 · 一面(2026.02.03) </h2><article class="q" id="q27"><h3><a class="q-link" href="#q27">面试题</a></h3><div class="a"><ol>
+<li>Redis 宕机时有什么容灾能力?</li>
+<li>Redis master 下线后怎么重新选主?领头哨兵如何从从节点中选出新主节点?</li>
+<li>布隆过滤器的优缺点?它的误判是假阳性还是假阴性?</li>
+<li>缓存雪崩怎么解决?</li>
+<li>Redis 为什么设计成单线程?</li>
+<li>分布式锁怎么延长过期时间?</li>
+<li>集群模式下缓存删除失败时,有哪些保证一致性的策略?</li>
+<li>热 key 问题怎么解决?</li>
+<li>分布式系统中互斥锁有什么优缺点?</li>
+<li>MySQL 一张表最多能存多少数据?B+ 树一般有几层?</li>
+<li>B 树和 B+ 树的区别。</li>
+<li>ThreadLocal 的底层实现。</li>
+<li>线程池的底层实现。</li>
+<li>讲一下 JVM 垃圾回收机制,具体讲讲 G1。</li>
+<li>AI coding 给你的学习带来了哪些变化?</li>
+<li>场景:设计一个抖音短视频点赞系统,支持百万级并发点赞,并保证实时性和一致性。</li>
+<li>算法:无重复字符的最长子串。</li>
+</ol></div></article><article class="q" id="q28"><h3><a class="q-link" href="#q28">要点</a></h3><div class="a"><ul>
+<li>Redis 高可用和缓存问题考得最多,最后一道高并发场景设计。</li>
+<li>哨兵选主:先筛掉断线久的从节点,再按 slave-priority、复制偏移量、runid 依次比较选出新主。</li>
+<li>锁续期:Redisson 看门狗在持锁期间定期把过期时间重置为 30 秒。</li>
+<li>点赞系统:Redis 计数加用户点赞集合做幂等,请求经 MQ 异步批量落库,热点视频分片计数,最终一致加定期对账。</li>
+</ul></div></article></section><section class="grp" id="g15"><h2 class="grp-title">字节跳动 · 后端 成都生活服务 · 一面(2026.01) </h2><article class="q" id="q29"><h3><a class="q-link" href="#q29">面试题</a></h3><div class="a"><ol>
+<li>介绍一下实验室的工作和你的研究方向。</li>
+<li>介绍一下你的论文和发明专利。</li>
+<li>Redis 为什么快?可以从哪几个方面分析?</li>
+<li>从数据结构层面看,Redis 为什么能快速定位数据?</li>
+<li>Redis List 用的快速列表是什么样的结构?</li>
+<li>跳表是怎样的结构?最多有多少层?</li>
+<li>Redis 是单线程的,为什么还这么快?</li>
+<li>Redis 的这种异步处理机制叫什么?它和 NIO 有什么相同点?</li>
+<li>介绍一下哨兵机制的主观下线和客观下线。心跳怎么维持?什么时候判定节点挂了需要重新选举?</li>
+<li>使用 ThreadLocal 有哪些注意事项?</li>
+<li>用户登录后设置了线程上下文但没有 remove,会发生什么?</li>
+<li>Java 有 GC,为什么 ThreadLocal 的数据没有被回收?</li>
+<li>按你的理解讲一下 IOC 是什么。</li>
+<li>介绍一下 MySQL 的 undo log。</li>
+<li>你日常最常用的 AI 工具和使用习惯有哪些?用过 Claude Code、Gemini CLI 这类命令行工具吗?</li>
+<li>提示词工程和上下文工程有什么区别和联系?</li>
+</ol></div></article><article class="q" id="q30"><h3><a class="q-link" href="#q30">要点</a></h3><div class="a"><ul>
+<li>以 Redis 原理为主线层层追问,结尾聊 AI 工具使用。</li>
+<li>Redis 的事件机制:基于 epoll 的 IO 多路复用(Reactor 模型),和 NIO 的 Selector 本质相同,都是单线程监听多个就绪事件。</li>
+<li>跳表层数:每个节点层数随机生成(晋升概率 1/4),最高 32 层(Redis 7.0 之前为 64)。</li>
+<li>主观/客观下线:单个哨兵 PING 超时(down-after-milliseconds)判定主观下线,达到 quorum 数量的哨兵同意则判定客观下线并开始选主。</li>
+<li>上下文工程:不只是写提示词,而是管理模型能看到的全部上下文(检索结果、记忆、工具结果、历史),提示词工程是其中一部分。</li>
+</ul></div></article></section><section class="grp" id="g16"><h2 class="grp-title">字节跳动 · 后端 · 二面(秋招) </h2><article class="q" id="q31"><h3><a class="q-link" href="#q31">面试题</a></h3><div class="a"><ol>
+<li>Spring 中用了哪些设计模式?举一个例子说明用在了哪里。</li>
+<li>如何实现分布式锁?</li>
+<li>Kafka 能保证 CAP 中的哪些?</li>
+<li>MyBatis 的模板引擎(动态 SQL)是怎么回事?</li>
+</ol></div></article><article class="q" id="q32"><h3><a class="q-link" href="#q32">要点</a></h3><div class="a"><ul>
+<li>偏框架原理和分布式理论,每题会要求结合具体例子。</li>
+<li>Spring 设计模式:BeanFactory 是工厂模式,Bean 默认单例,AOP 是代理模式,JdbcTemplate 是模板方法,事件机制是观察者模式。</li>
+<li>Kafka 与 CAP:以分区容错和可用性为主,一致性由 acks、ISR 和 min.insync.replicas 调节,默认不是强一致。</li>
+</ul></div></article></section><section class="grp" id="g17"><h2 class="grp-title">字节跳动 · 后端 · 一面(秋招) </h2><article class="q" id="q33"><h3><a class="q-link" href="#q33">面试题</a></h3><div class="a"><ol>
+<li>一条查询单行数据的 SQL 执行很慢,可能有哪些原因?</li>
+</ol></div></article><article class="q" id="q34"><h3><a class="q-link" href="#q34">要点</a></h3><div class="a"><ul>
+<li>记录只保留了一道题,考察慢 SQL 的系统性排查。</li>
+<li>慢查询原因:没走索引(隐式类型转换、对列用函数、违反最左前缀)、数据页不在 Buffer Pool 需要磁盘 IO、被行锁或 MDL 锁阻塞、机器资源瓶颈。</li>
+</ul></div></article></section><section class="grp" id="g18"><h2 class="grp-title">字节跳动 · 后端 · 一面(秋招,另一场) </h2><article class="q" id="q35"><h3><a class="q-link" href="#q35">面试题</a></h3><div class="a"><ol>
+<li>表 t 需要频繁按 (a, b) 和 (b, c) 查询,该如何建立索引?</li>
+<li>表有 a、b、c、d 四个字段,a 是唯一索引,b 无索引,(c, d) 是联合索引,判断下列 SQL 是否走索引、走哪种索引:<code>WHERE a = 5 AND c &gt; 9</code>、<code>WHERE b = 9</code>、<code>WHERE a = 1 AND d = 5 AND c &gt; 9</code>、<code>WHERE a = 1 AND c &gt; 9 AND d = 5</code>。</li>
+<li>算法:用递归合并两个有序链表,只写一个 main 函数,自己构造约 10 个测试用例。</li>
+</ol></div></article><article class="q" id="q36"><h3><a class="q-link" href="#q36">要点</a></h3><div class="a"><ul>
+<li>索引设计和走索引判断是核心,同一张表连续追问多种写法;其余基础题包括 TCP/IP 分层、给定协议判断属于哪一层。</li>
+<li>有 a 的等值条件时优化器通常直接走 a 的唯一索引;只有 b 的条件则全表扫描。</li>
+<li>WHERE 中条件的书写顺序不影响最左匹配;(c, d) 中 c 是范围条件时,d 不能用于定位,可以借助索引下推过滤。</li>
+<li>(a, b) 与 (b, c):建 (b, a) 和 (b, c) 两个联合索引,或者建 (a, b) 加 (b, c),按查询频率和区分度决定。</li>
+</ul></div></article></section><section class="grp" id="g19"><h2 class="grp-title">字节跳动 · 后端 · 二面(暑期实习) </h2><article class="q" id="q37"><h3><a class="q-link" href="#q37">面试题</a></h3><div class="a"><ol>
+<li>SKU 和 SPU 的概念和区别。</li>
+<li>Kafka 如何保证消息有序?如何保证全局有序?</li>
+<li>用 Redis 做缓存,数据量 5 亿、QPS 20 万,缓存该怎么设计?</li>
+<li>LFU 和 FIFO 两种淘汰策略分别适用于什么场景?</li>
+<li>线程池的工作流程。</li>
+<li>算法:手写阻塞队列。</li>
+<li>算法:无重复字符的最长子串。</li>
+</ol></div></article><article class="q" id="q38"><h3><a class="q-link" href="#q38">要点</a></h3><div class="a"><ul>
+<li>偏电商业务和缓存设计,算法有手写阻塞队列。</li>
+<li>Kafka 有序:单分区内有序,按业务 key 哈希到同一分区可以保证局部有序;全局有序只能单分区单消费者,吞吐受限。</li>
+<li>大规模缓存:Redis Cluster 分片加本地缓存扛热点,Cache Aside 加防穿透/击穿/雪崩,设计时估算内存和单分片 QPS。</li>
+<li>阻塞队列:synchronized 加 wait/notifyAll,或 ReentrantLock 加两个 Condition,条件判断必须用 while 循环。</li>
+</ul></div></article></section><section class="grp" id="g20"><h2 class="grp-title">字节跳动 · 后端 · 一面(暑期实习) </h2><article class="q" id="q39"><h3><a class="q-link" href="#q39">面试题</a></h3><div class="a"><ol>
+<li>讲一下实习中印象最深刻的事情,以及实习相关的其他经历。</li>
+<li>Kafka 中消费者和分区是什么关系?</li>
+<li>IO 多路复用的边界条件(边缘触发和水平触发)。</li>
+<li>Zset 插入数据的过程。</li>
+<li>表有 a、b、c、d 四个字段,a 是唯一索引,b 无索引,(c, d) 是联合索引,判断多种 SQL 是否走索引、走哪种索引。</li>
+<li>算法:用递归合并两个有序链表,只写一个 main 函数,自己构造约 10 个测试用例。</li>
+</ol></div></article><article class="q" id="q40"><h3><a class="q-link" href="#q40">要点</a></h3><div class="a"><ul>
+<li>面试约一个半小时,基础题之外还问了 TCP/IP 分层和协议所在层;Kafka、epoll、Zset、索引是难点。</li>
+<li>消费者与分区:同一消费者组内一个分区只能被一个消费者消费,消费者多于分区时多出的消费者空闲。</li>
+<li>ET 与 LT:ET 只通知一次,必须配合非阻塞 IO 循环读到 EAGAIN;LT 只要有数据就持续通知。</li>
+<li>Zset 插入:随机生成层数,从最高层逐层查找插入位置并更新各层指针和 span,同时写入 dict。</li>
+</ul></div></article></section><section class="grp" id="g21"><h2 class="grp-title">百度 · Java 后端 · 二面(2026.02.08) </h2><article class="q" id="q41"><h3><a class="q-link" href="#q41">面试题</a></h3><div class="a"><ol>
+<li>本地缓存和 Redis 怎么协作?一次查询请求的数据在两级缓存和数据库之间是怎么流转的?</li>
+<li>具体缓存的是什么对象?Redis 的 key 怎么设计?</li>
+<li>布隆过滤器的底层是怎么实现的?</li>
+<li>延迟双删是怎么做的?延迟时间怎么确定?</li>
+<li>缓存预热的时机和策略是什么?</li>
+<li>本地缓存的淘汰策略是怎么配置的?</li>
+<li>分布式锁的粒度是什么?不同粒度对并发性能和实现复杂度有什么影响?</li>
+<li>Redis、数据库或消息队列中任何一个环节出问题时,怎么降级保障系统可用?</li>
+<li>Redis 会话记忆的数据结构怎么设计?一个用户的多轮对话记录怎么组织?会话 TTL 是多久?</li>
+<li>大 key 和热 key 怎么排查和优化?</li>
+<li>集群中一个节点更新数据后,怎么让其他节点的本地缓存失效或同步?</li>
+<li>项目流量增加 100 倍,当前架构第一个出现的瓶颈是什么?怎么重构?</li>
+<li>大模型服务不可用或响应异常时,有降级方案吗?</li>
+<li>讲一下 Function Calling 实现查询信息和预约到店的流程。</li>
+<li>用户的对话记录和个人信息在存储和发给大模型时,做了哪些隐私保护?</li>
+<li>用 Chroma 自动构建知识库的流程是什么?</li>
+<li>项目有没有容器化?CI/CD 流程是怎样的?</li>
+<li>模型 API Key、MCP 服务地址等敏感配置怎么管理?用了配置中心或密钥管理服务吗?</li>
+<li>一次对话可能触发知识库检索、模型调用、写 Excel、发邮件等多个操作,怎么保证这些操作的事务性?</li>
+<li>整个项目开发中遇到的最复杂的技术问题是什么?</li>
+<li>算法:岛屿数量。</li>
+</ol></div></article><article class="q" id="q42"><h3><a class="q-link" href="#q42">要点</a></h3><div class="a"><ul>
+<li>几乎全是项目工程化追问:缓存、降级、隐私、配置管理、部署。</li>
+<li>延迟双删的延迟时间:按一次读请求的耗时(读库加回填缓存)再留一些余量估算,通常几百毫秒。</li>
+<li>多操作的事务性:无法用本地事务包住外部调用,按步骤持久化状态,每一步幂等加重试,失败后补偿(Saga 思路)。</li>
+<li>大模型降级:超时熔断,切换备用模型,或返回兜底话术加人工通道。</li>
+</ul></div></article></section><section class="grp" id="g22"><h2 class="grp-title">百度 · Java 实习 数据方向 · 面试(2026.02) </h2><article class="q" id="q43"><h3><a class="q-link" href="#q43">面试题</a></h3><div class="a"><ol>
+<li>最近在学什么、在做什么项目?</li>
+<li>投递时期望的工作内容和方向是什么?</li>
+<li>项目中提到的布隆过滤器是做什么用的?是用开源实现还是自研的?</li>
+<li>用了 RAG 的 Agent 仍然可能返回不符合预期甚至编造的结果(幻觉),可能是什么原因?</li>
+<li>JDK 自带的线程池有哪几种?</li>
+<li>线程安全的集合有哪些?</li>
+<li>synchronized 和 ReentrantLock 各有什么特点?都是可重入的吗?</li>
+<li>抽象类和接口各有什么特点?</li>
+<li>SQL:年级数学成绩表包含学生 ID、班级 ID、成绩,成绩无重复,求每个班成绩第二高的学生信息;如果是成绩最高的呢?</li>
+<li>UNION 和 UNION ALL 有什么区别?</li>
+<li>解释一下 ACID 分别指什么。</li>
+<li>常见的排序算法有哪些?快排的平均时间复杂度是多少?最坏情况是多少、什么时候出现?</li>
+<li>Spring 的 AOP 是做什么用的?</li>
+<li>一个已上线的 Spring Boot 项目有 N 个 Controller、每个有 M 个方法,都没有记录请求日志,现在要求记录所有请求访问信息,怎么做?</li>
+<li>从浏览器输入网址到看到页面,经历了哪些过程?</li>
+<li>算法:实现 LRU 缓存,不能用 LinkedHashMap。</li>
+</ol></div></article><article class="q" id="q44"><h3><a class="q-link" href="#q44">要点</a></h3><div class="a"><ul>
+<li>偏基础,Java 加 SQL 加计算机网络全覆盖,数据方向会考 SQL 题。</li>
+<li>幻觉原因:检索不准或召回不到、知识库质量差、Agent 路由没走检索、上下文噪声多、提示词没有约束禁止编造。</li>
+<li>班级第二高:窗口函数 <code>ROW_NUMBER() OVER (PARTITION BY class_id ORDER BY score DESC)</code> 取第 2 名,或用相关子查询。</li>
+<li>统一请求日志:AOP 切所有 Controller,或用 Filter/拦截器,不改业务代码。</li>
+</ul></div></article></section><section class="grp" id="g23"><h2 class="grp-title">百度 · Java 后端 · 一面(2026.02) </h2><article class="q" id="q45"><h3><a class="q-link" href="#q45">面试题</a></h3><div class="a"><ol>
+<li>这两个项目是学校的项目吗?部署上线了吗?</li>
+<li>项目有哪些表?是怎么设计的?</li>
+<li>为什么选 RocketMQ 而不是 Kafka 或其他消息队列?</li>
+<li>RocketMQ 如何保证消息不丢失?从生产者、Broker、消费者三个角度分析。</li>
+<li>一条 SQL 查询非常慢,排查思路是什么?会用到哪些命令和工具?</li>
+<li>MySQL 支持哪些锁?</li>
+<li>了解哪些设计模式?项目中用到了哪些?</li>
+<li>数据库连接池是怎么工作的?为什么能显著提升性能?核心参数怎么调优?</li>
+<li>怎么生成全局唯一 ID?</li>
+<li>Redis 持久化 RDB 和 AOF 各有什么优缺点?生产环境通常怎么配合使用?</li>
+<li>为什么说一棵 B+ 树大约能存 2000 万条数据?这个数是怎么算出来的?</li>
+<li>了解双亲委派模型吗?有什么好处?怎么打破?</li>
+<li>从浏览器输入网址到页面展示经历了哪些过程?</li>
+<li>如果从头设计一个类似微博或 Twitter 的社交系统,核心架构怎么设计?还有哪些可以优化的地方?</li>
+<li>如何保证缓存与数据库的一致性?删除失败怎么办?重试也失败了呢?</li>
+<li>垃圾回收算法有哪些?讲一下 G1 垃圾回收器。</li>
+<li>第二个项目是 Agent 相关的吗?了解多个 Agent 之间怎么相互调用吗?</li>
+<li>了解 RAG 吗?向量知识库用什么实现的?</li>
+<li>用过 AI coding 吗?</li>
+<li>算法:二叉树中序遍历(非递归,ACM 模式)。</li>
+</ol></div></article><article class="q" id="q46"><h3><a class="q-link" href="#q46">要点</a></h3><div class="a"><ul>
+<li>八股覆盖面很广,外加一道社交系统设计和缓存一致性的连环追问。</li>
+<li>2000 万估算:16KB 页,非叶子节点约 1170 个指针(8 字节主键加 6 字节指针),叶子页约 16 行,三层约 1170 × 1170 × 16。</li>
+<li>删除重试仍失败:删除失败的操作投递到 MQ 异步重试,或订阅 binlog(Canal)删除缓存,最后靠缓存 TTL 兜底。</li>
+<li>社交系统:关注关系存储,Feed 用推拉结合(大 V 拉、普通用户推),配合缓存和分库分表。</li>
+</ul></div></article></section><section class="grp" id="g24"><h2 class="grp-title">百度 · Java 后端 · 二面(2026.01.23) </h2><article class="q" id="q47"><h3><a class="q-link" href="#q47">面试题</a></h3><div class="a"><ol>
+<li>讲一下 JUC 并发编程。</li>
+<li>synchronized 和 ReentrantLock 的核心区别。</li>
+<li>Redis 的缓存雪崩、缓存穿透、缓存击穿。</li>
+<li>Spring Boot 启动时有哪些核心步骤?</li>
+<li>如果自己实现一个 Spring Boot Starter,该怎么做?</li>
+<li>Spring 的 AOP 和 IOC 了解吗?一般用在哪些场景?</li>
+<li>Tomcat 线程池的执行流程是怎样的?</li>
+<li>了解 K8s 吗?</li>
+<li>如何设计实现一个短链接系统?</li>
+<li>RAG 的工作流程是什么?</li>
+<li>了解 Function Calling 和 MCP 吗?</li>
+<li>谈谈你对 Agent 的了解和看法。</li>
+</ol></div></article><article class="q" id="q48"><h3><a class="q-link" href="#q48">要点</a></h3><div class="a"><ul>
+<li>前面是项目拷打,后面偏 Spring 原理加一道系统设计加 AI 概念。</li>
+<li>自定义 Starter:写自动配置类加 @Conditional 条件注解,在 META-INF/spring/...AutoConfiguration.imports(老版本为 spring.factories)中注册。</li>
+<li>Tomcat 线程池:与 JDK 不同,核心线程满后优先创建新线程直到最大线程数,之后才进入队列。</li>
+<li>短链接:发号器或哈希生成短码,Base62 编码,302 跳转,缓存热点短码,用布隆过滤器防止无效码打到数据库。</li>
+</ul></div></article></section><section class="grp" id="g25"><h2 class="grp-title">百度 · Java 后端 · 一面(2026.01.20) </h2><article class="q" id="q49"><h3><a class="q-link" href="#q49">面试题</a></h3><div class="a"><ol>
+<li>讲一下 HashMap 的底层结构。JDK 1.8 前后有什么区别?</li>
+<li>HashMap 是线程安全的吗?线程安全的 Map 有哪些?</li>
+<li>ConcurrentHashMap 用了什么手段保证线程安全?</li>
+<li>synchronized 关键字的作用是什么?</li>
+<li>了解 Java 的哪些集合?List 和 Map 分别用在什么场景?</li>
+<li>存储 1 到 10 十个数,想最快取到值为 6 的数,应该存在什么结构里?</li>
+<li>了解 JVM 吗?</li>
+<li>线程池有哪些参数?</li>
+<li>创建线程有哪几种方式?</li>
+<li>Redis 有哪些数据结构?底层是怎么实现的?</li>
+<li>Redis 的持久化方式有哪些?</li>
+<li>你一般用 Redis 做什么?</li>
+<li>了解 Redis 的缓存雪崩、穿透、击穿吗?</li>
+<li>消息中间件用的什么?和 Kafka、RabbitMQ 有什么区别?怎么防止消息丢失?</li>
+<li>MySQL 有哪些索引类型?唯一索引和主键索引有什么区别?</li>
+<li>了解 SQL 的查询执行计划吗?</li>
+<li>场景:如何设计一个支持 10 万 QPS 的会员系统?</li>
+<li>场景:如何设计 RPC,在 10 万 QPS 下实现毫秒级调用?</li>
+<li>知道哪些常用的 Linux 命令和 Docker 命令?</li>
+<li>算法:盛最多水的容器。</li>
+</ol></div></article><article class="q" id="q50"><h3><a class="q-link" href="#q50">要点</a></h3><div class="a"><ul>
+<li>基础八股为主,外加两道高 QPS 场景设计。</li>
+<li>会员系统:读多写少,多级缓存加读写分离,会员数据按用户 ID 分片,权益变更走 MQ 异步更新。</li>
+<li>毫秒级 RPC:长连接复用,高效序列化(Protobuf),Netty 异步 IO,客户端负载均衡,超时与熔断。</li>
+<li>主键与唯一索引:主键不能为 NULL 且只能有一个,是聚簇索引;唯一索引允许 NULL、可以有多个,是二级索引。</li>
+</ul></div></article></section><section class="grp" id="g26"><h2 class="grp-title">百度 · Java 后端 · 二面(秋招) </h2><article class="q" id="q51"><h3><a class="q-link" href="#q51">面试题</a></h3><div class="a"><ol>
+<li>Spring 中 Bean 相互依赖会报错吗?</li>
+<li>讲一下 Spring 的 IOC 和 AOP。</li>
+<li>公平锁和非公平锁的区别。</li>
+<li>synchronized 和 ReentrantLock 有什么区别?</li>
+<li>在默认隔离级别 RR 下,MySQL 为什么不能完全解决幻读?</li>
+<li>binlog、redo log、undo log 有什么区别?</li>
+<li>一个文件里有 100 亿个无序电话号码,怎么找出重复次数最多的前 5 个?</li>
+</ol></div></article><article class="q" id="q52"><h3><a class="q-link" href="#q52">要点</a></h3><div class="a"><ul>
+<li>Spring 和 MySQL 原理加一道海量数据题。</li>
+<li>循环依赖:单例加字段或 setter 注入通过三级缓存提前暴露早期引用来解决;构造器注入和 prototype 作用域会报错。</li>
+<li>RR 下的幻读:快照读靠 MVCC 看不到新行,但当前读(UPDATE、FOR UPDATE)会读到最新数据,同一事务中快照读和当前读混用就会出现幻读。</li>
+<li>100 亿号码 Top 5:按哈希把数据分到多个小文件,保证同一号码进同一个文件,每个文件用 HashMap 计数取 Top 5,最后用小顶堆合并。</li>
+</ul></div></article></section><section class="grp" id="g27"><h2 class="grp-title">美团 · Java 后端 履约技术部 · 面试(2026.02) </h2><article class="q" id="q53"><h3><a class="q-link" href="#q53">面试题</a></h3><div class="a"><ol>
+<li>讲一下秒杀项目的主要模块,以及对你来说最大的挑战。</li>
+<li>用 Redis 做缓存时,缓存删除的问题怎么解决?</li>
+<li>为什么用旁路缓存,先更新数据库再删缓存?</li>
+<li>高并发下大批量更新缓存时依赖的集群出问题,更新一直失败、重试不断积压,可能拖垮系统,怎么处理?</li>
+<li>怎么通知各节点删除本地缓存?</li>
+<li>服务部署在多台机器上,部分节点删除成功、部分失败,请求打到不同机器读到新旧不一致的数据,怎么办?</li>
+<li>了解 Redis 能扛住多少 QPS 吗?</li>
+<li>平时用哪些 Java 集合?它们有什么区别?</li>
+<li>HashMap 线程不安全体现在哪?多线程更新时会有什么问题?</li>
+<li>LinkedList 和 ArrayList 有什么区别?如果只删除最后一个元素,谁更快,为什么?</li>
+<li>ConcurrentHashMap 在多线程修改时,get 方法怎么保证读到最新数据?</li>
+<li>线程池的工作原理是什么?有哪些拒绝策略,有什么区别?</li>
+<li>还了解其他分布式锁和缓存的实现方式吗?为什么选 Redis?</li>
+<li>介绍一下 JVM 内存模型,每个区域在做什么?</li>
+<li>GC 怎么判定哪些对象是垃圾?</li>
+<li>项目里用到了 Redis 的哪些数据结构?String 类型最大能存多大?</li>
+<li>Redis 的内存淘汰策略有哪些?实际使用中怎么选择?</li>
+<li>主键索引和唯一索引有什么区别?</li>
+<li>算法:线程安全的单例模式的两种写法。</li>
+<li>算法:大数相加(不能用 BigInteger)。</li>
+</ol></div></article><article class="q" id="q54"><h3><a class="q-link" href="#q54">要点</a></h3><div class="a"><ul>
+<li>在缓存一致性上连续追问(重试积压、多节点部分失败),之后是集合和 JVM 八股。</li>
+<li>重试积压:重试要有次数上限和指数退避,失败的操作转入 MQ 或死信队列异步处理,并加熔断,不能无限重试。</li>
+<li>部分节点删除失败:MQ 广播加消费重试,本地缓存设置短 TTL 兜底;对一致性要求高的数据不放本地缓存。</li>
+<li>ConcurrentHashMap 的 get:Node 的 val 和 next 是 volatile,读不加锁也能看到最新写入。</li>
+<li>Redis 单个 String value 最大 512MB;单实例 QPS 约 10 万量级。</li>
+</ul></div></article></section><section class="grp" id="g28"><h2 class="grp-title">美团 · Java 后端 交易方向 · 一面(2026.01.22) </h2><article class="q" id="q55"><h3><a class="q-link" href="#q55">面试题</a></h3><div class="a"><ol>
+<li>Git 分支是怎么管理的?多个功能并行开发时怎么规范分支、怎么合并?</li>
+<li>A 和 B 都从 master 拉了分支 develop1 和 develop2,A 开发完已经合并到 master,B 应该怎样把 develop2 合进 master?</li>
+<li>Redis 怎么做备份?支持哪几种方式?</li>
+<li>怎么理解 MySQL 的原子性?</li>
+<li>乐观锁和悲观锁怎么理解、怎么使用?</li>
+<li>HTTP/1 和 HTTP/2 有什么区别?</li>
+<li>TCP 有多少种状态?</li>
+<li>电商订单系统峰值 TPS 10 万,怎么做分库分表和读写分离?</li>
+<li>高负载下 CPU 100%,怎么定位热点代码并优化?</li>
+<li>线程池参数怎么调优?</li>
+<li>Redis 热 key 问题怎么处理?</li>
+<li>了解 AIGC 吗?它的流程是什么样的?</li>
+<li>RAG 的流程是什么样的?</li>
+<li>讲一下 Java 内存模型和 GC。</li>
+<li>接触过 AI 辅助编程吗?经常关注 Hugging Face 吗?</li>
+<li>算法:排序链表(LeetCode 148)。</li>
+</ol></div></article><article class="q" id="q56"><h3><a class="q-link" href="#q56">要点</a></h3><div class="a"><ul>
+<li>前面是项目拷打,之后偏工程实践(Git 协作、线上排障、分库分表)。</li>
+<li>分支合并:B 先拉取最新 master,再 rebase 或 merge 到 develop2 并解决冲突,测试通过后提 MR 合入 master。</li>
+<li>CPU 100%:top 找进程,top -Hp 找线程,把线程 ID 转成十六进制后在 jstack 中定位栈;也可以用 Arthas 或火焰图。</li>
+<li>订单分库分表:按用户 ID 分片(买家维度),商家维度建异构索引表,订单号中嵌入分片基因。</li>
+</ul></div></article></section><section class="grp" id="g29"><h2 class="grp-title">京东 · 后端 jdy · 一面(2026.01) </h2><article class="q" id="q57"><h3><a class="q-link" href="#q57">面试题</a></h3><div class="a"><ol>
+<li>C 端用户想看附近有哪些店、哪些商品,怎么实现?用户看到的内容是基于什么展示的?</li>
+<li>你们的数据量有多大?</li>
+<li>类似抖音的关注列表和粉丝列表,分别怎么实现?</li>
+<li>第一个项目实现的是什么样的功能?模拟了多高的并发?</li>
+<li>一瞬间涌入 100 万用户,系统怎么保持稳定?</li>
+<li>Redis 也能实现消息中间件的功能,是怎么实现的?</li>
+<li>本地缓存会把所有优惠券信息都存进去吗?</li>
+<li>本地缓存和 Redis 都没有数据时,几十万请求直接打到数据库,怎么避免?怎么让缓存提前有数据?</li>
+<li>比如 9 点半数据发生变更并更新了数据库,怎么同步到缓存?数据从 DB 加载到缓存后再次变更,有什么办法刷新缓存?</li>
+<li>既用了本地缓存又用了 Redis,只用 Redis 行不行?会有什么问题?</li>
+<li>这个场景下 Redis 主从会存在什么问题?</li>
+<li>Redis 主从数据是怎么同步的?讲一下主从复制流程。</li>
+<li>MySQL 索引为什么用 B+ 树?二叉树、红黑树行不行?</li>
+<li>联合索引 (A, B, C),条件为 A 等于某值且 C 大于某值,能用到这个索引吗?索引会失效吗?</li>
+<li>MySQL 主键索引、唯一索引、联合索引、普通索引的区别是什么?</li>
+<li>MySQL 事务有哪些特性?ACID 是怎么保证的?</li>
+<li>了解 RAG 的原理吗?了解 MCP、Function Calling 吗?</li>
+<li>如果从头设计一个分布式系统,讲一下设计思路以及要考虑的点。</li>
+<li>算法:LRU 缓存(ACM 模式,自己实现双向链表)。</li>
+</ol></div></article><article class="q" id="q58"><h3><a class="q-link" href="#q58">要点</a></h3><div class="a"><ul>
+<li>围绕项目的高并发和缓存场景追问,基础题集中在 Redis 主从和 MySQL 索引。</li>
+<li>关注/粉丝:关注表和粉丝表双写(或按两个维度分表),热点用户的粉丝列表用 Redis ZSet 按时间排序。</li>
+<li>缓存同步:监听 binlog(Canal)触发缓存更新或删除,或用 MQ 通知;冷启动时提前预热。</li>
+<li>主从同步:首次全量(RDB 加缓冲区),之后基于 replication backlog 和偏移量增量同步;异步复制存在数据丢失和读到旧数据的风险。</li>
+<li>(A, B, C) 加 A 等值、C 范围:A 可以用于定位,C 不能参与定位,但可以借助索引下推在索引内过滤。</li>
+</ul></div></article></section><section class="grp" id="g30"><h2 class="grp-title">京东 · 后端 · 一面(秋招) </h2><article class="q" id="q59"><h3><a class="q-link" href="#q59">面试题</a></h3><div class="a"><ol>
+<li>MySQL 索引用的是什么数据结构?为什么用 B+ 树?</li>
+<li>ThreadLocalMap 和 HashMap 的哈希算法和冲突处理有什么不同?</li>
+<li>任务领取不用 Redis、只用 MySQL 可以吗?</li>
+<li>如何设计一个分布式限流系统?</li>
+<li>Redis 跳表的数据结构是什么样的?时间复杂度是多少?</li>
+<li>思考题:一个很长的数组,内存一次放不下,怎么做全局排序?</li>
+<li>算法:LRU 缓存。</li>
+</ol></div></article><article class="q" id="q60"><h3><a class="q-link" href="#q60">要点</a></h3><div class="a"><ul>
+<li>基础加实习项目加两道设计/思考题。</li>
+<li>ThreadLocalMap:斐波那契散列加线性探测;HashMap:扰动函数加拉链法,链表过长转红黑树。</li>
+<li>分布式限流:Redis 加 Lua 原子执行令牌桶或滑动窗口,按限流维度分片到不同节点。</li>
+<li>外部排序:分块读入内存排好序后写回磁盘,再用小顶堆做多路归并。</li>
+</ul></div></article></section><section class="grp" id="g31"><h2 class="grp-title">快手 · 后端 增长方向 · 一面(2026.01.26) </h2><article class="q" id="q61"><h3><a class="q-link" href="#q61">面试题</a></h3><div class="a"><ol>
+<li>两个项目有什么区别?技术上的差异点在哪?</li>
+<li>底层的表是怎么设计的?系统一共有几张表?</li>
+<li>用了两级缓存,能保证数据一致性吗?</li>
+<li>你提到用广播方式同步,广播过程中有节点缓存更新失败怎么办?</li>
+<li>广播是通过什么方式实现的?RocketMQ 广播时有实例监听失败,怎么处理?</li>
+<li>布隆过滤器主要给哪个模块用?</li>
+<li>你的 Lua 脚本是怎么写的?</li>
+<li>MVCC 的实现原理。</li>
+<li>redo log 怎么保证 crash-safe?</li>
+<li>synchronized 和 ReentrantLock 在底层实现上有什么区别?</li>
+<li>线程安全和线程不安全分别是什么意思?</li>
+<li>synchronized 中途不能释放锁而 ReentrantLock 可以,它具体是怎么释放锁的?</li>
+<li>了解线程的生命周期吗?</li>
+<li>线程池的原理和核心参数?拒绝策略有哪些?</li>
+<li>GC Roots 有哪些类型?</li>
+<li>项目里加了哪些类型的索引?主要用在哪?</li>
+<li>主键索引和普通索引在底层数据结构上有什么区别?同样是 B+ 树,存储的信息有什么不同?</li>
+<li>知道回表吗?</li>
+<li>HashMap 的底层数据结构是什么?为什么链表要转成红黑树?</li>
+<li>场景:设计一个短链服务。</li>
+<li>Spring、Spring MVC、Spring Boot、Spring Cloud 分别是什么、有什么区别?Spring Cloud 包含哪些组件?</li>
+<li>String 和 Hash 在使用场景上有什么区别?</li>
+<li>算法:删除排序链表中的重复元素 II(ACM 模式)。</li>
+</ol></div></article><article class="q" id="q62"><h3><a class="q-link" href="#q62">要点</a></h3><div class="a"><ul>
+<li>项目追问集中在两级缓存一致性和广播失败,其余是 Java、MySQL 标准八股。</li>
+<li>RocketMQ 广播消费失败:广播模式下 Broker 不会重投,需要消费端自己记录失败并重试,本地缓存用 TTL 兜底。</li>
+<li>redo log crash-safe:WAL 先写日志,两阶段提交保证 redo log 和 binlog 一致,重启时根据 redo log 恢复已提交的数据。</li>
+<li>主键与普通索引:聚簇索引叶子节点存整行数据,二级索引叶子节点存主键值,所以会回表。</li>
+</ul></div></article></section><section class="grp" id="g32"><h2 class="grp-title">快手 · 后端 · 二面(秋招) </h2><article class="q" id="q63"><h3><a class="q-link" href="#q63">面试题</a></h3><div class="a"><ol>
+<li>Kafka 是怎么实现高吞吐量的?</li>
+<li>什么是零拷贝?</li>
+<li>智力题:1000 瓶水中有 1 瓶有毒,用 10 只小白鼠怎么找出来?</li>
+<li>用 Redis 实现全局唯一 ID,Redis 宕机了怎么办?</li>
+</ol></div></article><article class="q" id="q64"><h3><a class="q-link" href="#q64">要点</a></h3><div class="a"><ul>
+<li>题量少,Kafka 原理加一道智力题加高可用追问。</li>
+<li>Kafka 高吞吐:顺序写磁盘、Page Cache、零拷贝(sendfile)、批量发送加压缩、分区并行。</li>
+<li>小白鼠:把瓶子编号转成 10 位二进制,每只小白鼠喝对应位为 1 的瓶子,按死亡情况拼出有毒瓶的编号(2^10 = 1024 ≥ 1000)。</li>
+<li>Redis 发号宕机:开启 AOF 持久化加主从,或者号段模式(数据库号段加本地缓存)、雪花算法替代。</li>
+</ul></div></article></section><section class="grp" id="g33"><h2 class="grp-title">小红书 · 后端 · 一面(2026.01.14) </h2><article class="q" id="q65"><h3><a class="q-link" href="#q65">面试题</a></h3><div class="a"><ol>
+<li>研究生阶段主要做什么方向?</li>
+<li>还记得 IP 头和 TCP 头的结构吗?</li>
+<li>讲一下 TCP 和 UDP。</li>
+<li>了解布隆过滤器吗?讲一下底层实现。</li>
+<li>讲讲乐观锁和悲观锁的原理。</li>
+<li>深拷贝和浅拷贝的区别。</li>
+<li>了解红黑树吗?讲一下。</li>
+<li>为什么用 RocketMQ?和 Kafka 之间怎么选?</li>
+<li>MySQL 的隔离级别有哪些?</li>
+<li>了解 Agent、MCP 吗?讲一下。</li>
+<li>Redis 的 ZSet 是怎么实现的?</li>
+<li>讲一下 redo log 和 undo log。</li>
+<li>HashMap 是怎么扩容的?</li>
+<li>算法:接雨水。</li>
+<li>算法:字母异位词分组。</li>
+</ol></div></article><article class="q" id="q66"><h3><a class="q-link" href="#q66">要点</a></h3><div class="a"><ul>
+<li>前面约 8 题项目拷打(点评类加星球类项目),之后是覆盖面较广的八股。</li>
+<li>IP/TCP 头:IP 头有 TTL、协议号、源/目的 IP;TCP 头有端口、序号、确认号、标志位、窗口大小。</li>
+<li>ZSet:元素少时用 listpack(早期为 ziplist),元素多时用跳表加 dict。</li>
+<li>HashMap 扩容:容量翻倍,1.8 中根据 hash &amp; oldCap 判断节点留在原位置还是移到原位置加 oldCap。</li>
+</ul></div></article></section><section class="grp" id="g34"><h2 class="grp-title">蔚来 · 后端 · 面试(2026.03.23) </h2><article class="q" id="q67"><h3><a class="q-link" href="#q67">面试题</a></h3><div class="a"><ol>
+<li>研究生方向是什么?</li>
+<li>算法:多线程按顺序打印,每个线程只打印一个字母,输出 ABCABCABC。</li>
+<li>算法:原地反转句子中的单词顺序,例如 &quot;what is your name&quot; 变成 &quot;name your is what&quot;,不能使用额外空间。</li>
+<li>Linux 用得多吗?Vim 的常用操作有哪些?</li>
+<li>SQL 中的 HAVING 关键字怎么用?</li>
+<li>讲一下 Agent 项目的业务范围和应用场景,以及技术方案。</li>
+<li>模型用的是什么?是 OpenAI 吗?</li>
+<li>多人同时聊天时的并发方案是什么?从入口到模型调用,用的是框架的并发能力还是自己写多线程?</li>
+<li>框架对 token 是怎么管理的?咨询量很大时容易超出模型的上下文限制,怎么处理?</li>
+<li>微调怎么理解?是一个知识库吗?是不是用 prompt 加问答强制模型这么回答?</li>
+<li>微调具体是怎么实施的?改的是配置还是什么?</li>
+<li>微调影响的是千问模型的哪一部分?</li>
+<li>微调后模型体积变化大吗?</li>
+<li>没有 Redisson 的话,分布式锁还能用什么实现?</li>
+<li>是不是任何开源模型都可以微调?需要模型对外提供接口吗?</li>
+<li>本地部署对模型的开放协议有要求吗?</li>
+</ol></div></article><article class="q" id="q68"><h3><a class="q-link" href="#q68">要点</a></h3><div class="a"><ul>
+<li>两道手撕开场,之后面试官从概念层面追问大模型微调,面试官对 AI 了解不深,需要讲清楚基本概念。</li>
+<li>微调与 RAG、Prompt 的区别:RAG 是外挂知识,不改模型;Prompt 是临时指令;LoRA 训练少量低秩适配参数,改变模型行为。</li>
+<li>LoRA 作用位置:冻结主干权重,在注意力层(如 q/v 投影)旁路加低秩矩阵,产物是几 MB 到几十 MB 的适配器。</li>
+<li>句子反转:先整体反转字符数组,再逐个反转每个单词。</li>
+</ul></div></article></section><section class="grp" id="g35"><h2 class="grp-title">小米 · 后端 · 一面(2026.01) </h2><article class="q" id="q69"><h3><a class="q-link" href="#q69">面试题</a></h3><div class="a"><ol>
+<li>两个项目哪个复杂度更高?</li>
+<li>介绍一下系统架构是怎么设计的。有哪些模块?模块之间怎么传递信息?</li>
+<li>讲一下 TCP 三次握手和四次挥手。</li>
+<li>为什么用布隆过滤器拦截无效查询?有哪些优缺点?除了误判之外还有别的缺点吗?</li>
+<li>某个商品在后端已经删除,但布隆过滤器仍判断存在,怎么更新布隆过滤器?</li>
+<li>Cache Aside 是什么?</li>
+<li>Redis 集群中缓存删除失败,重试也失败,数据一致性怎么考虑?</li>
+<li>为什么 Redis 加 Lua 脚本可以保证原子性?</li>
+<li>Lua 脚本中依次执行 set a、set b、del c,前两条成功、第三条失败,前两条能回滚吗?</li>
+<li>从设计到实现,遇到的最困难的问题是什么?</li>
+<li>高并发设计中,除了多级缓存和读写分离还考虑过什么?你说的分片集群是什么?</li>
+<li>这样设计的高并发系统有什么问题?</li>
+<li>为什么要用长连接?(面试官认为不太合理)</li>
+<li>了解 Java 集合的快速失败(fail-fast)机制吗?</li>
+<li>MySQL 有哪些索引类型?</li>
+<li>对 name 和 school 两个字段建索引:一种是唯一联合索引,一种是普通联合索引,写入时哪个效率更高?</li>
+<li>哪些情况下索引会失效?</li>
+<li>Spring 事务失效的场景有哪些?</li>
+<li>讲一下回表。</li>
+<li>算法:三数之和(ACM 模式)。</li>
+</ol></div></article><article class="q" id="q70"><h3><a class="q-link" href="#q70">要点</a></h3><div class="a"><ul>
+<li>项目设计被质疑较多(长连接、高并发方案),需要说清取舍理由。</li>
+<li>Lua 原子性:Redis 单线程执行整个脚本,中间不会插入其他命令,但没有回滚,前面成功的命令不会撤销。</li>
+<li>唯一索引与普通索引写入:普通索引可以利用 change buffer 延迟写入,唯一索引必须读页校验唯一性,所以普通索引写入更快。</li>
+<li>布隆过滤器删除:标准布隆过滤器不能删除,只能定期重建或换成计数布隆过滤器。</li>
+</ul></div></article></section><nav class="pager"><a href="brain.html" class="prev"><small>上一章</small>智力题</a><span></span></nav>
+  </div>
+</main>
+<div class="backdrop" id="backdrop"></div>
+<button class="to-top" id="to-top" aria-label="回到顶部">↑</button>
+<script id="outline" type="application/json">[{"id":"g1","title":"腾讯 · 后端 · CSIG(2026.02)","n":"","core":0},{"id":"g2","title":"腾讯 · 后端 IEG · 一面(2026.02)","n":"","core":0},{"id":"g3","title":"腾讯 · 后端 · 二面(秋招)","n":"","core":0},{"id":"g4","title":"腾讯 · 后端 TEG · 一面(秋招)","n":"","core":0},{"id":"g5","title":"腾讯 · 后端 · 一面(秋招)","n":"","core":0},{"id":"g6","title":"腾讯 · 后端 · 一面(秋招,另一场)","n":"","core":0},{"id":"g7","title":"腾讯 · 后端 · 三面(暑期实习)","n":"","core":0},{"id":"g8","title":"腾讯 · 后端 · 一面(暑期实习)","n":"","core":0},{"id":"g9","title":"字节跳动 · 后端 成都中国交易与广告 · 三面(2026.03)","n":"","core":0},{"id":"g10","title":"字节跳动 · 后端 成都中国交易与广告 · 二面(2026.02.13)","n":"","core":0},{"id":"g11","title":"字节跳动 · 后端 国际化广告 · 一面(2026.02.10)","n":"","core":0},{"id":"g12","title":"字节跳动 · 后端 中国交易与广告 · 面试(2026.02)","n":"","core":0},{"id":"g13","title":"字节跳动 · 后端 TikTok 生服 · 二面(2026.02)","n":"","core":0},{"id":"g14","title":"字节跳动 · 后端 TikTok 生服 · 一面(2026.02.03)","n":"","core":0},{"id":"g15","title":"字节跳动 · 后端 成都生活服务 · 一面(2026.01)","n":"","core":0},{"id":"g16","title":"字节跳动 · 后端 · 二面(秋招)","n":"","core":0},{"id":"g17","title":"字节跳动 · 后端 · 一面(秋招)","n":"","core":0},{"id":"g18","title":"字节跳动 · 后端 · 一面(秋招,另一场)","n":"","core":0},{"id":"g19","title":"字节跳动 · 后端 · 二面(暑期实习)","n":"","core":0},{"id":"g20","title":"字节跳动 · 后端 · 一面(暑期实习)","n":"","core":0},{"id":"g21","title":"百度 · Java 后端 · 二面(2026.02.08)","n":"","core":0},{"id":"g22","title":"百度 · Java 实习 数据方向 · 面试(2026.02)","n":"","core":0},{"id":"g23","title":"百度 · Java 后端 · 一面(2026.02)","n":"","core":0},{"id":"g24","title":"百度 · Java 后端 · 二面(2026.01.23)","n":"","core":0},{"id":"g25","title":"百度 · Java 后端 · 一面(2026.01.20)","n":"","core":0},{"id":"g26","title":"百度 · Java 后端 · 二面(秋招)","n":"","core":0},{"id":"g27","title":"美团 · Java 后端 履约技术部 · 面试(2026.02)","n":"","core":0},{"id":"g28","title":"美团 · Java 后端 交易方向 · 一面(2026.01.22)","n":"","core":0},{"id":"g29","title":"京东 · 后端 jdy · 一面(2026.01)","n":"","core":0},{"id":"g30","title":"京东 · 后端 · 一面(秋招)","n":"","core":0},{"id":"g31","title":"快手 · 后端 增长方向 · 一面(2026.01.26)","n":"","core":0},{"id":"g32","title":"快手 · 后端 · 二面(秋招)","n":"","core":0},{"id":"g33","title":"小红书 · 后端 · 一面(2026.01.14)","n":"","core":0},{"id":"g34","title":"蔚来 · 后端 · 面试(2026.03.23)","n":"","core":0},{"id":"g35","title":"小米 · 后端 · 一面(2026.01)","n":"","core":0}]</script>
+<script src="assets/app.js?v=ab30056e"></script>
+</body>
+</html>

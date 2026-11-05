@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="darkreader-lock">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>分布式 · 八股笔记</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' font-weight='bold' fill='white' text-anchor='middle'%3E八%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css?v=ab30056e">
+<script>
+  (function () {
+    var t = localStorage.getItem('iv.theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+</head>
+<body data-part="java" data-sec="distributed">
+<header class="site-header">
+  <button class="icon-btn menu-btn" id="menu-btn" aria-label="目录">☰</button>
+  <a href="index.html" class="brand"><span class="dot">●</span> 八股笔记</a>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="search">
+    <input id="search" type="search" placeholder="搜索题目  /" autocomplete="off" aria-label="搜索题目">
+    <span id="search-info"></span>
+    <div class="search-pop" id="search-pop" hidden></div>
+  </div>
+  <button class="icon-btn" id="theme-toggle" aria-label="切换主题">◐</button>
+</header>
+<aside class="side" id="side"><nav id="toc"></nav></aside>
+<main class="main">
+  <div id="article">
+<header class="page-head"><div class="crumb">Java 后端</div><h1>分布式 <span class="cnt">15 题</span></h1><div class="tools"><button type="button" class="tool" id="t-core" aria-pressed="false">只看高频 <b>8</b></button><button type="button" class="tool" id="t-quiz" aria-pressed="false">自测模式</button><a class="tool resume" id="t-resume" hidden></a><span class="kbd-hint"><kbd>j</kbd>/<kbd>k</kbd> 上下题 · 自测时 <kbd>空格</kbd> 看答案 · <kbd>/</kbd> 搜索</span></div><nav class="overview"><div class="ov-groups"><a href="#g1">分布式理论与数据分布<span><span class="n-all">3</span><span class="n-core">1</span></span></a><a href="#g2">分布式锁<span><span class="n-all">4</span><span class="n-core">3</span></span></a><a href="#g3">分布式事务与全局 ID<span><span class="n-all">3</span><span class="n-core">3</span></span></a><a href="#g4">服务通信与中间件<span><span class="n-all">5</span><span class="n-core">1</span></span></a></div></nav></header><section class="grp has-core" id="g1"><h2 class="grp-title">分布式理论与数据分布 <span class="cnt"><span class="n-all">3</span><span class="n-core">高频 1</span></span></h2><article class="q core" id="q1"><h3><a class="q-link" href="#q1">什么是CAP理论？为什么CAP三者无法同时满足</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">CAP 定理：分布式系统在发生网络分区时，一致性和可用性只能二选一。因为分区无法避免，P 是必选项，实际的选择是 CP 或 AP。</p>
+<ul>
+<li><strong>C 一致性（Consistency）</strong>：指线性一致性，任何读操作都能读到最近一次写入的结果，所有节点看起来像一份数据。它和 ACID 里的 C（数据满足约束、处于合法状态）不是一回事。</li>
+<li><strong>A 可用性（Availability）</strong>：每个发给非故障节点的请求都能在有限时间内得到非错误的响应（不保证是最新数据）。</li>
+<li><strong>P 分区容错性（Partition tolerance）</strong>：节点间网络断开、消息丢失或延迟时，系统仍能继续运行。</li>
+</ul>
+<p><strong>为什么只能选两个</strong>：网络分区时，节点 A 和 B 之间无法同步。客户端往 A 写入后去 B 读：</p>
+<ul>
+<li>如果 B 要保证 C，就只能拒绝请求或等待，牺牲了 A → CP。</li>
+<li>如果 B 要保证 A，就只能返回旧数据，牺牲了 C → AP。</li>
+</ul>
+<p>注意：CP/AP 的取舍只在发生分区时才需要做，没有分区时 C 和 A 可以同时满足。</p>
+<p><strong>常见例子</strong></p>
+<ul>
+<li>偏 CP：ZooKeeper、etcd、Consul（基于 ZAB / Raft，多数派写入）。</li>
+<li>偏 AP：Eureka、Cassandra。</li>
+<li>Nacos：临时实例走 AP（Distro 协议），持久实例走 CP（Raft）。</li>
+</ul>
+<p><strong>BASE 理论</strong>：基本可用（Basically Available）、软状态（Soft state）、最终一致（Eventually consistent）。它是 AP 方向的工程实践：放弃强一致，允许中间状态，通过异步同步、重试、补偿最终达到一致。</p></div></article><article class="q" id="q2"><h3><a class="q-link" href="#q2">什么是一致性哈希？解决什么问题？虚拟节点作用是什么？</a></h3><div class="a"><p class="lead">一致性哈希把节点和 key 都映射到同一个哈希环上，key 顺时针找到的第一个节点就是它的归属节点。增删节点时只影响环上相邻的一小段数据。</p>
+<p><strong>解决的问题</strong>：普通哈希取模 <code>hash(key) % N</code>，节点数 N 一变，几乎所有 key 都要重新映射，缓存大面积失效、数据大量迁移。一致性哈希在增删一个节点时，平均只有约 1/N 的 key 需要迁移。</p>
+<p><strong>原理</strong></p>
+<ol>
+<li>哈希空间是 0 ~ 2^32-1，首尾相连成环。</li>
+<li>对节点（如 IP:端口）求哈希，放到环上。</li>
+<li>对 key 求哈希，顺时针找到的第一个节点负责它。</li>
+<li>新增节点只接管它和前一个节点之间的 key；删除节点只把它的 key 交给下一个节点。</li>
+</ol>
+<p><strong>虚拟节点的作用</strong></p>
+<ul>
+<li>节点少时，节点在环上分布不均匀，会出现数据倾斜。</li>
+<li>每个物理节点映射成多个虚拟节点（比如 <code>IP#1</code>、<code>IP#2</code>…各几百个），散布在环上，数据分布更均匀。</li>
+<li>节点下线时，它的负载分摊到多个物理节点，而不是全部压给顺时针的下一个节点。</li>
+<li>还可以按机器性能分配不同数量的虚拟节点，实现加权。</li>
+</ul>
+<p>应用：Dubbo 的 <code>ConsistentHashLoadBalance</code>、Nginx 的一致性哈希负载均衡、Memcached 客户端分片。Redis Cluster 不用一致性哈希，而是固定的哈希槽。</p></div></article><article class="q" id="q3"><h3><a class="q-link" href="#q3">Redis 集群模式有哪些？主从、哨兵、集群分别解决什么问题？</a></h3><div class="a"><p class="lead">三种模式依次解决：数据备份 → 故障自动切换 → 容量和写性能的水平扩展。</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>解决的问题</th>
+<th>局限</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>主从复制</td>
+<td>数据冗余备份、读写分离（从节点分担读）</td>
+<td>主节点故障要人工切换；写能力和容量受单机限制</td>
+</tr>
+<tr>
+<td>哨兵（Sentinel）</td>
+<td>监控主从节点，主节点故障时自动选出新主并通知客户端</td>
+<td>仍然只有一个主节点写，容量受单机限制</td>
+</tr>
+<tr>
+<td>Cluster</td>
+<td>数据分片到多个主节点，每个主节点带从节点，自带故障转移</td>
+<td>跨槽的多 key 操作、事务、Lua 受限（可用 hash tag <code>{}</code> 让相关 key 落到同一个槽）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Cluster 的分片方式</strong>：固定 16384 个哈希槽，<code>CRC16(key) mod 16384</code> 算出槽位，每个主节点负责一部分槽。客户端访问错节点时会收到 <code>MOVED</code> 重定向。</p>
+<p><strong>哨兵的故障判定</strong>：单个哨兵认为主节点超时是主观下线；达到 quorum 个哨兵同意才判定客观下线，再由哨兵选出领头者执行故障转移。</p></div></article></section><section class="grp has-core" id="g2"><h2 class="grp-title">分布式锁 <span class="cnt"><span class="n-all">4</span><span class="n-core">高频 3</span></span></h2><article class="q core" id="q4"><h3><a class="q-link" href="#q4">分布式锁的常用实现方案有哪些？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">常见三种：基于数据库、基于 Redis、基于 ZooKeeper。追求性能选 Redis，追求可靠性选 ZooKeeper / etcd。</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>实现</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数据库</td>
+<td>唯一索引插入一条记录即加锁，删除记录即释放；或者 <code>SELECT ... FOR UPDATE</code></td>
+<td>不需要额外中间件</td>
+<td>性能差；没有自动过期，持锁方宕机容易死锁，要自己加超时清理</td>
+</tr>
+<tr>
+<td>Redis</td>
+<td><code>SET key uuid NX EX 30</code> 原子加锁，Lua 校验后删除；生产常用 Redisson</td>
+<td>性能高、使用简单</td>
+<td>主从异步复制，主节点宕机切换时可能丢锁</td>
+</tr>
+<tr>
+<td>ZooKeeper</td>
+<td>在锁目录下创建临时顺序节点，序号最小者持锁，其他节点监听前一个节点</td>
+<td>可靠：会话断开临时节点自动删除；天然支持阻塞等待和公平锁</td>
+<td>性能低于 Redis；频繁创建删除节点对 ZK 有压力</td>
+</tr>
+</tbody>
+</table>
+<p><strong>ZooKeeper 锁细节</strong>：每个客户端只监听自己前一个节点，前一个节点删除时才被唤醒，避免所有客户端同时被唤醒的羊群效应。Curator 的 <code>InterProcessMutex</code> 就是这样实现的。</p></div></article><article class="q core" id="q5"><h3><a class="q-link" href="#q5">如何基于Redis实现一个可靠的分布式锁？如何解决锁的超时释放问题？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">可靠的 Redis 锁有三个要点：原子加锁并设置过期时间、只能删除自己的锁、业务没执行完时自动续期。</p>
+<p><strong>1. 原子加锁</strong></p>
+<pre><code class="language-bash">SET lock_key &lt;uuid&gt; NX EX 30
+</code></pre>
+<p><code>NX</code> 保证只有 key 不存在时才设置成功，<code>EX</code> 同时设置过期时间，防止持锁方宕机后死锁。不能拆成 <code>SETNX</code> + <code>EXPIRE</code> 两条命令，否则两条之间宕机，锁就永远不会过期。</p>
+<p><strong>2. 只删除自己的锁</strong>：value 存唯一标识（UUID + 线程 ID），解锁时用 Lua 脚本原子地比较并删除。</p>
+<pre><code class="language-lua">if redis.call('get', KEYS[1]) == ARGV[1] then
+    return redis.call('del', KEYS[1])
+else
+    return 0
+end
+</code></pre>
+<p><strong>3. 解决超时释放</strong>：超时释放是指业务还没执行完，锁已经过期，其他线程拿到锁，出现并发安全问题。解决方法是让后台线程定期续期（看门狗），Redisson 已经实现好了。</p>
+<p><strong>其他要考虑的点</strong></p>
+<ul>
+<li>可重入：同一线程重复加锁要计数，Redisson 用 Hash 结构实现。</li>
+<li>主从切换丢锁：主节点加锁后还没同步到从节点就宕机，从节点升主后锁丢失。对一致性要求极高时用 ZooKeeper / etcd，或在存储层加 fencing token 校验。</li>
+</ul></div></article><article class="q core" id="q6"><h3><a class="q-link" href="#q6">如何确保锁不会被其他线程误删？请解释Redisson“看门狗”机制的原理</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">防误删靠&quot;锁的 value 存持有者的唯一标识，删除前校验，且校验和删除用 Lua 保证原子&quot;；防止锁提前过期靠看门狗自动续期。</p>
+<p><strong>误删是怎么发生的</strong>：线程 A 加锁后业务执行太久，锁过期了；线程 B 加锁成功；A 执行完直接 <code>DEL</code>，把 B 的锁删掉了。所以每个锁要带唯一标识（UUID + 线程 ID），只有标识匹配才能删除。如果先 <code>GET</code> 判断再 <code>DEL</code> 分两步，中间锁可能刚好过期并被别人拿到，所以必须用 Lua 一次完成。</p>
+<p><strong>Redisson 锁的结构</strong>：用 Redis Hash 存储，key 是锁名，field 是 <code>UUID:threadId</code>，value 是重入次数，所以支持可重入。加锁、解锁都是 Lua 脚本；解锁时重入次数减 1，减到 0 才删除 key，并发布消息唤醒等待的线程。</p>
+<p><strong>看门狗原理</strong></p>
+<ul>
+<li>调用 <code>lock()</code> 且没有指定 leaseTime 时，锁的默认过期时间是 <code>lockWatchdogTimeout</code>，即 30 秒。</li>
+<li>加锁成功后启动一个定时任务，每隔 30/3 = 10 秒检查当前线程是否还持有锁，持有就把过期时间重置为 30 秒。</li>
+<li>线程调用 <code>unlock()</code> 后取消续期任务。</li>
+<li>客户端宕机时续期任务随之停止，锁最多 30 秒后自动过期，不会死锁。</li>
+</ul>
+<p><strong>注意</strong>：调用 <code>lock(10, TimeUnit.SECONDS)</code> 或 <code>tryLock(waitTime, leaseTime, unit)</code> 这类显式指定 leaseTime 的方法时，看门狗不生效，到期就释放。</p>
+<pre><code class="language-java">RLock lock = redissonClient.getLock(&quot;order:&quot; + orderId);
+if (lock.tryLock(3, TimeUnit.SECONDS)) {   // 只指定等待时间，看门狗生效
+    try {
+        // 业务逻辑
+    } finally {
+        lock.unlock();
+    }
+}
+</code></pre></div></article><article class="q" id="q7"><h3><a class="q-link" href="#q7">Redlock 红锁原理是什么？为什么很多人不推荐生产用？</a></h3><div class="a"><p class="lead">Redlock 是在多个独立的 Redis master 上分别加锁，多数成功才算加锁成功，用来避免单个 Redis 主从切换丢锁。它的问题是依赖时钟假设、无法提供 fencing token，在 GC 停顿和网络延迟下仍可能不安全，运维成本又高。</p>
+<p><strong>加锁流程</strong>（以 N = 5 个独立 master 为例）</p>
+<ol>
+<li>记录当前时间，依次向 5 个实例用相同的 key 和随机 value 加锁，每次请求设置远小于锁有效期的超时时间。</li>
+<li>至少 N/2+1（即 3）个实例加锁成功，并且总耗时小于锁的有效期，才算成功。</li>
+<li>锁的实际有效时间 = 设定的有效期 − 加锁耗时 − 时钟漂移。</li>
+<li>加锁失败时，要向所有实例发送解锁请求。</li>
+</ol>
+<p><strong>为什么不推荐</strong></p>
+<ul>
+<li><strong>进程暂停和网络延迟</strong>（Martin Kleppmann 的批评）：客户端拿到锁后发生长时间 GC，锁已经过期被别人拿走，它恢复后仍以为自己持有锁，继续写数据。正确的做法是 fencing token：每次加锁发一个单调递增的版本号，存储端拒绝旧版本号的写入，而 Redlock 给不出这种 token。</li>
+<li><strong>依赖时钟</strong>：某个节点时钟跳变，锁会提前过期，导致两个客户端同时满足多数派。</li>
+<li><strong>节点重启</strong>：没有开启 AOF 每次 fsync 的节点重启后丢失锁数据，也会破坏多数派。</li>
+<li><strong>成本高</strong>：要部署多个独立 master，加锁延迟也更高。</li>
+</ul>
+<p>Redisson 新版本已经把 <code>RedissonRedLock</code> 标记为 deprecated。实践中，一般业务用单 Redis + Redisson 即可，对正确性要求极高时用 ZooKeeper / etcd 加 fencing token。</p></div></article></section><section class="grp has-core" id="g3"><h2 class="grp-title">分布式事务与全局 ID <span class="cnt"><span class="n-all">3</span><span class="n-core">高频 3</span></span></h2><article class="q core" id="q8"><h3><a class="q-link" href="#q8">什么是分布式事务？请介绍常见解决方案（2PC、TCC、Saga、本地消息表）的核心思想</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">分布式事务是一个业务操作跨多个服务或多个数据库，本地事务无法保证整体原子性，需要额外的协议协调。方案分两类：2PC/XA 追求强一致，TCC、Saga、本地消息表、事务消息追求最终一致。</p>
+<p><strong>2PC（两阶段提交）</strong></p>
+<ul>
+<li>prepare：参与者执行事务但不提交，写好 undo/redo 日志后回复 yes/no；commit/rollback：全部 yes 才提交，否则回滚。数据库层实现是 XA。</li>
+<li>问题：同步阻塞，全程持有资源锁；协调者单点，宕机后参与者阻塞；第二阶段部分参与者没收到 commit 会不一致。3PC 加了超时，仍不能完全解决，用得少。</li>
+</ul>
+<p><strong>TCC（Try-Confirm-Cancel）</strong>：业务层两阶段。Try 预留资源（冻结库存、余额），Confirm 使用预留资源，Cancel 释放。不持有数据库锁、性能好，但每个接口写三个方法，侵入性强。必须处理<strong>空回滚</strong>（没 Try 却收到 Cancel）、<strong>幂等</strong>（Confirm/Cancel 会重试）、<strong>悬挂</strong>（Cancel 先于 Try 到达）。</p>
+<p><strong>Saga</strong>：长事务拆成多个本地事务依次执行，每步有补偿操作，失败时逆序补偿。分编排式和协同式。不保证隔离性，中间状态可见，适合流程长、涉及外部系统的业务。</p>
+<p><strong>本地消息表</strong>：业务数据和「待发送」消息写在同一个本地事务里；后台任务扫描投递 MQ，失败重试，成功后标记；下游消费必须幂等。简单可靠，代价是轮询消息表。</p>
+<p><strong>其他方案</strong></p>
+<ul>
+<li>RocketMQ 事务消息：半消息 + 本地事务 + Broker 回查，效果同本地消息表但不用建表。</li>
+<li>最大努力通知：多次重试 + 查询接口兜底，常见于支付回调。</li>
+<li>Seata：提供 AT（自动生成反向 SQL 回滚，无侵入）、TCC、Saga、XA 四种模式。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>一致性</th>
+<th>性能</th>
+<th>侵入性</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2PC / XA</td>
+<td>强一致</td>
+<td>低</td>
+<td>低</td>
+</tr>
+<tr>
+<td>TCC</td>
+<td>最终一致</td>
+<td>高</td>
+<td>高</td>
+</tr>
+<tr>
+<td>Saga</td>
+<td>最终一致</td>
+<td>高</td>
+<td>中（要写补偿）</td>
+</tr>
+<tr>
+<td>本地消息表 / 事务消息</td>
+<td>最终一致</td>
+<td>高</td>
+<td>中</td>
+</tr>
+</tbody>
+</table></div></article><article class="q core" id="q9"><h3><a class="q-link" href="#q9">在分布式系统中，如何设计一个全局唯一ID生成器？对比UUID、数据库自增、Redis自增、雪花算法</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">全局 ID 一般要求：全局唯一、趋势递增（有利于 B+ 树索引）、高性能高可用，有时还要求不能被猜出业务量。工程上最常用的是雪花算法和号段模式。</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UUID</td>
+<td>本地生成，无网络开销，实现最简单</td>
+<td>128 位、字符串形式 36 个字符，存储占用大；v4 完全随机，作为 InnoDB 主键会导致频繁页分裂</td>
+</tr>
+<tr>
+<td>数据库自增</td>
+<td>简单、严格递增</td>
+<td>依赖数据库，有单点和性能瓶颈；分库分表时会重复（可用不同起始值和步长缓解，但扩容麻烦）；ID 连续，容易被推算业务量</td>
+</tr>
+<tr>
+<td>Redis INCR</td>
+<td>性能高、递增</td>
+<td>依赖 Redis；持久化不完整时宕机重启可能生成重复 ID</td>
+</tr>
+<tr>
+<td>雪花算法</td>
+<td>本地生成、64 位 long、趋势递增、性能高</td>
+<td>依赖机器时钟，有时钟回拨问题；要分配唯一的机器 ID</td>
+</tr>
+<tr>
+<td>号段模式</td>
+<td>从数据库批量取一段 ID（如 1000 个）缓存在内存中发放，数据库压力小</td>
+<td>ID 不严格连续；服务重启会浪费未用完的号段</td>
+</tr>
+</tbody>
+</table>
+<p><strong>补充</strong></p>
+<ul>
+<li>UUIDv7（RFC 9562，2024 年发布）高位是毫秒时间戳，按时间有序，作为主键比 v4 友好。</li>
+<li>美团 Leaf 同时提供号段模式（双 buffer 预加载）和雪花模式（用 ZooKeeper 分配 workerId 并检测时钟）。</li>
+<li>百度 UidGenerator 基于雪花思路，用秒级时间并预先生成 ID 放入 RingBuffer。</li>
+</ul></div></article><article class="q core" id="q10"><h3><a class="q-link" href="#q10">雪花算法的原理是什么？由哪几部分组成？时钟回拨问题如何解决</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">雪花算法（Snowflake，Twitter 提出）生成 64 位 long 型 ID，由时间戳、机器 ID 和序列号拼接而成，整体按时间趋势递增。</p>
+<p><strong>组成（64 bit）</strong></p>
+<ol>
+<li>1 位符号位：固定为 0，保证 ID 是正数。</li>
+<li>41 位时间戳：当前毫秒数减去自定义起始时间（epoch），可用约 69 年。</li>
+<li>10 位机器 ID：通常拆成 5 位数据中心 ID + 5 位机器 ID，最多 1024 个节点。</li>
+<li>12 位序列号：同一毫秒内自增，每个节点每毫秒最多生成 4096 个 ID。同一毫秒内序列号用完，就自旋等到下一毫秒。</li>
+</ol>
+<p><strong>时钟回拨问题</strong>：存在。NTP 同步或人为调整可能让系统时间倒退，如果回到已经用过的毫秒，就可能生成重复 ID。</p>
+<p><strong>解决办法</strong></p>
+<ul>
+<li>记录上一次生成 ID 的时间戳，发现当前时间小于它，说明发生了回拨。</li>
+<li>回拨幅度小（如几毫秒）：等待时间追上后再生成。</li>
+<li>回拨幅度大：直接抛异常拒绝生成，并告警，同时摘掉这个节点。</li>
+<li>预留备用 workerId：回拨时切换到另一个 workerId 继续生成。</li>
+<li>不依赖实时时钟：如百度 UidGenerator 的 CachedUidGenerator 借用未来时间批量生成；美团 Leaf-snowflake 启动时和 ZooKeeper 中记录的时间做校验。</li>
+</ul>
+<p><strong>其他注意点</strong></p>
+<ul>
+<li>机器 ID 必须唯一，常用 ZooKeeper / Redis / 数据库分配，或由配置下发。</li>
+<li>低并发时每毫秒只生成一个 ID，序列号总是 0，如果按 ID 取模分库分表会不均匀，可以让序列号起始值随机。</li>
+</ul></div></article></section><section class="grp has-core" id="g4"><h2 class="grp-title">服务通信与中间件 <span class="cnt"><span class="n-all">5</span><span class="n-core">高频 1</span></span></h2><article class="q" id="q11"><h3><a class="q-link" href="#q11">RPC与HTTP调用有什么区别？你了解gRPC吗？相比RESTful API有哪些优势</a></h3><div class="a"><p class="lead">RPC 是一种调用方式（像调用本地方法一样调用远程服务），HTTP 是一种传输协议，两者不是同一层面的东西。RPC 底层可以是自定义 TCP 协议（如 Dubbo 协议），也可以基于 HTTP（gRPC 基于 HTTP/2）。</p>
+<p><strong>常被问到的区别</strong></p>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>RPC 框架（Dubbo、gRPC）</th>
+<th>HTTP / RESTful</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>定位</td>
+<td>面向服务内部调用，像本地方法</td>
+<td>面向资源，通用、适合对外开放</td>
+</tr>
+<tr>
+<td>协议和序列化</td>
+<td>通常是二进制协议 + 高效序列化（Hessian、Protobuf）</td>
+<td>一般是文本格式 JSON，报文和头部较大</td>
+</tr>
+<tr>
+<td>治理能力</td>
+<td>自带服务发现、负载均衡、超时重试、熔断</td>
+<td>需要配合网关、注册中心等实现</td>
+</tr>
+<tr>
+<td>跨语言 / 调试</td>
+<td>依赖 IDL 或框架</td>
+<td>任何语言、浏览器都能直接调用，调试方便</td>
+</tr>
+</tbody>
+</table>
+<p>&quot;HTTP 是短连接、文本协议&quot;的说法已经过时：HTTP/1.1 默认持久连接（keep-alive）；HTTP/2 是二进制分帧，支持一条连接上多路复用。</p>
+<p><strong>gRPC</strong>：Google 开源的 RPC 框架，基于 HTTP/2 传输，用 Protocol Buffers 定义接口和序列化。</p>
+<ul>
+<li>序列化体积小、速度快，比 JSON 高效。</li>
+<li>HTTP/2 多路复用和头部压缩，一条连接并发多个请求。</li>
+<li>支持四种调用方式：一元调用、服务端流、客户端流、双向流。</li>
+<li>用 <code>.proto</code> 文件定义强类型接口，自动生成多语言的客户端和服务端代码。</li>
+<li>局限：浏览器不能直接调用（需要 gRPC-Web 代理），二进制报文不便于人工调试。适合微服务内部的高性能调用。</li>
+</ul></div></article><article class="q" id="q12"><h3><a class="q-link" href="#q12">Dubbo 的核心组件有哪些？服务注册发现流程是什么</a></h3><div class="a"><p class="lead">Dubbo 的核心角色有五个：Provider、Consumer、Registry、Monitor、Container。注册中心只负责地址的注册和推送，实际调用是 Consumer 直连 Provider。</p>
+<p><strong>核心组件</strong></p>
+<ul>
+<li>Provider：服务提供者。</li>
+<li>Consumer：服务消费者。</li>
+<li>Registry：注册中心，常用 Nacos、ZooKeeper。</li>
+<li>Monitor：统计服务调用次数和耗时的监控中心。</li>
+<li>Container：服务运行容器，负责启动、加载 Provider。</li>
+</ul>
+<p><strong>注册发现流程</strong></p>
+<ol>
+<li>Container 启动并加载 Provider。</li>
+<li>Provider 启动时向注册中心注册自己的地址和服务信息。</li>
+<li>Consumer 启动时向注册中心订阅需要的服务。</li>
+<li>注册中心把 Provider 地址列表返回给 Consumer；Provider 上下线时主动推送变更（ZooKeeper 用 watch，Nacos 用推送）。</li>
+<li>Consumer 在本地缓存地址列表，按负载均衡策略（默认随机）选一个 Provider 直接发起调用，失败时按集群容错策略处理（默认 Failover，重试其他节点）。</li>
+<li>Provider 和 Consumer 定时把调用统计数据发给 Monitor。</li>
+</ol>
+<p><strong>补充</strong></p>
+<ul>
+<li>注册中心宕机时，Consumer 仍可以用本地缓存的地址继续调用，只是感知不到新的上下线。</li>
+<li>Dubbo 3 新增应用级服务发现（以应用而不是接口为粒度注册，减少注册中心数据量），以及基于 HTTP/2、兼容 gRPC 的 Triple 协议。</li>
+</ul></div></article><article class="q" id="q13"><h3><a class="q-link" href="#q13">什么是分布式 session？分布式 session 解决方案有哪些</a></h3><div class="a"><p class="lead">分布式 session 要解决的是：集群部署后，用户的请求可能落到不同节点，而 Servlet 容器默认把 session 存在单机内存里，换节点就丢登录态。思路是让所有节点能拿到同一份会话数据，或者干脆不在服务端存会话。</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>做法</th>
+<th>优缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Session 复制</td>
+<td>节点之间互相同步 session（如 Tomcat 集群复制）</td>
+<td>不用改代码；节点多时同步开销和内存占用大，只适合小集群</td>
+</tr>
+<tr>
+<td>Session 粘滞</td>
+<td>负载均衡按 IP 哈希等规则，让同一用户总落到同一节点</td>
+<td>简单；节点宕机会话丢失，负载可能不均</td>
+</tr>
+<tr>
+<td>集中存储</td>
+<td>session 统一存到 Redis，常用 Spring Session</td>
+<td>最常用，性能高、易扩展；依赖 Redis 的高可用</td>
+</tr>
+<tr>
+<td>客户端存储 Token（JWT）</td>
+<td>服务端签发带签名的 token，客户端每次携带，服务端只校验签名</td>
+<td>无状态，天然支持水平扩展和跨服务；签发后难以主动失效（要配合黑名单或短有效期 + refresh token），payload 只是 Base64 编码，不能放敏感信息</td>
+</tr>
+</tbody>
+</table>
+<p>直接把 session 数据放在 Cookie 里不安全、大小也受限（单个 Cookie 一般 4KB），不推荐。实际项目里常见的是&quot;Redis 存 token → 用户信息&quot;，或者 JWT + Redis 黑名单。</p></div></article><article class="q core" id="q14"><h3><a class="q-link" href="#q14">如何保证消息不被重复消费？消息队列积压了几百万条消息该如何处理？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">主流 MQ 只保证 at-least-once，生产者重试、消费者提交 offset 前宕机、Rebalance 都会造成重复投递，所以去重要靠消费端幂等。积压的处理思路是先止血，再扩容消费能力。</p>
+<p><strong>消费幂等的做法</strong>：用业务唯一 ID（订单号、请求 ID、消息 ID）判断是否处理过。</p>
+<ul>
+<li>数据库唯一约束：插入去重表或业务表，主键冲突就说明已处理。去重记录和业务操作放在同一个本地事务里最可靠。</li>
+<li>Redis <code>SET key NX EX</code>：记录已处理的 ID，性能高，但和业务操作不在同一事务里，要考虑处理失败后删除标记。</li>
+<li>状态机 / 乐观锁：<code>UPDATE order SET status = 'PAID' WHERE id = ? AND status = 'UNPAID'</code>，影响行数为 0 就跳过；或者带版本号更新。</li>
+<li>天然幂等的操作（按主键覆盖写、设置为某个值）不需要额外处理。</li>
+</ul>
+<p><strong>百万级积压怎么处理</strong></p>
+<ol>
+<li>先定位原因：消费端是否报错重试、有没有慢 SQL、下游接口是否变慢、是否死循环。先修复消费端，否则扩容也没用。</li>
+<li>扩容消费者：增加消费实例或消费线程。Kafka 和 RocketMQ 中，同一消费组内的消费者数超过分区（队列）数后，多出来的消费者是空闲的。</li>
+<li>分区不够时临时扩容：写一个临时程序，把积压消息不做业务处理、直接转发到一个分区数更多的新 topic，再部署大量消费者并行消费新 topic，处理完后恢复原架构。</li>
+<li>提高单个消费者的吞吐：批量消费、批量写库，业务允许时可以异步处理。</li>
+<li>非核心消息可以降级：先丢弃或延后，保障核心链路；消息过期丢失的，事后从业务数据中查出来补发。</li>
+<li>事后补监控：对积压量（consumer lag）设置告警。</li>
+</ol></div></article><article class="q" id="q15"><h3><a class="q-link" href="#q15">Quartz、XXL-Job、Elastic-Job 的区别？</a></h3><div class="a"><p class="lead">三者都是 Java 定时任务框架。Quartz 是基础调度库；XXL-Job 是&quot;调度中心 + 执行器&quot;的中心化平台；ElasticJob 是基于 ZooKeeper 的去中心化分布式调度，主打分片。</p>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>Quartz</th>
+<th>XXL-Job</th>
+<th>ElasticJob（Lite）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>架构</td>
+<td>嵌入应用的调度库</td>
+<td>中心化：调度中心统一触发，执行器负责执行</td>
+<td>去中心化：没有调度中心，各节点通过 ZooKeeper 协调</td>
+</tr>
+<tr>
+<td>集群方式</td>
+<td>多节点共享数据库，通过数据库行锁抢占触发权，同一任务同一时刻只在一个节点执行</td>
+<td>调度中心集群依赖数据库锁，按路由策略（轮询、故障转移、分片广播等）选择执行器</td>
+<td>ZooKeeper 做注册、选主和分片分配</td>
+</tr>
+<tr>
+<td>分片</td>
+<td>不支持</td>
+<td>支持分片广播</td>
+<td>支持分片，节点变化时自动重新分片</td>
+</tr>
+<tr>
+<td>运维管理</td>
+<td>没有自带控制台</td>
+<td>自带 Web 控制台，可视化管理、日志、告警、失败重试</td>
+<td>有可选的控制台</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>单体应用或简单集群</td>
+<td>中小规模，上手快，国内使用最广</td>
+<td>大数据量、需要弹性分片的场景</td>
+</tr>
+</tbody>
+</table>
+<p>Quartz 的问题在于数据库锁竞争导致节点多时性能一般，也不能把一个任务拆到多台机器并行执行。ElasticJob 现在是 Apache ShardingSphere 的子项目。Spring 自带的 <code>@Scheduled</code> 只适合单机，集群部署会在每个节点各执行一次，需要配合分布式锁（如 ShedLock）。</p></div></article></section><nav class="pager"><a href="spring.html" class="prev"><small>上一章</small>Spring</a><a href="network.html" class="next"><small>下一章</small>计算机网络</a></nav>
+  </div>
+</main>
+<div class="backdrop" id="backdrop"></div>
+<button class="to-top" id="to-top" aria-label="回到顶部">↑</button>
+<script id="outline" type="application/json">[{"id":"g1","title":"分布式理论与数据分布","n":3,"core":1},{"id":"g2","title":"分布式锁","n":4,"core":3},{"id":"g3","title":"分布式事务与全局 ID","n":3,"core":3},{"id":"g4","title":"服务通信与中间件","n":5,"core":1}]</script>
+<script src="assets/app.js?v=ab30056e"></script>
+</body>
+</html>

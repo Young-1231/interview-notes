@@ -1,0 +1,902 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="darkreader-lock">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Java 集合 · 八股笔记</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' font-weight='bold' fill='white' text-anchor='middle'%3E八%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css?v=ab30056e">
+<script>
+  (function () {
+    var t = localStorage.getItem('iv.theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+</head>
+<body data-part="java" data-sec="java-collection">
+<header class="site-header">
+  <button class="icon-btn menu-btn" id="menu-btn" aria-label="目录">☰</button>
+  <a href="index.html" class="brand"><span class="dot">●</span> 八股笔记</a>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="search">
+    <input id="search" type="search" placeholder="搜索题目  /" autocomplete="off" aria-label="搜索题目">
+    <span id="search-info"></span>
+    <div class="search-pop" id="search-pop" hidden></div>
+  </div>
+  <button class="icon-btn" id="theme-toggle" aria-label="切换主题">◐</button>
+</header>
+<aside class="side" id="side"><nav id="toc"></nav></aside>
+<main class="main">
+  <div id="article">
+<header class="page-head"><div class="crumb">Java 后端</div><h1>Java 集合 <span class="cnt">29 题</span></h1><div class="tools"><button type="button" class="tool" id="t-core" aria-pressed="false">只看高频 <b>12</b></button><button type="button" class="tool" id="t-quiz" aria-pressed="false">自测模式</button><a class="tool resume" id="t-resume" hidden></a><span class="kbd-hint"><kbd>j</kbd>/<kbd>k</kbd> 上下题 · 自测时 <kbd>空格</kbd> 看答案 · <kbd>/</kbd> 搜索</span></div><nav class="overview"><div class="ov-groups"><a href="#g1" class="no-core">集合体系概览<span><span class="n-all">3</span><span class="n-core">0</span></span></a><a href="#g2">List<span><span class="n-all">8</span><span class="n-core">3</span></span></a><a href="#g3">线程安全的集合<span><span class="n-all">3</span><span class="n-core">1</span></span></a><a href="#g4">HashMap<span><span class="n-all">12</span><span class="n-core">6</span></span></a><a href="#g5">ConcurrentHashMap<span><span class="n-all">3</span><span class="n-core">2</span></span></a></div></nav></header><section class="grp" id="g1"><h2 class="grp-title">集合体系概览 <span class="cnt"><span class="n-all">3</span><span class="n-core">高频 0</span></span></h2><article class="q" id="q1"><h3><a class="q-link" href="#q1">Java 集合框架的整体结构？Collection 和 Map 有什么区别？</a></h3><div class="a"><p class="lead">Java 集合分为两大体系：存单个元素的 <code>Collection</code> 和存键值对的 <code>Map</code>，两者是平级的根接口，<code>Map</code> 并不继承 <code>Collection</code>。</p>
+<p><strong>Collection（单列）</strong></p>
+<ul>
+<li><code>List</code>：有序（按插入顺序）、可重复、可按下标访问。实现类 <code>ArrayList</code>、<code>LinkedList</code>、<code>Vector</code>（及其子类 <code>Stack</code>）、<code>CopyOnWriteArrayList</code>。</li>
+<li><code>Set</code>：不可重复。<code>HashSet</code>（无序）、<code>LinkedHashSet</code>（保持插入顺序）、<code>TreeSet</code>（排序）。</li>
+<li><code>Queue</code> / <code>Deque</code>：队列和双端队列语义。<code>ArrayDeque</code>、<code>LinkedList</code>、<code>PriorityQueue</code>（堆，按优先级出队），并发场景下有 <code>BlockingQueue</code> 系列。</li>
+</ul>
+<p><strong>Map（双列）</strong>：key 唯一，每个 key 映射一个 value。<code>HashMap</code>、<code>LinkedHashMap</code>（保持插入或访问顺序）、<code>TreeMap</code>（按 key 排序）、<code>Hashtable</code>、<code>ConcurrentHashMap</code>。</p>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>Collection</th>
+<th>Map</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>存储内容</td>
+<td>单个元素</td>
+<td>key-value 键值对</td>
+</tr>
+<tr>
+<td>访问方式</td>
+<td>遍历、下标（List）、元素本身</td>
+<td>通过 key 查找 value</td>
+</tr>
+<tr>
+<td>唯一性</td>
+<td>List 可重复，Set 不可重复</td>
+<td>key 不可重复，value 可重复</td>
+</tr>
+<tr>
+<td>遍历</td>
+<td>本身实现 <code>Iterable</code></td>
+<td>通过 <code>keySet()</code>、<code>values()</code>、<code>entrySet()</code> 视图遍历</td>
+</tr>
+</tbody>
+</table>
+<p>一句话：List 关注顺序和下标，Set 关注去重，Queue 关注出入队顺序，Map 关注按 key 快速查找。</p></div></article><article class="q" id="q2"><h3><a class="q-link" href="#q2">Java 常见集合有哪些？分别适合什么场景？</a><span class="tags"><i class="t-co bank">农业银行</i><i class="t-co bank">交通银行</i></span></h3><div class="a"><table>
+<thead>
+<tr>
+<th>需求</th>
+<th>推荐</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>普通列表、随机访问</td>
+<td><code>ArrayList</code></td>
+<td>绝大多数场景的默认选择</td>
+</tr>
+<tr>
+<td>栈、队列、双端队列</td>
+<td><code>ArrayDeque</code></td>
+<td>比 <code>Stack</code>、<code>LinkedList</code> 更快，不允许 null</td>
+</tr>
+<tr>
+<td>优先级队列、Top K</td>
+<td><code>PriorityQueue</code></td>
+<td>二叉小顶堆，出队 O(log n)</td>
+</tr>
+<tr>
+<td>去重</td>
+<td><code>HashSet</code></td>
+<td>依赖 <code>hashCode</code> + <code>equals</code></td>
+</tr>
+<tr>
+<td>去重且保持插入顺序</td>
+<td><code>LinkedHashSet</code></td>
+<td></td>
+</tr>
+<tr>
+<td>去重且排序、范围查询</td>
+<td><code>TreeSet</code></td>
+<td>红黑树</td>
+</tr>
+<tr>
+<td>按 key 快速查找</td>
+<td><code>HashMap</code></td>
+<td>平均 O(1)</td>
+</tr>
+<tr>
+<td>保持顺序、实现 LRU</td>
+<td><code>LinkedHashMap</code></td>
+<td><code>accessOrder = true</code> + 重写 <code>removeEldestEntry</code></td>
+</tr>
+<tr>
+<td>key 有序、范围查询</td>
+<td><code>TreeMap</code></td>
+<td>O(log n)</td>
+</tr>
+<tr>
+<td>并发读写 Map</td>
+<td><code>ConcurrentHashMap</code></td>
+<td>不要再用 <code>Hashtable</code></td>
+</tr>
+<tr>
+<td>读多写少的并发 List</td>
+<td><code>CopyOnWriteArrayList</code></td>
+<td>如监听器列表、配置白名单</td>
+</tr>
+<tr>
+<td>生产者-消费者</td>
+<td><code>ArrayBlockingQueue</code>、<code>LinkedBlockingQueue</code></td>
+<td>线程池的任务队列</td>
+</tr>
+</tbody>
+</table>
+<p><code>Vector</code>、<code>Hashtable</code>、<code>Stack</code> 都是 JDK 1.0 的遗留类，方法级 <code>synchronized</code>，性能差，新代码不推荐使用。</p></div></article><article class="q" id="q3"><h3><a class="q-link" href="#q3">List 和 Set 的区别？</a></h3><div class="a"><p class="lead">两者都继承 <code>Collection</code>，核心区别是是否允许重复和是否有序。</p>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>List</th>
+<th>Set</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>重复元素</td>
+<td>允许</td>
+<td>不允许（<code>add</code> 重复元素返回 false）</td>
+</tr>
+<tr>
+<td>顺序</td>
+<td>有序，保持插入顺序</td>
+<td><code>HashSet</code> 不保证顺序；<code>LinkedHashSet</code> 保持插入顺序；<code>TreeSet</code> 按比较规则排序</td>
+</tr>
+<tr>
+<td>下标访问</td>
+<td>支持 <code>get(int index)</code></td>
+<td>不支持</td>
+</tr>
+<tr>
+<td>null</td>
+<td>可存多个 null</td>
+<td><code>HashSet</code> 可存一个 null；<code>TreeSet</code> 自然排序时不能存 null</td>
+</tr>
+<tr>
+<td>判断重复的依据</td>
+<td>无</td>
+<td><code>HashSet</code> 用 <code>hashCode()</code> + <code>equals()</code>；<code>TreeSet</code> 用 <code>compareTo()</code> / <code>Comparator</code> 返回 0</td>
+</tr>
+<tr>
+<td>实现类</td>
+<td><code>ArrayList</code>、<code>LinkedList</code></td>
+<td><code>HashSet</code>、<code>LinkedHashSet</code>、<code>TreeSet</code></td>
+</tr>
+</tbody>
+</table>
+<p>需要保持顺序且允许重复用 List；需要去重用 Set。<code>contains</code> 的效率也不同：<code>ArrayList</code> 是 O(n)，<code>HashSet</code> 平均 O(1)，频繁判断是否存在时应该用 Set。</p></div></article></section><section class="grp has-core" id="g2"><h2 class="grp-title">List <span class="cnt"><span class="n-all">8</span><span class="n-core">高频 3</span></span></h2><article class="q core" id="q4"><h3><a class="q-link" href="#q4">ArrayList 的底层结构？插入和删除的时间复杂度？</a><span class="tags"><i class="t-core">高频</i><i class="t-co bank">工商银行</i><i class="t-co">美团</i><i class="t-co">蚂蚁</i><i class="t-co bank">农业银行</i><i class="t-co bank">交通银行</i></span></h3><div class="a"><p class="lead"><code>ArrayList</code> 底层是可动态扩容的 <code>Object[] elementData</code> 数组，实现了 <code>RandomAccess</code> 接口，支持按下标 O(1) 随机访问。</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>时间复杂度</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>get(i)</code> / <code>set(i, e)</code></td>
+<td>O(1)</td>
+<td>直接按下标访问</td>
+</tr>
+<tr>
+<td><code>add(e)</code> 尾部插入</td>
+<td>均摊 O(1)</td>
+<td>容量满时触发扩容，需要 O(n) 复制，均摊后仍是 O(1)</td>
+</tr>
+<tr>
+<td><code>add(i, e)</code> 指定位置插入</td>
+<td>O(n)</td>
+<td>需要用 <code>System.arraycopy</code> 把 i 之后的元素后移一位</td>
+</tr>
+<tr>
+<td><code>remove(i)</code> 指定位置删除</td>
+<td>O(n)</td>
+<td>i 之后的元素前移；删除尾部元素是 O(1)</td>
+</tr>
+<tr>
+<td><code>remove(Object)</code> / <code>contains</code> / <code>indexOf</code></td>
+<td>O(n)</td>
+<td>需要线性查找</td>
+</tr>
+</tbody>
+</table>
+<p>特点：内存连续、CPU 缓存友好；允许 null 和重复元素；非线程安全；删除元素不会自动缩容，可调用 <code>trimToSize()</code>。</p></div></article><article class="q core" id="q5"><h3><a class="q-link" href="#q5">ArrayList 的扩容机制</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">一句话：懒初始化，第一次 <code>add</code> 时容量变为 10；之后容量不够时扩容为原来的 1.5 倍，通过 <code>Arrays.copyOf</code> 把旧数组复制到新数组。</p>
+<p><strong>初始容量（JDK 8 起）</strong>：<code>new ArrayList&lt;&gt;()</code> 先指向共享空数组 <code>DEFAULTCAPACITY_EMPTY_ELEMENTDATA</code>，第一次 <code>add</code> 才分配 10；<code>new ArrayList&lt;&gt;(0)</code> 指向另一个空数组 <code>EMPTY_ELEMENTDATA</code>，之后按 0 → 1 → 2 → 3 → 4 → 6 → 9 增长，不会跳到 10。</p>
+<p><strong>扩容流程</strong></p>
+<ol>
+<li><code>add</code> 时 <code>size == elementData.length</code>，调用 <code>grow(minCapacity)</code>。</li>
+<li>新容量 <code>oldCapacity + (oldCapacity &gt;&gt; 1)</code>，即 1.5 倍（向下取整，15 → 22）；仍小于所需容量（如 <code>addAll</code> 大量元素）时直接用所需容量。</li>
+<li>上限接近 <code>Integer.MAX_VALUE - 8</code>，超出抛 <code>OutOfMemoryError</code>。</li>
+<li><code>Arrays.copyOf</code> 复制到新数组，底层是 <code>System.arraycopy</code>。</li>
+</ol>
+<pre><code class="language-java">// JDK 17 ArrayList.grow 核心逻辑
+int oldCapacity = elementData.length;
+if (oldCapacity &gt; 0 || elementData != DEFAULTCAPACITY_EMPTY_ELEMENTDATA) {
+    int newCapacity = ArraysSupport.newLength(oldCapacity,
+            minCapacity - oldCapacity,   // 最小增长量
+            oldCapacity &gt;&gt; 1);           // 期望增长量，即 0.5 倍
+    return elementData = Arrays.copyOf(elementData, newCapacity);
+} else {
+    return elementData = new Object[Math.max(DEFAULT_CAPACITY, minCapacity)]; // 首次 add 分配 10
+}
+</code></pre>
+<p><strong>为什么是 1.5 倍</strong>：兼顾扩容次数和空间浪费。对比 <code>Vector</code> 默认 2 倍、<code>HashMap</code> 2 倍。预知元素数量时用 <code>new ArrayList&lt;&gt;(n)</code> 或 <code>ensureCapacity(n)</code> 避免多次复制。</p></div></article><article class="q core" id="q6"><h3><a class="q-link" href="#q6">ArrayList 和 LinkedList 的区别？</a><span class="tags"><i class="t-core">高频</i><i class="t-co bank">交通银行</i><i class="t-co">饿了么</i></span></h3><div class="a"><table>
+<thead>
+<tr>
+<th>对比</th>
+<th>ArrayList</th>
+<th>LinkedList</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>底层结构</td>
+<td><code>Object[]</code> 动态数组</td>
+<td>双向链表（<code>Node</code> 含 <code>prev</code>、<code>item</code>、<code>next</code>，维护 <code>first</code>、<code>last</code>）</td>
+</tr>
+<tr>
+<td>随机访问 <code>get(i)</code></td>
+<td>O(1)，实现 <code>RandomAccess</code></td>
+<td>O(n)，从离 i 更近的一端遍历（i &lt; size/2 从头，否则从尾）</td>
+</tr>
+<tr>
+<td>头部插入 / 删除</td>
+<td>O(n)，需要移动所有元素</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>尾部插入 / 删除</td>
+<td>均摊 O(1)</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>中间插入 / 删除</td>
+<td>O(n)，移动元素</td>
+<td>定位 O(n) + 修改指针 O(1)，整体仍是 O(n)</td>
+</tr>
+<tr>
+<td>内存</td>
+<td>连续空间，尾部可能有预留的空闲容量</td>
+<td>每个节点额外存两个引用和对象头，占用更大，且分散在堆中</td>
+</tr>
+<tr>
+<td>缓存友好</td>
+<td>好</td>
+<td>差，节点不连续</td>
+</tr>
+<tr>
+<td>扩容</td>
+<td>需要，1.5 倍</td>
+<td>不需要</td>
+</tr>
+<tr>
+<td>额外能力</td>
+<td>无</td>
+<td>实现了 <code>Deque</code>，可当队列、栈、双端队列</td>
+</tr>
+<tr>
+<td>线程安全</td>
+<td>都不安全</td>
+<td>都不安全</td>
+</tr>
+</tbody>
+</table>
+<p>List 接口的其他实现：<code>Vector</code>（同步的动态数组，已不推荐）、<code>Stack</code>（继承 <code>Vector</code>，推荐用 <code>ArrayDeque</code> 代替）、<code>CopyOnWriteArrayList</code>（并发场景读多写少）。</p>
+<p>结论：查询多、尾部追加用 <code>ArrayList</code>，实际开发中绝大多数场景都用它；需要频繁在头部操作或当队列使用时，优先 <code>ArrayDeque</code>，其次 <code>LinkedList</code>。</p></div></article><article class="q" id="q7"><h3><a class="q-link" href="#q7">大量增加和删除，用 ArrayList 好还是 LinkedList 好？</a></h3><div class="a"><p class="lead">不能简单地说&quot;增删多就用 LinkedList&quot;，要看在哪里增删。</p>
+<ul>
+<li><strong>在头部增删</strong>：<code>LinkedList</code> 是 O(1)，<code>ArrayList</code> 需要移动全部元素是 O(n)，<code>LinkedList</code> 明显更好（更推荐 <code>ArrayDeque</code>）。</li>
+<li><strong>在尾部增删</strong>：两者都是 O(1)，<code>ArrayList</code> 内存连续、没有创建节点对象的开销，通常更快。</li>
+<li><strong>在中间按下标增删</strong>：<code>LinkedList</code> 需要先遍历到位置，这一步就是 O(n)，而且是指针跳跃式访问，缓存命中率低；<code>ArrayList</code> 移动元素用的是 <code>System.arraycopy</code>，是连续内存的批量复制，非常快。实测中 <code>ArrayList</code> 往往不慢甚至更快。</li>
+<li><strong>遍历过程中边走边删</strong>：用 <code>LinkedList</code> 的迭代器 <code>iterator.remove()</code> 是 O(1)，这才是 <code>LinkedList</code> 真正有优势的场景。</li>
+</ul>
+<p>所以一般回答：头部增删或已持有迭代器位置时用 <code>LinkedList</code>（或 <code>ArrayDeque</code>），其他场景优先 <code>ArrayList</code>。</p></div></article><article class="q" id="q8"><h3><a class="q-link" href="#q8">LinkedList 的底层？插入删除的时间复杂度？</a><span class="tags"><i class="t-co bank">交通银行</i><i class="t-co bank">建设银行</i></span></h3><div class="a"><p class="lead"><code>LinkedList</code> 是双向链表，内部维护 <code>first</code>、<code>last</code> 两个指针和 <code>size</code>，每个节点是 <code>Node&lt;E&gt;</code>，包含 <code>item</code>、<code>prev</code>、<code>next</code>。它同时实现了 <code>List</code> 和 <code>Deque</code> 接口。</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>复杂度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>addFirst</code> / <code>addLast</code> / <code>removeFirst</code> / <code>removeLast</code> / <code>add(e)</code></td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td><code>get(i)</code> / <code>set(i, e)</code></td>
+<td>O(n)，最多遍历 n/2</td>
+</tr>
+<tr>
+<td><code>add(i, e)</code> / <code>remove(i)</code></td>
+<td>O(n)，主要耗在定位；定位后改指针是 O(1)</td>
+</tr>
+<tr>
+<td><code>remove(Object)</code> / <code>contains</code></td>
+<td>O(n)</td>
+</tr>
+<tr>
+<td>通过迭代器在当前位置插入或删除</td>
+<td>O(1)</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>不需要扩容，按需创建节点，但每个节点额外占用两个引用和一个对象头的空间。</li>
+<li>不实现 <code>RandomAccess</code>，用普通 <code>for (int i...)</code> 加 <code>get(i)</code> 遍历是 O(n²)，应该用 foreach / 迭代器遍历。</li>
+<li>允许 null；非线程安全。</li>
+</ul></div></article><article class="q" id="q9"><h3><a class="q-link" href="#q9">ArrayList、LinkedList 是线程安全的吗？会出现哪些问题？</a><span class="tags"><i class="t-co bank">工商银行</i><i class="t-co">美团</i><i class="t-co">蚂蚁</i><i class="t-co bank">农业银行</i><i class="t-co bank">交通银行</i></span></h3><div class="a"><p class="lead">都不是线程安全的。当它们作为共享数据（单例 Bean 的成员变量、静态变量）被多线程并发修改时会出问题。</p>
+<p><strong>ArrayList 的典型问题</strong>（<code>add</code> 里的 <code>elementData[size++] = e</code> 不是原子操作）</p>
+<ul>
+<li><strong>元素被覆盖、丢失</strong>：两个线程读到同一个 <code>size</code>，先后写入同一个下标，最终只保留一个，<code>size</code> 却可能加了两次，出现 null 元素。</li>
+<li><strong>数组越界 <code>ArrayIndexOutOfBoundsException</code></strong>：容量还剩 1 时，两个线程都判断&quot;不需要扩容&quot;，第二个线程写入时越界。</li>
+<li><strong>size 与实际元素数不一致</strong>：<code>size++</code> 本身是读-改-写，存在丢失更新。</li>
+<li><strong>并发修改异常</strong>：一个线程遍历、另一个线程修改，触发 <code>ConcurrentModificationException</code>。</li>
+</ul>
+<p><strong>LinkedList 的典型问题</strong></p>
+<ul>
+<li>并发 <code>add</code> 时多个线程同时修改 <code>last</code> 指针和 <code>next</code> 指针，导致节点丢失、链表断裂或 <code>size</code> 不准。</li>
+<li>遍历时被其他线程修改同样会抛 <code>ConcurrentModificationException</code>。</li>
+</ul>
+<p><strong>解决方案</strong></p>
+<ul>
+<li>读多写少：<code>CopyOnWriteArrayList</code>。</li>
+<li>读写都多：<code>Collections.synchronizedList(new ArrayList&lt;&gt;())</code>，或自己加锁。注意用它遍历时仍要手动 <code>synchronized (list) { ... }</code>，因为迭代器本身不加锁。</li>
+<li>队列场景改用 <code>ConcurrentLinkedQueue</code>、<code>ConcurrentLinkedDeque</code> 或 <code>LinkedBlockingQueue</code>。</li>
+<li>不共享：每个线程用局部变量的 List，最安全。</li>
+</ul></div></article><article class="q" id="q10"><h3><a class="q-link" href="#q10">什么是快速失败（fail-fast）？和安全失败（fail-safe）有什么区别？</a></h3><div class="a"><p class="lead">fail-fast 是 <code>java.util</code> 下非并发集合的一种错误检测机制：迭代器遍历过程中，如果发现集合结构被<strong>迭代器之外的方式</strong>修改了，立即抛出 <code>ConcurrentModificationException</code>，而不是继续返回可能错误的数据。单线程里一边遍历一边调用集合的 <code>add</code> / <code>remove</code> 也会触发，并不只有多线程场景。</p>
+<p><strong>原理</strong></p>
+<ul>
+<li>集合内部有 <code>modCount</code> 计数器，每次结构性修改（增删元素、扩容、<code>clear</code>；<code>set</code> 替换值不算）都会 <code>modCount++</code>。</li>
+<li>创建迭代器时记录 <code>expectedModCount = modCount</code>。</li>
+<li>每次 <code>next()</code>（以及迭代器的 <code>remove()</code>）前检查 <code>modCount != expectedModCount</code>，不相等就抛异常。</li>
+<li>迭代器自己的 <code>remove()</code> 会同步更新 <code>expectedModCount</code>，所以用它删除是安全的。</li>
+</ul>
+<p>fail-fast 是&quot;尽力而为&quot;的检测，不保证一定抛出，不能拿它来保证并发正确性。</p>
+<p><strong>fail-safe（安全失败）</strong>：<code>java.util.concurrent</code> 下的集合（<code>CopyOnWriteArrayList</code>、<code>ConcurrentHashMap</code> 等）遍历时不会抛 <code>ConcurrentModificationException</code>。</p>
+<ul>
+<li><code>CopyOnWriteArrayList</code> 的迭代器基于创建时的数组快照，看不到之后的修改。</li>
+<li><code>ConcurrentHashMap</code> 的迭代器是弱一致的，能反映部分修改，但不保证看到最新状态。</li>
+<li>代价是可能读到旧数据，以及额外的内存开销。</li>
+</ul></div></article><article class="q" id="q11"><h3><a class="q-link" href="#q11">在 for 循环或迭代器中删除 ArrayList 元素会发生什么？怎么解决？</a></h3><div class="a"><p class="lead"><strong>会发生什么</strong></p>
+<ul>
+<li><strong>foreach 中调用 <code>list.remove()</code></strong>：foreach 底层是迭代器，<code>list.remove</code> 使 <code>modCount</code> 改变，下一次 <code>next()</code> 时抛 <code>ConcurrentModificationException</code>。特例：删除的是倒数第二个元素时，删除后 <code>size</code> 正好等于游标，<code>hasNext()</code> 返回 false，循环直接结束，不抛异常，但最后一个元素没被检查到。</li>
+<li><strong>普通下标 for 循环正序删除</strong>：不会抛异常，但删除后后面的元素前移，<code>i++</code> 会跳过紧挨着的那个元素，连续两个符合条件的元素只能删掉一个。</li>
+</ul>
+<p><strong>正确做法</strong></p>
+<pre><code class="language-java">// 1. 迭代器自己的 remove（会同步 expectedModCount）
+Iterator&lt;String&gt; it = list.iterator();
+while (it.hasNext()) {
+    if (&quot;a&quot;.equals(it.next())) it.remove();
+}
+
+// 2. JDK 8+ 推荐：removeIf，内部一次遍历批量删除，O(n)
+list.removeIf(&quot;a&quot;::equals);
+
+// 3. 下标 for 循环倒序删除，前面的元素下标不受影响
+for (int i = list.size() - 1; i &gt;= 0; i--) {
+    if (&quot;a&quot;.equals(list.get(i))) list.remove(i);
+}
+
+// 4. Stream 过滤生成新集合
+List&lt;String&gt; result = list.stream().filter(s -&gt; !&quot;a&quot;.equals(s)).toList(); // toList 为 JDK 16+
+</code></pre>
+<p>正序下标循环也可以在删除后 <code>i--</code> 修正，但可读性差。多线程场景则应改用 <code>CopyOnWriteArrayList</code> 或加锁。</p></div></article></section><section class="grp has-core" id="g3"><h2 class="grp-title">线程安全的集合 <span class="cnt"><span class="n-all">3</span><span class="n-core">高频 1</span></span></h2><article class="q core" id="q12"><h3><a class="q-link" href="#q12">Java 中有哪些线程安全的集合？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">分三代，推荐用 JUC 并发集合。</p>
+<p><strong>1. 遗留同步集合（JDK 1.0）</strong>：<code>Vector</code>、<code>Stack</code>、<code>Hashtable</code>，方法上加 <code>synchronized</code> 锁整个对象，性能差。</p>
+<p><strong>2. <code>Collections</code> 同步包装器</strong>：<code>synchronizedList()</code>、<code>synchronizedMap()</code> 等，用一个 mutex 包住每个方法，仍是全局一把锁；复合操作和遍历要外部手动加锁。</p>
+<p><strong>3. JUC 并发集合</strong></p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>实现</th>
+<th>原理与场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Map</td>
+<td><code>ConcurrentHashMap</code></td>
+<td>JDK 8 起 CAS + synchronized 锁桶头节点，通用首选</td>
+</tr>
+<tr>
+<td>有序 Map / Set</td>
+<td><code>ConcurrentSkipListMap</code>、<code>ConcurrentSkipListSet</code></td>
+<td>跳表 + CAS，有序，适合并发排序和范围查询</td>
+</tr>
+<tr>
+<td>写时复制</td>
+<td><code>CopyOnWriteArrayList</code>、<code>CopyOnWriteArraySet</code></td>
+<td>写时加锁复制新数组、读无锁，读多写少</td>
+</tr>
+<tr>
+<td>非阻塞队列</td>
+<td><code>ConcurrentLinkedQueue</code>、<code>ConcurrentLinkedDeque</code></td>
+<td>CAS 无锁链表队列</td>
+</tr>
+<tr>
+<td>阻塞队列</td>
+<td><code>ArrayBlockingQueue</code>（有界，一把锁）、<code>LinkedBlockingQueue</code>（两把锁，默认容量 <code>Integer.MAX_VALUE</code>）、<code>SynchronousQueue</code> 等</td>
+<td><code>put</code> / <code>take</code> 阻塞，用于生产者-消费者和线程池</td>
+</tr>
+</tbody>
+</table></div></article><article class="q" id="q13"><h3><a class="q-link" href="#q13">有哪些线程安全的 List？CopyOnWriteArrayList 的原理？是强一致还是最终一致？</a></h3><div class="a"><p class="lead"><strong>线程安全的 List</strong></p>
+<table>
+<thead>
+<tr>
+<th>实现</th>
+<th>原理</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Vector</code></td>
+<td>方法加 <code>synchronized</code></td>
+<td>读写都加锁，已不推荐</td>
+</tr>
+<tr>
+<td><code>Collections.synchronizedList</code></td>
+<td>包装器，每个方法 <code>synchronized (mutex)</code></td>
+<td>读写都加锁；遍历需手动加锁</td>
+</tr>
+<tr>
+<td><code>CopyOnWriteArrayList</code></td>
+<td>写时复制</td>
+<td>读无锁，写加锁复制数组，读多写少</td>
+</tr>
+</tbody>
+</table>
+<p><strong>CopyOnWriteArrayList 原理</strong></p>
+<ul>
+<li>底层是 <code>volatile Object[] array</code>。</li>
+<li><strong>读</strong>（<code>get</code>、遍历）：直接读当前数组引用，不加锁。</li>
+<li><strong>写</strong>（<code>add</code>、<code>set</code>、<code>remove</code>）：先加锁（JDK 8 用 <code>ReentrantLock</code>，较新版本如 JDK 11、17 改为 <code>synchronized</code> 锁一个内部对象），复制出一个新数组，在新数组上修改，最后把 <code>array</code> 引用指向新数组。写写互斥，写不阻塞读。</li>
+<li><code>volatile</code> 保证引用替换后，后续的读能立刻看到新数组。</li>
+<li>迭代器基于创建时的数组快照，不会抛 <code>ConcurrentModificationException</code>，但也不支持通过迭代器 <code>remove</code>（抛 <code>UnsupportedOperationException</code>）。</li>
+</ul>
+<pre><code class="language-java">public boolean add(E e) {
+    synchronized (lock) {
+        Object[] es = getArray();
+        int len = es.length;
+        es = Arrays.copyOf(es, len + 1);  // 复制新数组
+        es[len] = e;
+        setArray(es);                      // volatile 写，替换引用
+        return true;
+    }
+}
+</code></pre>
+<p><strong>一致性</strong>：属于弱一致 / 最终一致，不是强一致。写操作完成（引用替换）之后的读一定能看到新数据；但在写的过程中，并发的读线程看到的仍是旧数组，已经拿到旧数组引用的迭代器也会一直遍历旧快照。</p>
+<p><strong>缺点</strong>：每次写都复制整个数组，写多或数组很大时 CPU 和内存开销高，大数组还可能频繁触发 GC；不适合对实时性要求高的场景。典型用途：监听器列表、黑白名单、路由表等读远多于写的配置类数据。</p></div></article><article class="q" id="q14"><h3><a class="q-link" href="#q14">除了 ConcurrentHashMap，还有哪些线程安全的 Map？</a></h3><div class="a"><table>
+<thead>
+<tr>
+<th>实现</th>
+<th>原理</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Hashtable</code></td>
+<td>所有方法 <code>synchronized</code>，锁整张表</td>
+<td>遗留类，不推荐</td>
+</tr>
+<tr>
+<td><code>Collections.synchronizedMap(map)</code></td>
+<td>包装器，每个方法用同一把 mutex 加锁</td>
+<td>并发不高，或需要把 <code>TreeMap</code>、<code>LinkedHashMap</code> 等特定 Map 包成线程安全的</td>
+</tr>
+<tr>
+<td><code>ConcurrentHashMap</code></td>
+<td>CAS + synchronized 锁桶</td>
+<td>高并发通用首选</td>
+</tr>
+<tr>
+<td><code>ConcurrentSkipListMap</code></td>
+<td>跳表 + CAS，无锁</td>
+<td>需要 key 有序、范围查询的并发场景，读写 O(log n)</td>
+</tr>
+</tbody>
+</table>
+<p>JDK 中没有 <code>CopyOnWriteMap</code>，读多写少时如果想用写时复制的思路，可以自己用 <code>volatile</code> 引用 + 整体替换不可变 Map 实现。</p>
+<p><code>synchronizedMap</code> 的注意点：<code>get</code> 后再 <code>put</code> 这类复合操作不是原子的，遍历时也要手动 <code>synchronized (map)</code>；<code>ConcurrentHashMap</code> 则提供了原子的 <code>putIfAbsent</code>、<code>computeIfAbsent</code>、<code>merge</code> 方法。</p></div></article></section><section class="grp has-core" id="g4"><h2 class="grp-title">HashMap <span class="cnt"><span class="n-all">12</span><span class="n-core">高频 6</span></span></h2><article class="q core" id="q15"><h3><a class="q-link" href="#q15">HashMap 的底层数据结构？JDK 1.7 和 1.8 有什么区别？</a><span class="tags"><i class="t-core">高频</i><i class="t-co bank">交通银行</i><i class="t-co">字节</i><i class="t-co">bilibili</i></span></h3><div class="a"><p class="lead">JDK 1.8 起，<code>HashMap</code> 是 <strong>数组 + 链表 + 红黑树</strong>：<code>Node&lt;K,V&gt;[] table</code> 数组，每个桶存放链表头节点；冲突的元素挂在链表上，链表过长时转为红黑树（<code>TreeNode</code>）。</p>
+<p><strong>关键参数</strong></p>
+<ul>
+<li>默认初始容量 16（<code>DEFAULT_INITIAL_CAPACITY = 1 &lt;&lt; 4</code>），且容量总是 2 的幂；最大容量 <code>1 &lt;&lt; 30</code>。</li>
+<li>默认负载因子 0.75，扩容阈值 <code>threshold = capacity × loadFactor</code>，默认 12。</li>
+<li><code>TREEIFY_THRESHOLD = 8</code>、<code>UNTREEIFY_THRESHOLD = 6</code>、<code>MIN_TREEIFY_CAPACITY = 64</code>。</li>
+<li>table 也是懒初始化，第一次 <code>put</code> 时才在 <code>resize()</code> 中创建。</li>
+</ul>
+<p><strong>hash 计算</strong>：<code>(h = key.hashCode()) ^ (h &gt;&gt;&gt; 16)</code>，把高 16 位异或到低 16 位（扰动函数），让高位也参与下标计算，减少冲突；下标 <code>index = (n - 1) &amp; hash</code>。</p>
+<p><strong>JDK 1.7 与 1.8 对比</strong></p>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>JDK 1.7</th>
+<th>JDK 1.8</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>结构</td>
+<td>数组 + 链表（<code>Entry</code>）</td>
+<td>数组 + 链表 + 红黑树（<code>Node</code> / <code>TreeNode</code>）</td>
+</tr>
+<tr>
+<td>链表插入</td>
+<td>头插法</td>
+<td>尾插法</td>
+</tr>
+<tr>
+<td>扰动函数</td>
+<td>4 次位移 + 5 次异或</td>
+<td>1 次位移 + 1 次异或</td>
+</tr>
+<tr>
+<td>扩容迁移</td>
+<td>每个元素重新计算下标，头插导致链表顺序反转</td>
+<td>按 <code>hash &amp; oldCap</code> 拆成高低两条链，保持原顺序</td>
+</tr>
+<tr>
+<td>扩容时机</td>
+<td>插入前判断，且要求当前桶不为空</td>
+<td>插入后判断 <code>++size &gt; threshold</code></td>
+</tr>
+<tr>
+<td>最坏查找</td>
+<td>O(n)</td>
+<td>树化后 O(log n)</td>
+</tr>
+<tr>
+<td>并发扩容</td>
+<td>可能形成环形链表导致死循环</td>
+<td>不会成环，但依然线程不安全</td>
+</tr>
+</tbody>
+</table></div></article><article class="q core" id="q16"><h3><a class="q-link" href="#q16">HashMap 的 put 流程？发生哈希碰撞怎么处理？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead"><code>put</code> 调用 <code>putVal(hash(key), key, value, ...)</code>：</p>
+<ol>
+<li><strong>计算 hash</strong>：<code>hash = (h = key.hashCode()) ^ (h &gt;&gt;&gt; 16)</code>；<code>key == null</code> 时 hash 为 0，固定放在 0 号桶。</li>
+<li><strong>懒初始化</strong>：table 为空则 <code>resize()</code> 创建数组（默认 16）。</li>
+<li><strong>定位桶</strong>：<code>i = (n - 1) &amp; hash</code>。桶为空，直接新建节点放入。</li>
+<li><strong>桶不为空（发生碰撞）</strong>：
+<ul>
+<li>头节点的 hash 相等且 key 相等（<code>==</code> 或 <code>equals</code>），记录下来准备覆盖 value。</li>
+<li>头节点是 <code>TreeNode</code>，调用 <code>putTreeVal</code> 按红黑树插入。</li>
+<li>否则遍历链表：找到相同 key 就覆盖；遍历到尾部仍没找到，就<strong>尾插</strong>新节点。若插入后链表长度超过 8（遍历计数 <code>binCount &gt;= TREEIFY_THRESHOLD - 1</code>），调用 <code>treeifyBin</code>。</li>
+</ul>
+</li>
+<li><strong>覆盖旧值</strong>：找到已存在的 key 时替换 value 并返回旧值（<code>putIfAbsent</code> 则不替换），这种情况不增加 <code>modCount</code> 和 <code>size</code>。</li>
+<li><strong>新增节点后</strong>：<code>++modCount</code>，<code>++size &gt; threshold</code> 时 <code>resize()</code> 扩容。</li>
+</ol>
+<p><strong>解决哈希冲突的方式</strong>：<code>HashMap</code> 用的是<strong>链地址法（拉链法）</strong>，同一个桶内的元素组成链表，链表过长时转为红黑树。其他常见方法还有开放地址法（线性探测，<code>ThreadLocalMap</code> 用的就是这种）、再哈希法、建立公共溢出区。</p>
+<p><code>get</code> 流程：计算 hash 定位桶 → 检查头节点 → 是树就走 <code>getTreeNode</code>，是链表就遍历比较 <code>hash</code> 和 <code>equals</code>。</p></div></article><article class="q core" id="q17"><h3><a class="q-link" href="#q17">什么时候链表转红黑树？什么时候退化回链表？为什么阈值是 8 和 6？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead"><strong>树化条件（同时满足）</strong></p>
+<ul>
+<li>某个桶的链表长度达到阈值 <code>TREEIFY_THRESHOLD = 8</code>：插入新节点后链表节点数超过 8 时调用 <code>treeifyBin</code>。</li>
+<li>数组长度 <code>table.length &gt;= MIN_TREEIFY_CAPACITY = 64</code>。如果数组长度小于 64，<code>treeifyBin</code> 不会树化，而是直接 <code>resize()</code> 扩容 2 倍，因为数组小时冲突多半是容量不够造成的，扩容能把链表拆散。</li>
+</ul>
+<p><strong>退化条件</strong></p>
+<ul>
+<li>扩容时，红黑树在 <code>split</code> 中按高低位拆分成两部分，某一部分节点数 <code>&lt;= UNTREEIFY_THRESHOLD = 6</code> 时，退化为链表。</li>
+<li>删除节点时（<code>removeTreeNode</code>），不是按数量 6 判断，而是当树的结构已经很小（根节点或其左右子节点为空等）时退化。</li>
+</ul>
+<p><strong>为什么是 8</strong></p>
+<ul>
+<li><code>TreeNode</code> 的大小约是普通 <code>Node</code> 的两倍，树化有空间和维护成本，只有冲突严重时才值得。</li>
+<li>在负载因子 0.75、hashCode 分布良好的情况下，桶中元素个数服从参数约为 0.5 的泊松分布，链表长度达到 8 的概率约为 0.00000006（千万分之六）。所以正常情况下几乎不会树化，树化主要是应对 hashCode 实现很差或恶意构造哈希冲突（哈希碰撞攻击）的情况，把最坏查找从 O(n) 降到 O(log n)。</li>
+</ul>
+<p><strong>为什么退化阈值是 6 而不是 8</strong>：中间留出 7 作为缓冲，避免节点数在 8 附近来回增删时频繁地树化、反树化，造成性能抖动。</p>
+<p><strong>红黑树的好处</strong>：自平衡二叉查找树，查找、插入、删除最坏都是 O(log n)；相比 AVL 树旋转更少，插入删除效率更高。数据量小时链表遍历足够快、内存更省，所以 <code>HashMap</code> 只在必要时才用红黑树。</p></div></article><article class="q core" id="q18"><h3><a class="q-link" href="#q18">HashMap 的扩容机制</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">一句话：元素个数超过 <code>threshold = capacity × loadFactor</code> 时扩容为原来的 <strong>2 倍</strong>，并把旧数组中的节点迁移到新数组；JDK 1.8 迁移时不需要重新计算 hash，每个节点要么留在原位置，要么移动到&quot;原位置 + 旧容量&quot;。</p>
+<p><strong>触发时机</strong>：第一次 <code>put</code> 初始化 table（默认 16，阈值 12）；新增节点后 <code>++size &gt; threshold</code>；链表超过 8 但数组长度小于 64 时（<code>treeifyBin</code> 改为扩容）。</p>
+<p><strong>迁移过程（JDK 1.8 <code>resize</code>）</strong>：新容量和阈值都翻倍，遍历旧数组每个桶：</p>
+<ul>
+<li>单个节点：直接放到 <code>hash &amp; (newCap - 1)</code>。</li>
+<li>红黑树：<code>split</code> 拆成两棵，节点数 <code>&lt;= 6</code> 的退化为链表。</li>
+<li>链表：按 <code>(hash &amp; oldCap) == 0</code> 拆成 lo、hi 两条链并保持顺序，lo 放原下标 <code>j</code>，hi 放 <code>j + oldCap</code>。</li>
+</ul>
+<p><strong>为什么只有两种位置</strong>：掩码从 <code>n - 1</code> 变成 <code>2n - 1</code>，只多出 <code>oldCap</code> 那一位，该位为 0 下标不变，为 1 下标加 <code>oldCap</code>。例如 oldCap = 16，hash 末 5 位 <code>1 0101</code>：旧下标 5，新下标 21 = 5 + 16。</p>
+<p><strong>注意</strong>：扩容要遍历所有节点，代价大。已知数量时指定初始容量 <code>expected / 0.75 + 1</code>，或用 JDK 19+ 的 <code>HashMap.newHashMap(expectedSize)</code>。HashMap 不会自动缩容。</p></div></article><article class="q" id="q19"><h3><a class="q-link" href="#q19">HashMap 的容量为什么是 2 的幂次方？</a></h3><div class="a"><p class="lead"><strong>1. 用位运算代替取模</strong>：当 n 是 2 的幂时，<code>hash % n == hash &amp; (n - 1)</code>（hash 为非负数时），按位与比取模快得多。</p>
+<p><strong>2. 让下标分布均匀</strong>：n 为 2 的幂时，<code>n - 1</code> 的二进制低位全是 1（如 15 = <code>1111</code>），hash 的低位每一位都会参与运算，每个桶被命中的概率相同。如果 n 不是 2 的幂，比如 n = 10，<code>n - 1 = 1001</code>，中间两位永远是 0，下标 <code>0010</code>、<code>0011</code> 等永远不会被用到，空间浪费、冲突加剧。</p>
+<p><strong>3. 扩容迁移高效</strong>：容量翻倍后只多了一个高位参与运算，节点要么留在原位置要么移动 <code>oldCap</code>，只需判断 <code>hash &amp; oldCap</code> 一位即可，不必重新计算下标。</p>
+<p><strong>怎么保证总是 2 的幂</strong>：构造时传入的初始容量会通过 <code>tableSizeFor</code> 向上取整到最近的 2 的幂，例如 <code>new HashMap&lt;&gt;(10)</code> 实际容量是 16，<code>new HashMap&lt;&gt;(17)</code> 是 32。</p>
+<p>另外配合扰动函数 <code>h ^ (h &gt;&gt;&gt; 16)</code>：因为只取低几位算下标，让高 16 位也混入低位，弥补了&quot;只用低位&quot;带来的冲突问题。</p></div></article><article class="q" id="q20"><h3><a class="q-link" href="#q20">HashMap 的负载因子为什么默认是 0.75？</a></h3><div class="a"><p class="lead">负载因子决定&quot;数组填到多满就扩容&quot;，<code>threshold = capacity × loadFactor</code>，0.75 是时间和空间之间的折中。</p>
+<ul>
+<li><strong>太大（如 1.0）</strong>：空间利用率高、扩容少，但哈希冲突明显增多，链表变长，查询和插入变慢。</li>
+<li><strong>太小（如 0.5）</strong>：冲突少、查得快，但扩容频繁，一半空间闲置，浪费内存，扩容本身也有开销。</li>
+<li><strong>0.75 的依据</strong>：JDK 源码注释说明，在 0.75 的负载因子下，桶中节点数近似服从参数为 0.5 的泊松分布，链表长度为 0 / 1 / 2 的概率最高，长度达到 8 的概率仅约千万分之六，时间和空间成本取得较好的平衡。</li>
+<li>附带的好处：容量是 2 的幂，乘以 0.75 得到的阈值总是整数（16 → 12，32 → 24）。</li>
+</ul>
+<p>负载因子可以在构造器中修改：内存敏感可以调大，查询性能敏感可以调小，一般保持默认。</p></div></article><article class="q core" id="q21"><h3><a class="q-link" href="#q21">HashMap 为什么线程不安全？JDK 1.7 的死循环是怎么回事？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">HashMap 的所有操作都没有同步控制，多线程并发写时会出现以下问题：</p>
+<ul>
+<li><strong>数据覆盖丢失（1.7 和 1.8 都有）</strong>：两个线程同时 <code>put</code>，计算出相同的桶下标且该桶为空，都判断&quot;桶为空&quot;后各自写入，后写的覆盖先写的。</li>
+<li><strong>size 不准</strong>：<code>++size</code> 不是原子操作，并发时计数丢失，可能导致该扩容时没有扩容。</li>
+<li><strong>扩容期间数据丢失或读不到</strong>：一个线程正在迁移，另一个线程读写的可能是新数组或旧数组中不完整的状态。</li>
+<li><strong>JDK 1.8 树化并发</strong>：并发树化、平衡操作可能破坏红黑树结构，个别情况下也可能导致 CPU 飙升（结构损坏导致遍历无法结束）。</li>
+<li><strong>没有可见性保证</strong>：一个线程写入的数据，另一个线程不一定能及时看到。</li>
+</ul>
+<p><strong>JDK 1.7 的死循环</strong>：1.7 扩容 <code>transfer</code> 迁移链表时采用<strong>头插法</strong>，迁移后链表顺序会反转。两个线程同时扩容时：线程 A 记下 <code>e = a, next = b</code> 后被挂起；线程 B 完成迁移，链表变为 <code>b → a</code>；A 恢复后继续按自己记录的指针头插，最终形成 <code>a → b → a</code> 的环。之后 <code>get</code> 一个落在该桶但不存在的 key 时，会在环上无限循环，CPU 100%。</p>
+<p>JDK 1.8 改为<strong>尾插法</strong>，并且迁移时按高低位保持原顺序，不会再形成环，但上面的数据丢失等问题依旧存在。</p>
+<p><strong>结论</strong>：多线程场景使用 <code>ConcurrentHashMap</code>，而不是给 HashMap 打补丁。</p></div></article><article class="q" id="q22"><h3><a class="q-link" href="#q22">equals 和 hashCode 为什么要一起重写？</a></h3><div class="a"><p class="lead">因为 <code>HashMap</code>、<code>HashSet</code> 等哈希结构先用 <code>hashCode()</code> 定位桶，再用 <code>equals()</code> 判断桶里有没有相等的元素。两者必须遵守约定：</p>
+<ul>
+<li><code>a.equals(b)</code> 为 true，则 <code>a.hashCode() == b.hashCode()</code> <strong>必须</strong>成立。</li>
+<li>hashCode 相等，equals 不一定为 true（哈希冲突）。</li>
+<li>equals 为 false 时 hashCode 可以相等，但尽量不同，以减少冲突。</li>
+</ul>
+<p><strong>只重写 equals、不重写 hashCode 的后果</strong>：<code>Object.hashCode()</code> 默认与对象身份相关，两个逻辑上相等的对象 hashCode 很可能不同，会落到不同的桶，<code>HashSet</code> 去重失败、存入两个&quot;相等&quot;的对象，<code>HashMap.get(new Key(...))</code> 也找不到之前放进去的值。</p>
+<p><strong>只重写 hashCode、不重写 equals</strong>：能定位到同一个桶，但 <code>equals</code> 仍按 <code>==</code> 比较，依然判断为不同对象。</p>
+<pre><code class="language-java">@Override
+public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof User u)) return false;   // JDK 16+ 模式匹配
+    return age == u.age &amp;&amp; Objects.equals(name, u.name);
+}
+@Override
+public int hashCode() {
+    return Objects.hash(name, age);              // 与 equals 使用相同的字段
+}
+</code></pre>
+<p>补充：作为 key 的对象最好是不可变的。如果放入 HashMap 之后修改了参与 hashCode 计算的字段，hashCode 会变，就再也找不到这个元素了，还会造成内存泄漏。<code>String</code>、包装类、<code>record</code> 都是很好的 key。</p></div></article><article class="q core" id="q23"><h3><a class="q-link" href="#q23">HashMap 和 Hashtable 的区别？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><table>
+<thead>
+<tr>
+<th>对比</th>
+<th>HashMap</th>
+<th>Hashtable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>线程安全</td>
+<td>不安全</td>
+<td>安全，几乎所有方法都是 <code>synchronized</code>，锁整张表</td>
+</tr>
+<tr>
+<td>性能</td>
+<td>高</td>
+<td>低，所有操作串行</td>
+</tr>
+<tr>
+<td>null</td>
+<td>允许一个 null key（放在 0 号桶）和多个 null value</td>
+<td>key 和 value 都不能为 null，否则抛 <code>NullPointerException</code></td>
+</tr>
+<tr>
+<td>默认初始容量</td>
+<td>16（第一次 put 时懒初始化）</td>
+<td>11（构造时就创建数组）</td>
+</tr>
+<tr>
+<td>扩容</td>
+<td>2 倍，容量始终为 2 的幂；指定初始容量会被向上取整为 2 的幂</td>
+<td><code>2n + 1</code>；直接使用指定的初始容量</td>
+</tr>
+<tr>
+<td>下标计算</td>
+<td><code>(n - 1) &amp; hash</code>，hash 经过扰动</td>
+<td><code>(hash &amp; 0x7FFFFFFF) % n</code>，直接取模</td>
+</tr>
+<tr>
+<td>底层结构</td>
+<td>JDK 8 起数组 + 链表 + 红黑树</td>
+<td>数组 + 链表，没有树化</td>
+</tr>
+<tr>
+<td>继承</td>
+<td><code>AbstractMap</code></td>
+<td>遗留的 <code>Dictionary</code> 类</td>
+</tr>
+<tr>
+<td>遍历</td>
+<td>Iterator，fail-fast</td>
+<td>除 Iterator 外还支持 <code>Enumeration</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>Hashtable</code> 已经是遗留类。需要线程安全的 Map 应该使用 <code>ConcurrentHashMap</code>，它同样不允许 null，但并发性能好得多。</p></div></article><article class="q" id="q24"><h3><a class="q-link" href="#q24">HashMap 和 HashSet 的区别？</a><span class="tags"><i class="t-co bank">交通银行</i></span></h3><div class="a"><p class="lead"><code>HashSet</code> 底层就是一个 <code>HashMap</code>：元素作为 HashMap 的 key，value 统一是一个静态的占位对象 <code>PRESENT</code>（<code>new Object()</code>）。除了 <code>clone</code>、序列化等少数方法，<code>HashSet</code> 的方法基本都直接委托给内部的 HashMap。</p>
+<pre><code class="language-java">private transient HashMap&lt;E, Object&gt; map;
+private static final Object PRESENT = new Object();
+
+public boolean add(E e) {
+    return map.put(e, PRESENT) == null;   // 返回 null 说明之前不存在，添加成功
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>HashMap</th>
+<th>HashSet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>实现接口</td>
+<td><code>Map</code></td>
+<td><code>Set</code>（属于 <code>Collection</code>）</td>
+</tr>
+<tr>
+<td>存储</td>
+<td>键值对</td>
+<td>单个元素（即 HashMap 的 key）</td>
+</tr>
+<tr>
+<td>添加</td>
+<td><code>put(k, v)</code>，key 已存在时覆盖 value 并返回旧值</td>
+<td><code>add(e)</code>，已存在时返回 false，不做修改</td>
+</tr>
+<tr>
+<td>去重依据</td>
+<td>key 的 <code>hashCode()</code> + <code>equals()</code></td>
+<td>同左</td>
+</tr>
+<tr>
+<td>null</td>
+<td>一个 null key</td>
+<td>一个 null 元素</td>
+</tr>
+<tr>
+<td>典型用途</td>
+<td>缓存、索引、计数</td>
+<td>去重、判断是否存在、集合运算</td>
+</tr>
+</tbody>
+</table>
+<p>两者都非线程安全。并发场景下 Map 用 <code>ConcurrentHashMap</code>；Set 可以用 <code>ConcurrentHashMap.newKeySet()</code>，或者 <code>Collections.synchronizedSet()</code>。同理，<code>LinkedHashSet</code> 基于 <code>LinkedHashMap</code>，<code>TreeSet</code> 基于 <code>TreeMap</code>。</p></div></article><article class="q" id="q25"><h3><a class="q-link" href="#q25">HashMap 有哪些遍历方式？</a></h3><div class="a"><pre><code class="language-java">// 1. entrySet + foreach：同时需要 key 和 value 时最常用、效率高
+for (Map.Entry&lt;String, Integer&gt; e : map.entrySet()) {
+    System.out.println(e.getKey() + &quot;=&quot; + e.getValue());
+}
+
+// 2. keySet：只需要 key 时使用；如果再用 map.get(key) 取 value，相当于多查了一次
+for (String key : map.keySet()) { ... }
+
+// 3. values：只需要 value
+for (Integer v : map.values()) { ... }
+
+// 4. 显式 Iterator：遍历过程中需要删除元素时使用
+Iterator&lt;Map.Entry&lt;String, Integer&gt;&gt; it = map.entrySet().iterator();
+while (it.hasNext()) {
+    if (it.next().getValue() == 0) it.remove();
+}
+
+// 5. JDK 8 forEach / Stream
+map.forEach((k, v) -&gt; System.out.println(k + &quot;=&quot; + v));
+map.entrySet().removeIf(e -&gt; e.getValue() == 0);
+</code></pre>
+<p>注意点：</p>
+<ul>
+<li>HashMap 遍历顺序不保证是插入顺序，需要顺序时用 <code>LinkedHashMap</code>。</li>
+<li>遍历时直接调用 <code>map.remove()</code> 会触发 fail-fast，抛出 <code>ConcurrentModificationException</code>，要删除就用迭代器的 <code>remove()</code> 或 <code>removeIf</code>。</li>
+</ul></div></article><article class="q" id="q26"><h3><a class="q-link" href="#q26">TreeMap 是什么？和 HashMap 怎么选？</a></h3><div class="a"><p class="lead"><code>TreeMap</code> 是基于<strong>红黑树</strong>实现的有序 Map，按 key 的自然顺序（key 实现 <code>Comparable</code>）或构造时传入的 <code>Comparator</code> 排序。</p>
+<ul>
+<li><code>get</code>、<code>put</code>、<code>remove</code>、<code>containsKey</code> 都是 O(log n)。</li>
+<li>判断 key 是否相同用的是 <code>compareTo</code> / <code>compare</code> 返回 0，不是 <code>equals</code>，所以比较器要和 <code>equals</code> 保持一致，否则会出现&quot;看似不同的 key 被覆盖&quot;的情况。</li>
+<li>自然排序时 key 不能为 null；value 可以为 null。</li>
+<li>实现了 <code>NavigableMap</code> / <code>SortedMap</code>，支持丰富的有序和范围操作：<code>firstKey()</code>、<code>lastKey()</code>、<code>floorKey(k)</code>（≤ k 的最大 key）、<code>ceilingKey(k)</code>（≥ k 的最小 key）、<code>headMap(k)</code>、<code>tailMap(k)</code>、<code>subMap(from, to)</code>、<code>descendingMap()</code>。</li>
+<li>非线程安全，并发场景用 <code>ConcurrentSkipListMap</code>。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>HashMap</th>
+<th>TreeMap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>结构</td>
+<td>数组 + 链表 + 红黑树</td>
+<td>红黑树</td>
+</tr>
+<tr>
+<td>顺序</td>
+<td>无序</td>
+<td>按 key 排序</td>
+</tr>
+<tr>
+<td>复杂度</td>
+<td>平均 O(1)</td>
+<td>O(log n)</td>
+</tr>
+<tr>
+<td>null key</td>
+<td>允许一个</td>
+<td>自然排序时不允许</td>
+</tr>
+</tbody>
+</table>
+<p>只需要按 key 查找用 <code>HashMap</code>；需要按 key 排序、范围查询、找最近的 key（如按时间段、按分数区间查找，一致性哈希环）时用 <code>TreeMap</code>。</p></div></article></section><section class="grp has-core" id="g5"><h2 class="grp-title">ConcurrentHashMap <span class="cnt"><span class="n-all">3</span><span class="n-core">高频 2</span></span></h2><article class="q core" id="q27"><h3><a class="q-link" href="#q27">ConcurrentHashMap 的实现原理？JDK 1.7 和 1.8 有什么不同？</a><span class="tags"><i class="t-core">高频</i><i class="t-co bank">交通银行</i><i class="t-co">饿了么</i></span></h3><div class="a"><p class="lead">一句话：JDK 1.7 用 <strong>Segment 分段锁</strong>（<code>ReentrantLock</code>），JDK 1.8 去掉 Segment，改为 <strong>CAS + synchronized 锁单个桶的头节点</strong>，结构与 HashMap 一样是数组 + 链表 + 红黑树。</p>
+<p><strong>JDK 1.7：Segment 数组 + HashEntry 数组 + 链表</strong></p>
+<p><img src="images/Java+AI%E5%85%AB%E8%82%A1-image.png" alt=""></p>
+<p>Segment 数量由 <code>concurrencyLevel</code> 决定，默认 16，<strong>初始化后不能扩容</strong>。写操作先定位 Segment 再加锁，获取失败时 <code>scanAndLockForPut</code> 边自旋边预建节点；读不加锁，靠 <code>volatile</code> 保证可见性。</p>
+<p><strong>JDK 1.8：Node 数组 + 链表 / 红黑树</strong></p>
+<p><img src="images/Java+AI%E5%85%AB%E8%82%A1-image-1.png" alt=""></p>
+<p>空桶 CAS 插入，非空桶 <code>synchronized</code> 锁头节点（红黑树时锁 <code>TreeBin</code>）；读不加锁，<code>Node</code> 的 <code>val</code>、<code>next</code> 为 <code>volatile</code>。树化阈值同 HashMap（链表超过 8 且数组 ≥ 64，≤ 6 退化）。</p>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>JDK 1.7</th>
+<th>JDK 1.8</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>结构</td>
+<td>Segment[] + HashEntry[] + 链表</td>
+<td>Node[] + 链表 + 红黑树</td>
+</tr>
+<tr>
+<td>锁</td>
+<td>Segment（<code>ReentrantLock</code>）</td>
+<td>CAS + <code>synchronized</code> 锁桶头节点</td>
+</tr>
+<tr>
+<td>锁粒度</td>
+<td>一段（默认 16 段）</td>
+<td>一个桶</td>
+</tr>
+<tr>
+<td>最大并发度</td>
+<td>Segment 数，固定</td>
+<td>桶数，随扩容增加</td>
+</tr>
+<tr>
+<td>最坏查找</td>
+<td>O(n)</td>
+<td>O(log n)</td>
+</tr>
+<tr>
+<td>扩容</td>
+<td>每个 Segment 各自扩容</td>
+<td>全表扩容，多线程协作迁移</td>
+</tr>
+<tr>
+<td>size</td>
+<td>不加锁重试，失败后锁全部 Segment</td>
+<td><code>baseCount</code> + <code>CounterCell</code> 累加</td>
+</tr>
+</tbody>
+</table>
+<p><strong>为什么 1.8 用 synchronized 而不是 ReentrantLock</strong>：锁粒度细到单个桶后竞争很少，synchronized 经锁优化后低竞争开销很小；直接锁头节点，不用为每个桶额外建锁对象，更省内存。</p></div></article><article class="q core" id="q28"><h3><a class="q-link" href="#q28">ConcurrentHashMap 为什么是线程安全的？（put / get 流程）</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">线程安全靠三点：<strong>写操作用 CAS 或锁住单个桶互斥、读操作靠 volatile 保证可见性、扩容和计数都有专门的并发控制</strong>。以 JDK 1.8 为例：</p>
+<p><strong>put 流程（<code>putVal</code>）</strong></p>
+<ol>
+<li>key 或 value 为 null 抛 <code>NullPointerException</code>，计算 <code>spread(key.hashCode())</code>。</li>
+<li>自旋处理：table 为空则 <code>initTable()</code>（CAS 把 <code>sizeCtl</code> 设为 -1 抢初始化权，其他线程 <code>yield</code>）；目标桶为空则 <code>casTabAt</code> 放入，失败继续自旋；头节点 hash 为 <code>MOVED</code>（<code>ForwardingNode</code>）说明正在扩容，先 <code>helpTransfer</code>；否则 <code>synchronized</code> 锁头节点，再次确认头节点没变后按链表或 <code>TreeBin</code> 插入/覆盖。</li>
+<li>链表长度 ≥ 8 时 <code>treeifyBin</code>（数组 &lt; 64 时改为扩容）。</li>
+<li><code>addCount</code>：CAS 更新 <code>baseCount</code>，冲突时更新 <code>CounterCell</code>，再检查是否达到扩容阈值。</li>
+</ol>
+<p><strong>get 流程</strong>：全程不加锁，<code>tabAt</code> volatile 读头节点；头节点 hash &lt; 0（<code>ForwardingNode</code> 或 <code>TreeBin</code>）时调用其 <code>find</code>，扩容中会去新表查；否则遍历链表。</p>
+<p><strong>扩容（<code>transfer</code>）</strong>：每个线程按步长 <code>stride</code>（最小 16 个桶）领取一段桶迁移，迁完放 <code>ForwardingNode</code> 占位；其他线程 put 遇到它就协助扩容；迁移单个桶同样锁头节点，与 put 互斥；get 遇到它去新表读。</p>
+<p><strong>为什么 key、value 不能为 null</strong>：<code>get</code> 返回 null 时无法区分&quot;不存在&quot;还是&quot;值为 null&quot;，而并发下再调 <code>containsKey</code> 判断的结果不可靠。</p>
+<p>易错点：单个方法线程安全，&quot;先 <code>get</code> 再 <code>put</code>&quot;不是原子的，应改用 <code>putIfAbsent</code>、<code>computeIfAbsent</code>、<code>merge</code>；<code>size()</code> 和迭代器都是弱一致的。</p></div></article><article class="q" id="q29"><h3><a class="q-link" href="#q29">ConcurrentHashMap 用的是悲观锁还是乐观锁？</a></h3><div class="a"><p class="lead">两者都有，按操作耗时选择不同的并发控制方式（以 JDK 1.8 为例）。</p>
+<ul>
+<li><strong>乐观锁（CAS）</strong>：初始化数组（CAS 修改 <code>sizeCtl</code>）、往空桶放入第一个节点（<code>casTabAt</code>）、更新计数 <code>baseCount</code> / <code>CounterCell</code>、扩容时领取迁移区间。这些操作都很短，CAS 失败重试的成本低，比加锁更划算。</li>
+<li><strong>悲观锁（synchronized）</strong>：桶不为空时，锁住头节点再遍历链表或红黑树、比较 key、插入或替换、迁移桶。这些操作耗时较长，如果用 CAS 自旋，失败后要重新遍历，长时间自旋会浪费 CPU，直接加锁更稳定。</li>
+<li><strong>读不加锁</strong>：依赖 <code>volatile</code> 的可见性。</li>
+</ul>
+<p>JDK 1.7 的 Segment 继承 <code>ReentrantLock</code>，写操作是悲观锁，但获取锁时先用 <code>tryLock</code> 自旋若干次，也带了一点乐观的思想。</p></div></article></section><nav class="pager"><a href="java-basic.html" class="prev"><small>上一章</small>Java 基础</a><a href="jvm.html" class="next"><small>下一章</small>JVM</a></nav>
+  </div>
+</main>
+<div class="backdrop" id="backdrop"></div>
+<button class="to-top" id="to-top" aria-label="回到顶部">↑</button>
+<script id="outline" type="application/json">[{"id":"g1","title":"集合体系概览","n":3,"core":0},{"id":"g2","title":"List","n":8,"core":3},{"id":"g3","title":"线程安全的集合","n":3,"core":1},{"id":"g4","title":"HashMap","n":12,"core":6},{"id":"g5","title":"ConcurrentHashMap","n":3,"core":2}]</script>
+<script src="assets/app.js?v=ab30056e"></script>
+</body>
+</html>

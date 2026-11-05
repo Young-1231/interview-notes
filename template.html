@@ -1,39 +1,40 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f8f7f4">
-  <meta name="description" content="Java 后端与 Agent 面试学习笔记">
-  <title>Java 后端 + Agent 面试笔记</title>
-  <link rel="stylesheet" href="assets/style.css">
+<meta charset="utf-8">
+<meta name="darkreader-lock">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><!-- TITLE --> · 八股笔记</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' font-weight='bold' fill='white' text-anchor='middle'%3E八%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css?v=<!-- V -->">
+<script>
+  (function () {
+    var t = localStorage.getItem('iv.theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
 </head>
-<body>
-  <div class="reading-progress" aria-hidden="true"><span></span></div>
-  <header class="site-header">
-    <button class="icon-button sidebar-toggle" type="button" aria-label="打开目录" title="目录"><span></span><span></span><span></span></button>
-    <a class="brand" href="#top" aria-label="回到顶部"><b>INTERVIEW</b><i>NOTES</i></a>
-    <div class="header-actions">
-      <label class="search-box"><span>搜索</span><input id="search" type="search" placeholder="搜索问题或关键词" autocomplete="off"><kbd>/</kbd></label>
-      <button class="theme-button" type="button" aria-label="切换显示模式" title="切换显示模式">A</button>
-    </div>
-  </header>
-  <aside class="sidebar" aria-label="文档目录">
-    <div class="sidebar-heading"><span>目录</span><button class="close-sidebar" type="button" aria-label="关闭目录">x</button></div>
-    <nav id="toc"></nav>
-  </aside>
-  <main id="top">
-    <div class="article-meta">
-      <span>JAVA BACKEND</span><span class="meta-dot"></span><span>AGENT ENGINEERING</span>
-      <span class="reading-time" id="reading-time"></span>
-    </div>
-    <div id="search-status" role="status"></div>
-    <article id="article">
+<body data-part="<!-- PART -->" data-sec="<!-- SEC -->">
+<header class="site-header">
+  <button class="icon-btn menu-btn" id="menu-btn" aria-label="目录">☰</button>
+  <a href="index.html" class="brand"><span class="dot">●</span> 八股笔记</a>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="search">
+    <input id="search" type="search" placeholder="搜索题目  /" autocomplete="off" aria-label="搜索题目">
+    <span id="search-info"></span>
+    <div class="search-pop" id="search-pop" hidden></div>
+  </div>
+  <button class="icon-btn" id="theme-toggle" aria-label="切换主题">◐</button>
+</header>
+<aside class="side" id="side"><nav id="toc"></nav></aside>
+<main class="main">
+  <div id="article">
 <!-- CONTENT -->
-    </article>
-    <footer>面试学习资料 · 个人阅读版</footer>
-  </main>
-  <div class="sidebar-backdrop"></div>
-  <script src="assets/app.js"></script>
+  </div>
+</main>
+<div class="backdrop" id="backdrop"></div>
+<button class="to-top" id="to-top" aria-label="回到顶部">↑</button>
+<script id="outline" type="application/json"><!-- OUTLINE --></script>
+<script src="assets/app.js?v=<!-- V -->"></script>
 </body>
 </html>

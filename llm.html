@@ -1,0 +1,1624 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="darkreader-lock">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>大模型基础 · 八股笔记</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' font-weight='bold' fill='white' text-anchor='middle'%3E八%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css?v=ab30056e">
+<script>
+  (function () {
+    var t = localStorage.getItem('iv.theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+</head>
+<body data-part="ai" data-sec="llm">
+<header class="site-header">
+  <button class="icon-btn menu-btn" id="menu-btn" aria-label="目录">☰</button>
+  <a href="index.html" class="brand"><span class="dot">●</span> 八股笔记</a>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="search">
+    <input id="search" type="search" placeholder="搜索题目  /" autocomplete="off" aria-label="搜索题目">
+    <span id="search-info"></span>
+    <div class="search-pop" id="search-pop" hidden></div>
+  </div>
+  <button class="icon-btn" id="theme-toggle" aria-label="切换主题">◐</button>
+</header>
+<aside class="side" id="side"><nav id="toc"></nav></aside>
+<main class="main">
+  <div id="article">
+<header class="page-head"><div class="crumb">AI &amp; Agent</div><h1>大模型基础 <span class="cnt">86 题</span></h1><div class="tools"><button type="button" class="tool" id="t-core" aria-pressed="false">只看高频 <b>49</b></button><button type="button" class="tool" id="t-quiz" aria-pressed="false">自测模式</button><a class="tool resume" id="t-resume" hidden></a><span class="kbd-hint"><kbd>j</kbd>/<kbd>k</kbd> 上下题 · 自测时 <kbd>空格</kbd> 看答案 · <kbd>/</kbd> 搜索</span></div><nav class="overview"><div class="ov-groups"><a href="#g1">大模型基础<span><span class="n-all">8</span><span class="n-core">3</span></span></a><a href="#g2">Transformer<span><span class="n-all">11</span><span class="n-core">8</span></span></a><a href="#g3">自注意力<span><span class="n-all">9</span><span class="n-core">8</span></span></a><a href="#g4" class="no-core">位置编码与归一化<span><span class="n-all">7</span><span class="n-core">0</span></span></a><a href="#g5">MoE<span><span class="n-all">3</span><span class="n-core">3</span></span></a><a href="#g6">解码与 KV Cache<span><span class="n-all">9</span><span class="n-core">9</span></span></a><a href="#g7" class="no-core">推理部署与长上下文<span><span class="n-all">11</span><span class="n-core">0</span></span></a><a href="#g8">幻觉<span><span class="n-all">3</span><span class="n-core">3</span></span></a><a href="#g9">Prompt Engineering<span><span class="n-all">5</span><span class="n-core">5</span></span></a><a href="#g10" class="no-core">CoT 思维链<span><span class="n-all">4</span><span class="n-core">0</span></span></a><a href="#g11">主流模型：DeepSeek 与 Qwen<span><span class="n-all">8</span><span class="n-core">6</span></span></a><a href="#g12">智能体产品与平台<span><span class="n-all">8</span><span class="n-core">4</span></span></a></div></nav></header><section class="grp has-core" id="g1"><h2 class="grp-title">大模型基础 <span class="cnt"><span class="n-all">8</span><span class="n-core">高频 3</span></span></h2><article class="q" id="q1"><h3><a class="q-link" href="#q1">什么是 Token？它是如何产生的？</a></h3><div class="a"><p class="lead">Token 是大模型处理文本的最小单位。文本输入模型前，先由分词器（Tokenizer）切分成一个个 Token，再按词表（Vocabulary）映射成整数 ID，模型实际处理的是这些 ID 对应的 Embedding 向量。</p>
+<p><strong>为什么用 Subword</strong></p>
+<ul>
+<li>Word-based：<code>play / plays / playing</code> 是不同 Token，词表膨胀，生僻词变成 OOV（词表外）。</li>
+<li>Character-based：词表小，但单个 Token 信息量低，序列很长，计算开销大。</li>
+<li>Subword（主流）：高频片段整体保留，低频词拆成更小片段，在词表大小和序列长度之间折中。所以 Token 可能是完整单词、词缀、单个汉字或标点。</li>
+</ul>
+<p><strong>主流 Subword 算法</strong></p>
+<ul>
+<li>BPE：自底向上，从字符开始，每轮合并语料中相邻频率最高的符号对，直到达到目标词表大小。</li>
+<li>BBPE（Byte-level BPE）：基础单位换成字节（256 个），任何文本都能表示，彻底消除 OOV，GPT-2 以后的 GPT 系列、LLaMA 3、Qwen 等都使用。</li>
+<li>WordPiece（BERT）：类似 BPE，但按合并后语料似然提升最大来选，常用打分 <code>score = freq(ab) / (freq(a) × freq(b))</code>；非词首片段带 <code>##</code> 前缀，如 <code>un, ##happi, ##ness</code>。</li>
+<li>Unigram（常配合 SentencePiece，如 T5）：自顶向下，先建大候选词表，反复删除对语料似然贡献最小的子词；分词时选联合概率最高的切分。</li>
+</ul>
+<p><img src="images/Java+AI%E5%85%AB%E8%82%A1-image-29.png" alt="BPE合并例子"></p></div></article><article class="q" id="q2"><h3><a class="q-link" href="#q2">什么是自回归？</a></h3><div class="a"><p class="lead">自回归（Autoregressive）指用序列自身已经产生的部分来预测下一个元素：每次基于已有内容预测下一个 Token，把结果追加到序列末尾，再继续预测，直到生成结束符 <code>&lt;EOS&gt;</code> 或达到最大长度。</p>
+<ul>
+<li>数学上，模型把序列概率分解为 <code>P(x1..xn) = ∏ P(xt | x1..x(t-1))</code>，训练目标就是最大化每一步的条件概率（Next Token Prediction）。</li>
+<li>过程类似一个循环：输入&quot;今天天气很&quot;，模型输出词表上的概率分布，按解码策略选出&quot;好&quot;，下一轮输入变为&quot;今天天气很好&quot;，如此反复。</li>
+<li>GPT、LLaMA、Qwen 等生成式大模型都是自回归模型；与之相对的是 BERT 这类自编码模型（根据双向上下文还原被遮盖的 Token）。</li>
+<li>自回归的代价是推理只能逐 Token 串行生成，因此有了 KV Cache、投机解码等加速手段。</li>
+</ul></div></article><article class="q" id="q3"><h3><a class="q-link" href="#q3">什么是大模型？如何分类？</a></h3><div class="a"><p class="lead">大模型可以概括为&quot;大参数量 + 大数据量&quot;：参数通常在数十亿（7B = 70 亿）以上，训练数据达到万亿 Token 级别，通过大规模训练把数据中的语义和规律压缩到模型参数里。GPT、Gemini、豆包、通义千问等生成式大模型本质上只做一件事：根据上文预测下一个 Token，不断重复直到输出 <code>&lt;EOS&gt;</code>。</p>
+<p><img src="images/Java+AI%E5%85%AB%E8%82%A1-image-21.png" alt=""></p>
+<p>大语言模型是自然语言处理模型发展的最新阶段，此前经历了统计语言模型、神经网络语言模型（Word2Vec、RNN/LSTM）、预训练语言模型（BERT、GPT-1/2）等阶段。</p>
+<p>描述一个大模型通常从三个维度入手：</p>
+<p><img src="images/Java+AI%E5%85%AB%E8%82%A1-diagram.png" alt=""></p>
+<ul>
+<li>数据类型：文本大模型、图像大模型、语音大模型、多模态大模型。</li>
+<li>模型结构：主流是 Transformer，生成式大模型基本是 Decoder-only；此外还有 Encoder-only（BERT）、Encoder-Decoder（T5），以及 Dense 与 MoE 之分。</li>
+<li>训练方式：自回归（&quot;文字接龙&quot;，根据上文预测下一个 Token，如 GPT）和自编码（&quot;完形填空&quot;，遮盖部分 Token 再根据上下文还原，如 BERT）。RAG 中常用的 Embedding 模型很多基于自编码类的 Encoder 模型（如 BGE），也有基于 Decoder 的 Embedding 模型。</li>
+</ul>
+<p><img src="images/Java+AI%E5%85%AB%E8%82%A1-image-22.png" alt=""></p></div></article><article class="q core" id="q4"><h3><a class="q-link" href="#q4">大模型主要基于什么架构？由哪些部分组成？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">大模型主要基于 Transformer 架构。它用自注意力机制建模序列中任意位置之间的依赖关系，相比 RNN/LSTM 并行能力强、长距离依赖建模好、易于扩展规模，因此成为大语言模型的基础架构。</p>
+<ul>
+<li>整体结构：原始 Transformer 由编码器和解码器组成。编码器负责理解输入，解码器根据上下文逐步生成输出。BERT 用 Encoder-only，GPT 系列用 Decoder-only，T5 用完整的 Encoder-Decoder。</li>
+<li>自注意力：把每个 Token 映射为 Query、Key、Value，用 Q 与 K 的相关性得到注意力权重，再对 V 加权求和，使每个 Token 融合上下文信息。</li>
+<li>多头注意力：并行计算多组注意力，不同的头关注不同关系（语法、语义、指代等），拼接后再经线性映射。</li>
+<li>位置编码：自注意力本身对顺序不敏感，需要引入位置信息。原始 Transformer 用正弦位置编码，当前大模型多用 RoPE。</li>
+<li>前馈网络（FFN）：每层注意力之后接两层线性变换加非线性激活（现在多为 SwiGLU），对每个位置独立做特征变换。</li>
+<li>残差连接与归一化：每个子层外加残差连接和 LayerNorm（现在多用 Pre-Norm + RMSNorm），保证深层网络可训练、训练稳定。</li>
+<li>输入输出：Embedding 层把 Token ID 映射为向量；输出端经 LM Head（线性层 + softmax）得到词表上的概率分布。</li>
+</ul>
+<p>当前生成式大模型（GPT、LLaMA、Qwen、DeepSeek 等）几乎都是 Decoder-only Transformer，通过因果掩码屏蔽未来 Token，以自回归方式生成文本。</p></div></article><article class="q core" id="q5"><h3><a class="q-link" href="#q5">为什么大模型大多是 Decoder-only 架构？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">一句话：Decoder-only 在同等算力下的 zero-shot / few-shot 生成能力更好，训练目标统一简单，推理工程（KV Cache 等）也最成熟，加上 GPT 系列验证了它的 Scaling Law，后来者自然沿着这条路线迭代。</p>
+<ul>
+<li>训练目标统一：因果语言建模（Next Token Prediction）无需人为区分输入和输出，任何文本都能直接当训练数据，数据利用率高、流程简单。每一步只能看左侧上下文，任务难度更高，大规模训练下更容易学到通用能力。</li>
+<li>泛化表现：有实验（如 Wang et al. 2022 对不同架构和目标的对比）表明，在不做多任务微调时，Decoder-only + 因果语言建模的 zero-shot 效果最好。</li>
+<li>注意力矩阵的秩：一种常见的理论解释是，因果注意力矩阵是下三角矩阵，且 softmax 后对角线元素为正，因此一定满秩；而双向注意力矩阵可能出现低秩问题，限制表达能力。这是一种解释，并非定论。</li>
+<li>In-context Learning：Prompt 中的示例直接作为前缀参与每一层的计算，作用类似隐式微调，对 few-shot 更直接。</li>
+<li>推理效率：因果结构下历史 Token 的 K、V 不会随后续 Token 改变，可以直接复用 KV Cache；vLLM、FlashAttention 等推理优化也优先围绕因果路径。</li>
+<li>位置与长度扩展：输入输出是一条连续序列，只有一套位置编码，配合 RoPE 插值、YaRN 等方法扩展上下文更方便。</li>
+<li>多模态：主流做法把图像、音频等模态的 Token 拼接进文本序列，由同一个 Decoder 统一建模。</li>
+<li>路径依赖：OpenAI 率先验证了这条路线的训练方法和 Scaling Law，后续工作多在其上叠加 MoE、长上下文、多模态，而不是重新改架构。</li>
+</ul>
+<p>RWKV、Mamba 等 RNN / 状态空间模型在长序列和端侧场景有优势，但目前不是主流。</p></div></article><article class="q core" id="q6"><h3><a class="q-link" href="#q6">大模型是如何训练、获取知识的？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">大模型的知识主要来自预训练阶段对海量文本的 Next Token Prediction，后续的微调和对齐阶段主要教会模型&quot;如何使用知识、按人类期望回答&quot;，而不是大量注入新知识。</p>
+<p><strong>典型训练流程</strong></p>
+<ul>
+<li>数据准备：收集网页、书籍、代码、论文等数据，做去重、质量过滤、去毒、隐私过滤，再用 Tokenizer 切分为 Token。</li>
+<li>预训练（Pre-training）：在万亿级 Token 上做自监督的下一个 Token 预测，损失为交叉熵。为了预测准确，模型必须学会语法、事实知识、推理模式，这些规律被压缩进参数（FFN 层常被认为承担了大量&quot;知识存储&quot;）。产出的是只会续写的基座模型（Base Model）。</li>
+<li>继续预训练（可选）：用领域语料或长文本继续训练，补充领域知识、扩展上下文长度。</li>
+<li>监督微调（SFT）：用高质量&quot;指令-回答&quot;对训练，让模型学会遵循指令、按对话格式输出。</li>
+<li>偏好对齐：通过 RLHF（训练奖励模型 + PPO）或 DPO 等方法，让回答更符合人类偏好，更有用、更安全。</li>
+<li>推理强化（新一代模型）：用可验证奖励的强化学习（如 DeepSeek-R1 用的 GRPO）训练长链思考能力。</li>
+</ul>
+<p><strong>模型获取新知识的途径</strong></p>
+<ul>
+<li>参数内知识：通过预训练或继续预训练写入参数，成本高，有知识截止日期。</li>
+<li>上下文知识：推理时通过 Prompt、RAG、工具调用把外部信息放进上下文，无需改参数，适合时效性和私有知识。</li>
+</ul></div></article><article class="q" id="q7"><h3><a class="q-link" href="#q7">预训练为什么要做 Packing？</a></h3><div class="a"><p class="lead">Packing 是把多条短文本拼接成一条达到最大长度（如 4K / 8K）的样本，用来消除 Padding 浪费，提高训练吞吐。</p>
+<ul>
+<li>训练时一个 batch 的张量长度固定，短文本如果不拼接，只能用大量 <code>[PAD]</code> 补齐。</li>
+<li>Padding Token 不贡献有效梯度，却照样占用计算和显存带宽；语料长度分布越分散，浪费越严重。</li>
+<li>Packing 把每个样本&quot;塞满&quot;真实 Token，使计算的每个位置都是有效训练数据，显著提升 GPU 利用率和每步处理的有效 Token 数。</li>
+<li>代价是需要处理文档边界问题（见下一题）。SFT 阶段也常用 Packing，但要注意 loss mask 和样本隔离。</li>
+</ul></div></article><article class="q" id="q8"><h3><a class="q-link" href="#q8">两个不相干的段落 Packing 拼接不会破坏语义吗？</a></h3><div class="a"><p class="lead">影响很小，并且可以通过边界标记和注意力隔离基本消除。</p>
+<ul>
+<li>边界标记：每段文本后加 <code>&lt;EOS&gt;</code> 等分隔符，例如 <code>今天天气很好。&lt;EOS&gt;我喜欢学习大模型。&lt;EOS&gt;</code>，模型能学到&quot;分隔符之后是新内容，不要依赖前文&quot;。</li>
+<li>注意力隔离（document mask）：构造块对角的因果掩码，让后一段的 Token 看不到前一段，同时每段的位置 ID 重新从 0 开始。这样多段只是物理上拼在一起，计算上彼此独立。FlashAttention 的 varlen 接口可以高效实现这种计算。</li>
+<li>实践情况：早期很多预训练（如 GPT 系列）只加 <code>&lt;EOS&gt;</code> 不做隔离，实验上影响很小，因为模型会学会忽略分隔符之前的无关内容；LLaMA 3 等则明确使用了文档间注意力隔离，在长序列训练中效果更好。SFT 阶段一般建议做隔离，避免不同对话样本互相干扰。</li>
+</ul></div></article></section><section class="grp has-core" id="g2"><h2 class="grp-title">Transformer <span class="cnt"><span class="n-all">11</span><span class="n-core">高频 8</span></span></h2><article class="q core" id="q9"><h3><a class="q-link" href="#q9">什么是 Transformer？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">Transformer 是 Google 在 2017 年论文《Attention Is All You Need》中提出的序列建模架构，由多层自注意力模块和前馈网络堆叠而成，完全抛弃了 RNN 的循环结构。</p>
+<p><img src="images/Java+AI%E5%85%AB%E8%82%A1-image-30.png" alt=""></p>
+<ul>
+<li>结构：原始 Transformer 由编码器和解码器两部分组成，最初用于机器翻译。两部分可以独立使用：基于编码器的 BERT，基于解码器的 GPT。</li>
+<li>核心：多头自注意力机制。每个 Token 可以直接关注序列中所有（Decoder 中是所有前面的）Token，不需要像 RNN 那样逐步传递信息，因此长距离依赖建模好，训练时可以整句并行，为扩展参数规模打下基础。</li>
+<li>每层组成：多头注意力 + FFN，外加残差连接和 LayerNorm；输入端有 Embedding 和位置编码。</li>
+</ul>
+<p>直观理解：读到&quot;小李把蛋糕放进冰箱，因为它会坏&quot;中的&quot;它&quot;时，人会回看前文并判断&quot;它&quot;更可能指&quot;蛋糕&quot;。注意力机制做的是同样的事：计算当前词与上文每个词的相关性，相关性越高的位置权重越大，再按权重聚合信息。</p></div></article><article class="q core" id="q10"><h3><a class="q-link" href="#q10">Transformer 有什么优缺点？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">Transformer 的优势在于并行计算和全局上下文建模，主要缺点是注意力的计算和显存开销随序列长度平方增长，长文本代价高。</p>
+<p><strong>优点</strong></p>
+<ul>
+<li>任意两个 Token 之间直接交互，路径长度为 O(1)，长距离依赖建模好。</li>
+<li>训练时整个序列可以并行计算，比 RNN 训练效率高得多。</li>
+<li>计算以大矩阵乘法为主，非常适配 GPU/TPU。</li>
+<li>结构统一、模块化，易于堆叠扩展参数规模，Scaling Law 表现好；也易于迁移到图像、语音等多模态。</li>
+</ul>
+<p><img src="images/Java+AI%E5%85%AB%E8%82%A1-Gemini_Generated_Image_hgffmyhgffmyhgff.png" alt=""></p>
+<p><strong>缺点</strong></p>
+<ul>
+<li>自注意力时间复杂度 O(n²d)，注意力矩阵显存 O(n²)，长序列开销大（FlashAttention 可把显存降为线性，但计算量仍是平方级）。</li>
+<li>推理时自回归逐 Token 生成，无法并行，并且 KV Cache 随序列长度线性增长，占用大量显存。</li>
+<li>自身没有顺序信息，需要额外的位置编码，长度外推能力受位置编码限制。</li>
+<li>缺少 CNN/RNN 那样的归纳偏置，需要大量数据和算力才能训练好。</li>
+</ul></div></article><article class="q core" id="q11"><h3><a class="q-link" href="#q11">Transformer 的编码器和解码器分别有什么作用？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">编码器负责&quot;理解&quot;：把输入 Token 编码成融合了上下文的向量表示；解码器负责&quot;生成&quot;：根据已有信息逐个生成新 Token。生成式大模型一定包含解码器，而 Embedding、分类等理解类模型通常用编码器。</p>
+<ul>
+<li>编码器（Encoder-only，如 BERT）：使用双向自注意力，每个 Token 能看到整个输入，适合文本分类、NER、语义相似度、Embedding 等理解任务。</li>
+<li>解码器（Decoder-only，如 GPT、LLaMA、Qwen）：使用带因果掩码的自注意力，只能看到当前位置及之前，适合文本生成，是当前大模型的主流架构。</li>
+<li>编码器-解码器（如 T5、BART、原始 Transformer）：编码器理解源序列，解码器通过交叉注意力读取编码器输出并生成目标序列，适合翻译、摘要等序列到序列任务。</li>
+</ul>
+<p>解码器架构又分为两种：</p>
+<ul>
+<li>因果解码器（Causal Decoder）：所有 Token 都只能看前文，GPT 系列即此类，一般说的 Decoder-only 指这种。</li>
+<li>前缀解码器（Prefix Decoder）：前缀（输入）部分双向注意力，生成部分单向注意力，如 GLM、U-PaLM。</li>
+</ul>
+<p><img src="images/Java+AI%E5%85%AB%E8%82%A1-image-18.png" alt="三种主流架构的注意力模式比较示意图（蓝色、绿色、黄色和灰色的圆角矩形分别表示前缀词元之间的注意力、前缀词元和目标词元之间的注意力、目标词元之间的注意力以及掩码注意力。图片来源于中国人民大学出版的《大语言模型》书中。"></p></div></article><article class="q core" id="q12"><h3><a class="q-link" href="#q12">Decoder-only 模型在训练和推理阶段的输入格式有什么不同？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">训练阶段一次性输入完整序列并行计算，推理阶段自回归地逐 Token 输入。</p>
+<ul>
+<li>训练阶段（Teacher Forcing）：输入完整序列 <code>x1..xn</code>，标签是右移一位的 <code>x2..x(n+1)</code>。配合下三角因果掩码，一次前向就能让每个位置同时完成&quot;只看前文&quot;的注意力计算和下一个 Token 的预测，吞吐高。SFT 时通常只对回答部分计算 loss。</li>
+<li>推理阶段：先输入完整 Prompt（Prefill，可并行），之后每步只输入上一步新生成的 1 个 Token（Decode），追加到序列末尾后继续预测。</li>
+<li>效率问题：如果每步都把整个序列重新算一遍会有大量重复计算，因此推理时用 KV Cache 缓存历史 Token 的 K、V，每步只计算新 Token。</li>
+</ul>
+<p><img src="images/Java+AI%E5%85%AB%E8%82%A1-Gemini_Generated_Image_62sus662sus662su.png" alt=""></p></div></article><article class="q core" id="q13"><h3><a class="q-link" href="#q13">Decoder 和 Encoder 的多头自注意力有什么区别？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">核心区别是 Decoder 的自注意力加了因果掩码（Causal Mask）。</p>
+<ul>
+<li>Encoder：普通 Multi-Head Self-Attention，每个位置可以关注输入序列的所有位置（双向），只需屏蔽 Padding。</li>
+<li>Decoder：Masked Multi-Head Self-Attention，生成第 t 个 Token 时只能关注第 1 到第 t 个位置，看不到未来 Token，防止训练时信息泄露。</li>
+<li>在原始 Encoder-Decoder 结构中，Decoder 每层还多一个交叉注意力（Cross-Attention）子层，Q 来自 Decoder，K、V 来自 Encoder 输出；Decoder-only 模型没有这一层。</li>
+</ul></div></article><article class="q core" id="q14"><h3><a class="q-link" href="#q14">为什么 Decoder 的自注意力要做 Mask？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">为了保证训练过程符合自回归原则，让训练和推理一致。</p>
+<ul>
+<li>推理时模型预测第 t 个 Token 只能依赖第 1 到 t-1 个 Token，未来内容根本不存在。</li>
+<li>训练时为了并行，会一次性输入完整目标序列。如果不加掩码，每个位置能直接&quot;偷看&quot;后面的答案，模型学到的是抄答案而不是预测，训练 loss 很低但推理时没有未来信息可用，效果会严重下降。</li>
+<li>加上因果掩码后，一次前向就等价于 n 个&quot;只看前文预测下一个&quot;的子任务，既保证正确性，又保留训练并行性。</li>
+</ul></div></article><article class="q core" id="q15"><h3><a class="q-link" href="#q15">Transformer 的掩码注意力具体是怎么做的？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">在 softmax 之前，把不该关注位置的注意力分数加上一个极大负数（<code>-∞</code> 或 <code>-1e9</code>），softmax 后这些位置的权重约为 0，相当于看不到。</p>
+<p>计算过程：<code>scores = QKᵀ / √d_k</code>，<code>scores = scores + mask</code>（被屏蔽处为 <code>-∞</code>，其余为 0），<code>weights = softmax(scores)</code>，<code>output = weights · V</code>。</p>
+<ul>
+<li>填充掩码（Padding Mask）：一个 batch 中句子长度不同，用 <code>[PAD]</code> 补齐。<code>[PAD]</code> 没有语义，需要标记其位置，在注意力分数中把对应的列置为 <code>-∞</code>，模型就不会关注这些 Token。Encoder 和 Decoder 都会用到。</li>
+<li>因果掩码（Causal Mask）：用于 Decoder 自注意力。构造一个 n×n 矩阵，主对角线以上（未来位置）为 <code>-∞</code>，对角线及以下为 0，即保留下三角。这样训练时可以一次输入完整序列，但每个位置只能看到自己和之前的位置。</li>
+<li>实际使用时两种掩码可以叠加。</li>
+</ul>
+<pre><code class="language-python"># scores: (batch, heads, seq, seq)
+causal = torch.triu(torch.ones(seq, seq, dtype=torch.bool), diagonal=1)
+scores = scores.masked_fill(causal, float('-inf'))
+weights = torch.softmax(scores, dim=-1)
+</code></pre></div></article><article class="q core" id="q16"><h3><a class="q-link" href="#q16">Transformer 的并行化体现在哪？Decoder 端能并行吗？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">Transformer 的并行主要体现在同一层内所有 Token 可以同时计算；Decoder 在训练时可以并行，推理的生成阶段不能并行。</p>
+<ul>
+<li>层间：不能并行，上一层输出是下一层输入，必须按层顺序计算（分布式训练中的流水线并行是把不同层放到不同设备上，处理不同的微批次）。</li>
+<li>Encoder 层内：Self-Attention 用矩阵乘法一次算出所有 Token 两两之间的注意力；FFN 对每个位置独立计算；多个注意力头之间也相互独立。整个序列可以同时处理。</li>
+<li>Decoder 训练：目标序列已知，可以一次性输入，用因果掩码屏蔽未来位置（Teacher Forcing），因此和 Encoder 一样可以并行。</li>
+<li>Decoder 推理：Prefill 阶段对 Prompt 可以并行计算；Decode 阶段第 t 个 Token 依赖前面生成的结果，只能逐个串行生成。投机解码、MTP 等方法就是为了缓解这一串行瓶颈。</li>
+</ul></div></article><article class="q" id="q17"><h3><a class="q-link" href="#q17">Transformer 为什么要用残差连接？</a></h3><div class="a"><p class="lead">主要为了让深层网络可训练：缓解梯度消失和网络退化，并稳定训练。</p>
+<ul>
+<li>残差连接最早由 ResNet 提出，形式为 <code>y = x + F(x)</code>。</li>
+<li>反向传播时 <code>∂y/∂x = 1 + ∂F/∂x</code>，梯度可以通过恒等路径直接传到浅层，不会因层层连乘而消失，这样才能堆叠几十上百层。</li>
+<li>子层只需学习输入的&quot;增量&quot;（残差），如果某层没用，退化为恒等映射即可，避免网络加深后效果反而变差。</li>
+<li>在 Transformer 中，每个注意力子层和 FFN 子层外都包了一层残差，配合 LayerNorm 使用；残差路径也让原始的 Token 和位置信息能一直传递到深层。</li>
+</ul></div></article><article class="q" id="q18"><h3><a class="q-link" href="#q18">前馈网络层（FFN）的作用是什么？为什么 self-attention 后要接 FFN？</a></h3><div class="a"><p class="lead">自注意力负责&quot;在 Token 之间搬运和混合信息&quot;，FFN 负责&quot;在每个 Token 内部对信息做非线性加工&quot;，两者组合才是完整的特征处理单元。</p>
+<p>FFN 是接在注意力后面的两层全连接网络，对每个位置独立计算：<code>FFN(x) = σ(x·W1 + b1)·W2 + b2</code>。</p>
+<ul>
+<li>引入非线性：注意力输出本质上是对 V 的加权求和，非线性能力有限（只有 softmax）。FFN 中的激活函数（早期 ReLU，后来 GELU，现在大模型多用 SwiGLU）提供主要的非线性，让模型能拟合复杂函数。</li>
+<li>升维再降维：第一层把维度扩展到约 4 倍（如 768 → 3072），在高维空间对特征充分交叉重组，再投影回原维度，便于接残差。SwiGLU 由于多一个门控矩阵，中间维度一般取约 8/3 倍以保持参数量相近。</li>
+<li>存储知识：FFN 约占每层参数的三分之二，研究认为它类似键值记忆（Key-Value Memory），存储了大量事实知识和模式。MoE 就是把 FFN 替换为多个专家 FFN。</li>
+<li>分工互补：注意力建模长距离依赖（Token 间），FFN 做逐位置的特征细化（Token 内），堆叠后形成&quot;混合 → 加工 → 混合&quot;的结构。</li>
+</ul></div></article><article class="q" id="q19"><h3><a class="q-link" href="#q19">BERT 的 mask 为什么不像 Transformer 那样在 attention score 处屏蔽？</a></h3><div class="a"><p class="lead">因为两者目的不同：Decoder 的掩码是为了保证自回归、防止看到未来；BERT 的目标是学习双向表示，必须同时看左右两侧上下文。</p>
+<ul>
+<li>Transformer Decoder：预测第 t 个 Token 只能依赖前文，所以在 attention score 上屏蔽未来位置。</li>
+<li>BERT：预训练任务是 MLM（Masked Language Model），随机选 15% 的 Token，在输入层替换为 <code>[MASK]</code>（其中 80% 换成 <code>[MASK]</code>、10% 换成随机词、10% 保持不变），让模型根据左右上下文预测原词。</li>
+<li>如果在 attention 处屏蔽未来 Token，BERT 就退化成单向语言模型，失去双向建模能力；而如果在 attention 处屏蔽被预测的位置本身，又需要额外设计（XLNet 的双流注意力就是这类思路）。在输入层替换最简单。</li>
+<li>因此 BERT 的 attention 中只屏蔽 Padding，所有真实 Token 之间可以互相关注。</li>
+</ul></div></article></section><section class="grp has-core" id="g3"><h2 class="grp-title">自注意力 <span class="cnt"><span class="n-all">9</span><span class="n-core">高频 8</span></span></h2><article class="q core" id="q20"><h3><a class="q-link" href="#q20">Transformer 中 Attention 的本质是什么？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">本质是让每个 Token 根据相关性，自适应地从整个序列中加权聚合信息。</p>
+<ul>
+<li>用 Query 和 Key 的点积衡量当前位置与其他位置的相关程度，softmax 后得到注意力权重，再用权重对 Value 加权求和，得到融合了相关上下文的新表示。</li>
+<li>可以看作一种&quot;软寻址&quot;：Q 是查询，K 是索引，V 是内容；和哈希表精确匹配不同，它对所有条目按相似度加权取值。</li>
+<li>权重是根据输入动态计算的，而不是像 CNN 卷积核那样固定，因此能建模任意位置、任意距离的依赖。</li>
+<li>多头注意力在此基础上把特征划分到多个子空间并行计算，让不同头关注语法、语义、指代、局部或长距离等不同关系，最后拼接融合。</li>
+<li>相比 RNN 按时间步传递信息，Attention 直接连接任意两个 Token，既缓解了长距离依赖问题，又能整序列并行计算，这是 Transformer 取代 RNN 的关键。</li>
+</ul></div></article><article class="q" id="q21"><h3><a class="q-link" href="#q21">讲讲多头自注意力机制</a></h3><div class="a"><p class="lead">多头自注意力（Multi-Head Self-Attention, MHA）是把输入投影到多组低维子空间，在每个子空间里独立做缩放点积注意力，再把结果拼接并线性变换，让模型同时捕捉多种关系。</p>
+<p><strong>单头自注意力</strong></p>
+<ul>
+<li>输入 X 经过三个线性层得到 <code>Q = XWq</code>、<code>K = XWk</code>、<code>V = XWv</code>。Q 表示当前词在找什么信息，K 表示每个词可被匹配的特征，V 表示每个词携带的内容。</li>
+<li>计算 <code>Attention(Q, K, V) = softmax(QKᵀ / √d_k) · V</code>：Q 与所有 K 点积得到相关性分数，除以 √d_k 防止 softmax 饱和，softmax 得到权重，再对 V 加权求和。</li>
+</ul>
+<p><strong>多头</strong></p>
+<ul>
+<li>设模型维度 d、头数 h，每个头维度 <code>d_k = d / h</code>。每个头有自己的 Q/K/V 投影，相当于 h 个独立的注意力&quot;视角&quot;，有的关注指代，有的关注句法，有的关注相邻词。</li>
+<li><code>MHA = Concat(head1, ..., headh) · Wo</code>，拼接后维度回到 d，再经输出投影矩阵 Wo 融合。</li>
+<li>实现上并不真的用 h 个小矩阵，而是用一个 d×d 的大矩阵投影后 reshape 成 h 个头，计算量与单头相当。</li>
+</ul>
+<p><strong>PyTorch 实现</strong></p>
+<pre><code class="language-python">class MultiHeadSelfAttention(nn.Module):
+    def __init__(self, embed_dim, num_heads):
+        super().__init__()
+        self.h, self.dk = num_heads, embed_dim // num_heads
+        self.qkv = nn.Linear(embed_dim, 3 * embed_dim)  # Q/K/V 合并投影
+        self.out_proj = nn.Linear(embed_dim, embed_dim)
+
+    def forward(self, x, mask=None):
+        b, n, d = x.size()
+        # 投影并拆成多头: (batch, heads, seq_len, head_dim)
+        q, k, v = self.qkv(x).view(b, n, 3, self.h, self.dk).permute(2, 0, 3, 1, 4)
+        scores = q @ k.transpose(-2, -1) / math.sqrt(self.dk)
+        if mask is not None:  # padding 或未来位置不可见
+            scores = scores.masked_fill(mask == 0, float('-inf'))
+        attn = torch.softmax(scores, dim=-1)
+        # 加权求和并拼接各头: (batch, seq_len, embed_dim)
+        out = (attn @ v).transpose(1, 2).contiguous().view(b, n, d)
+        return self.out_proj(out)
+</code></pre>
+<p>推理优化中常见的变体：MQA（所有头共享一组 K、V）、GQA（若干头为一组共享 K、V，LLaMA 2 70B / LLaMA 3、Qwen 2 等使用）、MLA（DeepSeek-V2/V3 的低秩压缩 KV），目的都是减小 KV Cache。</p></div></article><article class="q core" id="q22"><h3><a class="q-link" href="#q22">自注意力怎么计算？复杂度是多少？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">计算公式为 <code>Attention(Q, K, V) = softmax(QKᵀ / √d_k) · V</code>，时间复杂度 O(n²d + nd²)，长序列时瓶颈在 O(n²d)，注意力矩阵的空间复杂度为 O(n²)。</p>
+<p>设序列长度 n，隐藏维度 d：</p>
+<ul>
+<li>QKV 投影：X(n×d) 乘 W(d×d)，三次，复杂度 O(nd²)。</li>
+<li>注意力分数：Q(n×d) 乘 Kᵀ(d×n)，得到 n×n 矩阵，复杂度 O(n²d)。</li>
+<li>softmax：对 n×n 矩阵逐行归一化，O(n²)。</li>
+<li>加权求和：权重(n×n) 乘 V(n×d)，复杂度 O(n²d)。</li>
+<li>输出投影：O(nd²)。</li>
+</ul>
+<p>所以总体为 O(n²d + nd²)。当 n 远大于 d（长上下文）时，主项为 O(n²d)，计算量随序列长度平方增长；n 较小时，投影和 FFN 的 O(nd²) 反而占主导。多头不改变总复杂度，因为每个头维度是 d/h。</p>
+<p>空间上需要存储 n×n 的注意力矩阵，为 O(n²)（多头为 O(hn²)）。FlashAttention 通过分块计算和在线 softmax，不实例化完整注意力矩阵，把额外显存降到 O(n)，但计算量仍是 O(n²d)。推理时有 KV Cache 的情况下，每生成一个 Token 的注意力计算为 O(nd)。</p></div></article><article class="q core" id="q23"><h3><a class="q-link" href="#q23">为什么自注意力计算要除以 √d_k？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">为了让点积结果的方差保持在 1 左右，防止 softmax 进入饱和区导致梯度过小、训练困难。</p>
+<ul>
+<li>假设 q、k 的每个分量独立、均值 0、方差 1，则点积 <code>q·k = Σ qi·ki</code> 的均值为 0、方差为 d_k，标准差为 √d_k。</li>
+<li>d_k 较大时（如 128），点积数值会很大，softmax 的输出会趋近 one-hot：最大值处接近 1，其余接近 0。</li>
+<li>此时 softmax 的梯度（<code>∂softmax</code> 涉及 <code>p(1-p)</code> 项）几乎为 0，梯度消失，参数难以更新。</li>
+<li>除以 √d_k 后方差变回 1，softmax 输入落在合理区间，注意力分布不会过于尖锐，梯度正常。</li>
+<li>为什么是 √d_k 而不是 d_k：要缩放的是标准差，除以 d_k 会把方差压到 1/d_k，分布过于平滑，区分度下降。</li>
+</ul></div></article><article class="q core" id="q24"><h3><a class="q-link" href="#q24">介绍一下 Transformer 中 QKV 的计算</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">QKV 是输入特征 X 分别经过三个不同的线性投影得到的：<code>Q = XWq</code>，<code>K = XWk</code>，<code>V = XWv</code>，其中 X 形状为 (n, d)，三个权重矩阵是可学习参数。</p>
+<ul>
+<li>Q（Query）：当前 Token 想要查询什么信息。</li>
+<li>K（Key）：每个 Token 用于被匹配的特征。</li>
+<li>V（Value）：每个 Token 真正携带、会被提取的内容。</li>
+</ul>
+<p>计算流程：</p>
+<ol>
+<li>Q 与 Kᵀ 做矩阵乘法，得到 n×n 的 Attention Score，衡量 Token 两两之间的相关性。</li>
+<li>除以 √d_k 缩放，按需加掩码。</li>
+<li>对每一行做 softmax，得到注意力权重。</li>
+<li>用权重对 V 加权求和，得到每个 Token 融合上下文后的表示。</li>
+<li>多头情况下，把投影结果 reshape 为 h 个头分别计算，拼接后再乘输出矩阵 Wo。</li>
+</ol>
+<p>三个投影矩阵不同，是为了把同一个输入映射到不同的表示空间，让模型分别学习&quot;查询&quot;、&quot;匹配&quot;和&quot;内容表达&quot;，而不是用同一套特征完成所有功能。</p></div></article><article class="q core" id="q25"><h3><a class="q-link" href="#q25">为什么要分成 Q、K、V？同一个 token 的 QKV 向量一样吗？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">QKV 实现的是一次&quot;查询 - 匹配 - 提取&quot;：用 Q 去匹配所有 K 得到权重，再按权重提取 V。分开是为了解耦&quot;我要找什么&quot;、&quot;凭什么被找到&quot;、&quot;被找到后提供什么&quot;这三种角色。</p>
+<p><strong>为什么要分开</strong></p>
+<ul>
+<li>如果直接用 X 自身做 <code>softmax(XXᵀ)X</code>，相关性矩阵是对称的（A 对 B 的关注度等于 B 对 A），且每个 Token 与自身的点积往往最大，注意力会集中在自己身上。</li>
+<li>用不同的 Wq、Wk，<code>QKᵀ = XWqWkᵀXᵀ</code> 不再对称，可以表达&quot;A 关注 B 但 B 不关注 A&quot;这种有方向的关系（如代词指向名词）。</li>
+<li>单独的 Wv 让&quot;用于匹配的特征&quot;和&quot;被传递的内容&quot;解耦，匹配依据和传递内容可以不同。</li>
+<li>三组投影显著增强了表达能力，每个头还能在自己的子空间里学到不同的关系。</li>
+</ul>
+<p><strong>同一个 Token 的 QKV 一样吗</strong></p>
+<ul>
+<li>进入某一层自注意力前，同一个 Token 只有一个输入向量（第一层是 Embedding 加位置信息）。</li>
+<li>经过 Wq、Wk、Wv 三个不同矩阵变换后，得到的 Q、K、V 三个向量不同（使用 RoPE 时，Q、K 还会按位置旋转）。</li>
+<li>注意力输出融合了上下文，所以同一个词在不同句子里，经过各层后得到的表示也不同，这就是上下文相关的语义表示（如&quot;苹果&quot;在水果和公司语境下不同）。</li>
+</ul></div></article><article class="q core" id="q26"><h3><a class="q-link" href="#q26">多头注意力有什么好处？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">多头让模型在多个表示子空间里并行地关注不同类型的信息，增强表达能力，而总计算量与单头基本相同。</p>
+<ul>
+<li>多视角：类似 CNN 的多通道，不同头可以关注不同特征，比如有的头关注语法依存，有的关注指代，有的关注相邻词，有的关注长距离信息。研究中可视化注意力头也确实观察到了这种分工。</li>
+<li>避免单一分布：单头的 softmax 权重是一个分布，往往被少数位置主导；多个头可以同时关注多个不同位置，减少信息丢失。</li>
+<li>表达能力更强：多个子空间的结果拼接后经 Wo 融合，比单个高维注意力的表示更丰富。</li>
+<li>计算代价不变：每个头维度降为 d/h，总计算量和参数量与单头相当，而且各头可以并行计算。</li>
+<li>一定冗余性：部分头被剪枝后效果下降不大，说明多头也提供了鲁棒性；这也是 GQA / MQA 能让多个头共享 K、V 而效果损失较小的原因之一。</li>
+</ul></div></article><article class="q core" id="q27"><h3><a class="q-link" href="#q27">多头注意力为什么要对每个 head 降维？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">把 d 维拆成 h 个 d/h 维的子空间，可以在计算量和参数量基本不变的前提下获得多头的好处，并保证输出维度和原结构对齐。</p>
+<ul>
+<li>控制计算量：如果每个头都保持完整维度 d，QKV 投影的参数量和注意力计算量都会变为原来的 h 倍。降到 d/h 后，h 个头的总开销与单头 d 维注意力相当。</li>
+<li>学习不同子空间：每个头在各自的低维子空间里计算注意力，被迫学习不同侧重点的关系，比一个大头学到的特征更多样。</li>
+<li>维度对齐：h 个 d/h 维的输出拼接后正好是 d 维，可以直接接输出投影、残差连接和 FFN，不破坏整体结构。</li>
+<li>注意点：头数也不是越多越好。每个头的维度太小会限制单头的表达能力（低秩瓶颈），常见设置是 head_dim 为 64 或 128。</li>
+</ul></div></article><article class="q core" id="q28"><h3><a class="q-link" href="#q28">交叉注意力怎么理解？和自注意力有什么区别？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">交叉注意力（Cross-Attention）是一种跨序列的信息交互机制：用一个序列去查询另一个序列。它出现在原始 Transformer 的 Decoder 中，让 Decoder 生成时能参考 Encoder 编码的源序列，实现源与目标的对齐（如翻译时的词对齐）。</p>
+<p>核心区别是 Q、K、V 的来源不同：</p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>自注意力</th>
+<th>交叉注意力</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q 来源</td>
+<td>当前序列</td>
+<td>Decoder 当前隐状态（目标序列）</td>
+</tr>
+<tr>
+<td>K、V 来源</td>
+<td>当前序列</td>
+<td>Encoder 最终输出（源序列）</td>
+</tr>
+<tr>
+<td>注意力矩阵形状</td>
+<td>n×n</td>
+<td>m×n（目标长度×源长度）</td>
+</tr>
+<tr>
+<td>解决的问题</td>
+<td>序列内部 Token 如何交互</td>
+<td>一个序列如何对齐并利用另一个序列的信息</td>
+</tr>
+<tr>
+<td>掩码</td>
+<td>Decoder 中需因果掩码</td>
+<td>不需要因果掩码，只需源序列 Padding Mask</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>在原始 Transformer 的每个 Decoder 层中，顺序是：Masked Self-Attention → Cross-Attention → FFN。</li>
+<li>推理时 Encoder 输出不变，交叉注意力的 K、V 只需计算一次并缓存。</li>
+<li>应用场景：机器翻译、摘要（T5、BART）、语音识别（Whisper）、文生图（Stable Diffusion 中图像特征作为 Q，文本特征作为 K、V），以及部分多模态模型（如 Flamingo）把视觉信息注入语言模型。</li>
+<li>Decoder-only 大模型没有交叉注意力，多模态信息通常直接拼进同一序列，由自注意力统一处理。</li>
+</ul></div></article></section><section class="grp" id="g4"><h2 class="grp-title">位置编码与归一化 <span class="cnt"><span class="n-all">7</span><span class="n-core">高频 0</span></span></h2><article class="q" id="q29"><h3><a class="q-link" href="#q29">Transformer 为什么需要位置编码？</a></h3><div class="a"><p class="lead">因为自注意力本身不感知顺序：如果不加位置信息，打乱输入 Token 的顺序，每个 Token 得到的输出只是跟着换位置，内容不变（置换等变），模型就退化成&quot;词袋&quot;，分不清&quot;狗咬人&quot;和&quot;人咬狗&quot;。</p>
+<ul>
+<li>自注意力只根据 Token 之间的内容相似度计算权重，计算过程中没有任何关于&quot;谁在前、谁在后&quot;的信息。RNN 靠逐步处理天然带顺序，CNN 靠卷积窗口带局部位置，Transformer 两者都没有。</li>
+<li>自然语言高度依赖词序，模型必须知道位置。</li>
+<li>位置编码把位置信息注入模型，使每个 Token 的表示同时包含语义和位置。</li>
+</ul>
+<p><strong>两大类</strong></p>
+<ul>
+<li>绝对位置编码：给第 t 个位置生成一个向量 p_t，与词向量相加 <code>x_t = v_t + p_t</code>。原始 Transformer 用正弦余弦函数生成（不可学习），BERT、GPT-2 用可学习的位置 Embedding。缺点是对超过训练长度的位置泛化差。</li>
+<li>相对位置编码：不往输入里加位置，而是在计算注意力分数时根据 Q、K 的距离 <code>i - j</code> 调整得分（如 T5 的相对位置偏置、ALiBi）。语言中相对距离往往比绝对位置更重要，外推性通常更好。</li>
+</ul>
+<p>当前大模型（LLaMA、Qwen、DeepSeek 等）基本使用 RoPE：用绝对位置的旋转实现相对位置的效果。另外，Decoder-only 因为有因果掩码，即使不加位置编码（NoPE）也能隐式学到一些位置信息，但效果和外推不如显式位置编码稳定。</p></div></article><article class="q" id="q30"><h3><a class="q-link" href="#q30">旋转位置编码 RoPE 有什么优缺点？</a></h3><div class="a"><p class="lead">RoPE（Rotary Position Embedding，苏剑林等 2021 年提出）把 Q、K 向量的维度两两分组看作二维平面上的点，按 Token 的绝对位置 t 旋转角度 <code>t·θ_i</code>（不同维度组频率 θ_i 不同）。旋转后两个向量的点积只依赖它们的相对位置：</p>
+<p><code>(R_i·q)ᵀ(R_j·k) = qᵀ·R_(j-i)·k</code></p>
+<p>即&quot;用绝对位置的运算实现相对位置的效果&quot;。RoPE 作用在每一层的 Q、K 上，而不是只加在输入层，V 不旋转。</p>
+<p><strong>优点</strong></p>
+<ul>
+<li>无需额外可学习参数，实现简单，只是对 Q、K 逐元素乘 cos/sin 再组合，开销很小。</li>
+<li>天然编码相对位置，同时保留绝对位置信息，兼顾两者好处。</li>
+<li>具有远程衰减特性：相对距离越大，内积的上界越小，注意力更倾向于关注临近 Token，符合语言的局部依赖规律。</li>
+<li>可以和线性注意力（Linear Attention）结合使用，而很多需要构造 n×n 相对位置矩阵的方案做不到。</li>
+<li>与 KV Cache 兼容：每个 Token 的 K 只依赖自己的位置，旋转后缓存即可。</li>
+<li>有成熟的长度扩展方法（PI、NTK-aware、YaRN 等），只需调整旋转频率。</li>
+</ul>
+<p><strong>缺点</strong></p>
+<ul>
+<li>直接外推能力有限：推理长度明显超过训练长度时，会出现训练中没见过的旋转角度（主要是低频维度），注意力分布失常，效果显著下降。</li>
+<li>依赖额外的长度扩展算法：要支持长上下文，通常需要位置插值、NTK-aware 缩放、YaRN 等方法，并配合少量长文本继续训练，增加了后训练调优成本。</li>
+<li>高频维度在长距离上周期性变化，远距离位置区分度下降。</li>
+</ul></div></article><article class="q" id="q31"><h3><a class="q-link" href="#q31">还有哪些位置编码策略？</a></h3><div class="a"><p class="lead">位置编码整体分两类：绝对位置编码把位置信息加到输入上，让 Token 一开始就带有&quot;坐标&quot;；相对位置编码修改注意力的计算，让模型在 Token 交互时感知它们的距离。</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>类型</th>
+<th>做法</th>
+<th>代表模型</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>正弦余弦编码</td>
+<td>绝对</td>
+<td>不同频率的 sin/cos 函数生成固定向量，加到输入</td>
+<td>原始 Transformer</td>
+<td>无参数，理论上可推到任意长度，但实际外推效果一般</td>
+</tr>
+<tr>
+<td>可学习位置编码</td>
+<td>绝对</td>
+<td>每个位置一个可训练向量</td>
+<td>BERT、GPT-2</td>
+<td>简单，但超过最大长度（如 512）无法直接使用</td>
+</tr>
+<tr>
+<td>相对位置编码</td>
+<td>相对</td>
+<td>在注意力中加入依赖 <code>i - j</code> 的可学习向量或偏置，并对距离截断</td>
+<td>Transformer-XL、T5</td>
+<td>只需学习有限个距离，能处理任意长度</td>
+</tr>
+<tr>
+<td>RoPE</td>
+<td>绝对实现相对</td>
+<td>按位置旋转 Q、K</td>
+<td>LLaMA、Qwen、DeepSeek</td>
+<td>当前主流</td>
+</tr>
+<tr>
+<td>ALiBi</td>
+<td>相对</td>
+<td>注意力分数减去 <code>m·(i - j)</code> 线性惩罚</td>
+<td>BLOOM、MPT</td>
+<td>无参数，直接外推能力强</td>
+</tr>
+</tbody>
+</table>
+<p><strong>相对位置编码的截断</strong>：把相对距离限制在一定范围（如 T5 分桶，近距离精细、远距离粗略），只学有限个编码就能处理任意长度。</p>
+<p><strong>ALiBi</strong>：不用位置 Embedding，在 QKᵀ 后加距离惩罚 <code>score_ij = q_i·k_j - m·(i - j)</code>，m 是每个头固定的斜率（几何级数，不可学习）。优势是短训长推直接外推、不加参数；缺点是强制距离衰减会削弱远距离信息利用，长文本检索类任务不一定占优。</p>
+<p>其他研究方案还有 NoPE（不加位置编码）、xPos（RoPE 上加指数衰减）等。</p></div></article><article class="q" id="q32"><h3><a class="q-link" href="#q32">讲讲 Transformer 中的归一化和激活函数</a></h3><div class="a"><p class="lead">归一化用来稳定深层网络中激活值的分布，防止梯度爆炸或消失；激活函数为网络引入非线性。大模型中归一化主流是 RMSNorm，激活函数主流是 SwiGLU（基于 Swish 的门控结构）。</p>
+<p><strong>归一化</strong></p>
+<ul>
+<li>BatchNorm：沿 Batch 维度统计，依赖 batch 大小，不适合变长序列和小 batch，Transformer 基本不用。</li>
+<li>LayerNorm：对单个 Token 的特征维度归一化，<code>LN(x) = (x - μ) / σ · γ + β</code>，γ、β 可学习。原始 Transformer、BERT、GPT-2 使用。</li>
+<li>RMSNorm：去掉减均值，只用均方根缩放 <code>x / sqrt(mean(x²) + ε) · γ</code>，没有 β。计算更少、效果相当，LLaMA、Qwen、DeepSeek 都在用。</li>
+<li>现在大模型普遍是 Pre-Norm（每个子层之前归一化）。</li>
+</ul>
+<p><strong>激活函数</strong></p>
+<ul>
+<li>ReLU：<code>max(0, x)</code>，原始 Transformer 使用。快，但负区间梯度为 0，可能&quot;神经元死亡&quot;。</li>
+<li>GELU：<code>x·Φ(x)</code>（Φ 为标准正态 CDF），ReLU 的平滑版，负区间有小梯度，BERT、GPT-2/3 使用。</li>
+<li>Swish / SiLU：<code>x·sigmoid(βx)</code>，β = 1 即 SiLU，形状接近 GELU。</li>
+<li>SwiGLU：<code>(Swish(xW1) ⊙ xW3)·W2</code>，一个线性分支做门控。PaLM、LLaMA、Qwen 等使用，效果优于 ReLU/GELU。因为多一个矩阵，中间维度一般取约 8/3·d，使参数量与 4d 的普通 FFN 相近。</li>
+</ul></div></article><article class="q" id="q33"><h3><a class="q-link" href="#q33">LayerNorm 和 BatchNorm 有什么区别？大模型为什么用 LayerNorm？</a></h3><div class="a"><p class="lead">BatchNorm 在 Batch 维度上对每个特征通道做归一化（跨样本统计），LayerNorm 在单个样本（单个 Token）的特征维度上做归一化（样本内统计）。BatchNorm 适合 CNN，LayerNorm 适合 Transformer 这类序列模型。</p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>BatchNorm</th>
+<th>LayerNorm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>统计范围</td>
+<td>同一特征在整个 batch（及空间维度）上</td>
+<td>同一 Token 的所有特征维度</td>
+</tr>
+<tr>
+<td>依赖 batch</td>
+<td>是，batch 小时统计不稳定</td>
+<td>否，batch = 1 也可以</td>
+</tr>
+<tr>
+<td>训练与推理</td>
+<td>训练用 batch 统计量，推理用滑动平均</td>
+<td>训练推理计算完全一致</td>
+</tr>
+<tr>
+<td>变长序列</td>
+<td>Padding 会污染统计量</td>
+<td>每个 Token 独立，不受影响</td>
+</tr>
+<tr>
+<td>分布式训练</td>
+<td>小 batch 下需 SyncBN 跨卡同步</td>
+<td>无需跨卡通信</td>
+</tr>
+<tr>
+<td>典型场景</td>
+<td>CNN、图像</td>
+<td>Transformer、RNN、NLP</td>
+</tr>
+</tbody>
+</table>
+<p>大模型用 LayerNorm（或 RMSNorm）的原因（表格之外的补充）：</p>
+<ul>
+<li>变长序列：BN 沿 batch 统计会混入大量 Padding，序列尾部有效 Token 少，均值方差失真。这是原始 Transformer 选 LN 的主要动机。</li>
+<li>训练推理一致：自回归生成每步只有一个新 Token，无法用 batch 统计；BN 的滑动均值在文本分布变化大时也容易失配。</li>
+<li>小 batch 鲁棒：大模型单卡 micro batch 很小，BN 统计波动大；LN 在很大的 hidden size（如 4096）上统计，足够稳定。</li>
+<li>语义上，不同样本同一维度的特征不一定可比，样本内归一化更合理，也避免样本间互相干扰。</li>
+</ul></div></article><article class="q" id="q34"><h3><a class="q-link" href="#q34">使用 RMSNorm 有什么好处？</a></h3><div class="a"><p class="lead">RMSNorm（Zhang &amp; Sennrich, 2019）在 LayerNorm 基础上去掉了减均值（中心化）和偏置项，只用均方根做缩放：<code>RMSNorm(x) = x / sqrt(mean(x²) + ε) · γ</code>。LLaMA 采用后，被 Qwen、DeepSeek、Mistral 等主流模型沿用。</p>
+<ul>
+<li>计算更高效：不需要计算均值、也不需要先减均值再求方差，只算一次平方均值，减少了计算和访存，论文报告可节省约 7%–64% 的归一化耗时（视模型与实现而定）。</li>
+<li>效果相当：RMSNorm 论文的假设是 LayerNorm 起作用的关键在于缩放不变性（re-scaling），而不是平移不变性（re-centering）。实验表明去掉中心化后收敛效果与 LayerNorm 相当，有时更好。</li>
+<li>参数更少：只有缩放参数 γ，没有偏置 β。</li>
+<li>训练稳定：保留了对输入整体缩放的不变性，能有效控制激活值尺度，配合 Pre-Norm 在深层大模型中训练稳定。</li>
+<li>实现简单，便于和其他算子做 kernel 融合。</li>
+</ul></div></article><article class="q" id="q35"><h3><a class="q-link" href="#q35">PostNorm 和 PreNorm 如何选择？</a></h3><div class="a"><p class="lead">深层大模型优先用 Pre-Norm，训练稳定；Post-Norm 在训练成功时效果上限可能略高，但深层下难训练，需要精细的 warmup 和初始化。当前主流大模型（GPT-3、LLaMA、Qwen、DeepSeek 等）都是 Pre-Norm。</p>
+<ul>
+<li>Post-Norm：<code>x_(l+1) = Norm(x_l + F(x_l))</code>，归一化放在残差相加之后，原始 Transformer、BERT 采用。</li>
+<li>Pre-Norm：<code>x_(l+1) = x_l + F(Norm(x_l))</code>，归一化放在子层之前，残差主干是纯恒等映射，最后一层输出后再加一次 Norm。</li>
+</ul>
+<p><strong>Pre-Norm 的优点</strong></p>
+<ul>
+<li>残差主干没有被归一化打断，梯度可以沿恒等路径直接传到底层，深层网络不容易梯度消失或爆炸。</li>
+<li>对学习率 warmup 的依赖小，训练稳定，适合几十上百层的大模型。</li>
+</ul>
+<p><strong>Pre-Norm 的缺点</strong></p>
+<ul>
+<li>随着层数增加，主干上 x 的量级不断累积，每层子层输出相对主干的贡献越来越小，深层的增量作用减弱，实际有效深度可能比名义深度浅，同等层数下效果上限可能略低于 Post-Norm。</li>
+</ul>
+<p><strong>Post-Norm 的特点</strong></p>
+<ul>
+<li>每层输出都被归一化，各层贡献更均衡，正则化作用更强，训练成功时微调效果往往更好。</li>
+<li>但每次相加后都归一化，会削弱残差恒等路径，越靠近底层梯度越小，深层时训练困难，必须依赖 warmup、较小学习率等技巧。</li>
+<li>也有折中方案，如 DeepNorm（对残差加权并调整初始化）让 Post-Norm 可以训练上千层。</li>
+</ul></div></article></section><section class="grp has-core" id="g5"><h2 class="grp-title">MoE <span class="cnt"><span class="n-all">3</span><span class="n-core">高频 3</span></span></h2><article class="q core" id="q36"><h3><a class="q-link" href="#q36">什么是 MoE 模型？和 Dense 模型有什么区别？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">MoE（Mixture of Experts，混合专家模型）把 Transformer 中的 FFN 层替换为多个并列的&quot;专家&quot;FFN，并用一个门控网络（Router / Gate）为每个 Token 选择少数几个专家参与计算，属于稀疏激活模型。Dense（稠密）模型则是每个 Token 都经过全部参数。</p>
+<p><strong>MoE 的工作方式</strong></p>
+<ul>
+<li>每个 MoE 层有 N 个专家（如 8、64、256 个）和一个 Router。</li>
+<li>Router 对每个 Token 计算各专家的得分（线性层 + softmax/sigmoid），选出 Top-k 个专家（如 k = 2 或 8）。</li>
+<li>该 Token 只经过被选中的专家，输出为这些专家输出按门控权重的加权和。</li>
+<li>注意力层通常仍是稠密的，MoE 主要替换 FFN。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>Dense 模型</th>
+<th>MoE 模型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>计算方式</td>
+<td>全量激活，每个 Token 用全部参数</td>
+<td>稀疏激活，每个 Token 只用部分专家</td>
+</tr>
+<tr>
+<td>参数</td>
+<td>总参数 = 激活参数</td>
+<td>总参数远大于激活参数（如 671B 总参数、37B 激活）</td>
+</tr>
+<tr>
+<td>单 Token 计算量</td>
+<td>与总参数成正比</td>
+<td>与激活参数成正比</td>
+</tr>
+<tr>
+<td>扩展能力</td>
+<td>扩容必然增加计算量</td>
+<td>增加专家数即可扩大容量，计算量基本不变</td>
+</tr>
+<tr>
+<td>显存</td>
+<td>与参数量一致</td>
+<td>需加载全部专家，显存占用按总参数算</td>
+</tr>
+<tr>
+<td>工程复杂度</td>
+<td>结构简单，训练部署直接</td>
+<td>需处理路由、负载均衡、专家并行通信</td>
+</tr>
+</tbody>
+</table>
+<p>代表模型：Mixtral 8x7B、DeepSeek-V2/V3/R1、Qwen1.5-MoE / Qwen2-57B-A14B / Qwen3-235B-A22B、Llama 4 等。</p>
+<p><img src="images/Java+AI%E5%85%AB%E8%82%A1-image-19.png" alt=""></p>
+<p>Dense 模型（全连接 FFN）</p>
+<p><img src="images/Java+AI%E5%85%AB%E8%82%A1-image-20.png" alt=""></p>
+<p>MoE 模型（多个专家 FFN + 门控机制）</p></div></article><article class="q core" id="q37"><h3><a class="q-link" href="#q37">MoE 模型有什么优势和劣势？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">一句话：MoE 用较低的激活计算成本换来更大的模型容量，代价是训练、调度和部署都更复杂，显存需求也更高。</p>
+<p><strong>优势</strong></p>
+<ul>
+<li>容量大、计算可控：总参数可以做到数千亿甚至万亿，而每个 Token 的 FLOPs 只取决于激活参数，接近一个中等规模 Dense 模型。</li>
+<li>训练效率高：在相同训练算力下，MoE 通常能达到比 Dense 更低的 loss，或用更少算力达到同等效果。</li>
+<li>推理更快：相同总参数下，单 Token 计算量和需读取的权重远小于 Dense 模型，生成速度更快。</li>
+<li>专家分工：训练中不同专家会逐渐偏向不同的输入模式（如代码、数学、特定语言），形成一定的专业化。</li>
+</ul>
+<p><strong>劣势</strong></p>
+<ul>
+<li>显存占用大：虽然每次只激活部分专家，但所有专家都要加载到显存，部署所需显存按总参数计算，对单卡/端侧不友好。</li>
+<li>负载不均衡：Router 容易偏向少数专家（&quot;赢者通吃&quot;），导致部分专家过载、部分闲置甚至训练不足，需要辅助负载均衡损失（auxiliary loss）、专家容量限制（capacity factor，超出部分 Token 被丢弃）或 DeepSeek-V3 的无辅助损失偏置调节等手段。</li>
+<li>通信开销高：专家并行（Expert Parallelism）把专家分布在不同 GPU，Token 需要 All-to-All 通信分发和收集，跨节点时成为瓶颈。</li>
+<li>训练不稳定：路由是离散选择，可能出现 loss 尖峰、路由崩溃，需要 router z-loss 等技巧。</li>
+<li>微调难度：小数据微调时容易过拟合，部分专家得不到充分更新。</li>
+<li>部署复杂：需要专家并行、动态路由调度等推理框架支持；小 batch 时每个专家分到的 Token 很少，GPU 利用率不高。</li>
+</ul></div></article><article class="q core" id="q38"><h3><a class="q-link" href="#q38">为什么大模型都开始转向 MoE？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">核心原因是 MoE 解决了&quot;参数规模要大&quot;和&quot;算力成本要可控&quot;之间的矛盾：总参数可以堆到几千亿甚至上万亿，但每个 Token 只激活少数专家（激活参数通常在几十亿到几百亿），训练和推理的 FLOPs 接近一个中等规模的 Dense 模型。</p>
+<ul>
+<li>Scaling 的性价比：模型能力随参数和数据规模增长，但 Dense 模型的训练和推理成本也随参数线性增长。MoE 让容量和计算量解耦，在同等训练算力下效果更好，研究也给出了稀疏模型的 Scaling Law。</li>
+<li>推理成本：大模型服务的主要成本在推理。MoE 的单 Token 计算量只与激活参数相关，同样效果下推理更便宜，例如 DeepSeek-V3 总参数 671B、每 Token 激活约 37B。</li>
+<li>知识容量：更多参数意味着能存储更多知识，适合多语言、多领域、多模态、复杂推理等需要大容量的场景，按需调用合适的专家。</li>
+<li>工程链路成熟：Megatron-LM、DeepSpeed-MoE 支持专家并行训练，vLLM、SGLang 等推理框架支持 MoE 和专家并行；DeepSeek 的细粒度专家、共享专家、无辅助损失负载均衡等方案也证明了 MoE 可以稳定训练。</li>
+<li>行业实践：Mixtral、DeepSeek-V3/R1、Qwen3 MoE 系列（如 Qwen3-235B-A22B）、Llama 4（Scout / Maverick）、Kimi K2 等旗舰开源模型都采用 MoE，Gemini 1.5 也公开说明使用了 MoE 架构，MoE 已基本成为大参数旗舰模型的标配。</li>
+</ul>
+<p>需要注意的是，MoE 显存占用按总参数计算，在端侧和小模型场景下 Dense 仍然很常见。</p></div></article></section><section class="grp has-core" id="g6"><h2 class="grp-title">解码与 KV Cache <span class="cnt"><span class="n-all">9</span><span class="n-core">高频 9</span></span></h2><article class="q core" id="q39"><h3><a class="q-link" href="#q39">大模型常见的解码方式有哪些？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">解码方式决定模型每一步如何根据输出的概率分布选出下一个 Token，大体分为确定性搜索（Greedy、Beam Search）和随机采样（Top-k、Top-p，配合 Temperature）两类。</p>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>做法</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Greedy Search</td>
+<td>每步选概率最高的 Token</td>
+<td>快、简单、结果确定</td>
+<td>局部最优，容易单调、重复</td>
+</tr>
+<tr>
+<td>Beam Search</td>
+<td>每步保留 B 条累计概率最高的候选序列，最后选整体最优</td>
+<td>比 Greedy 更接近全局最优，适合翻译、摘要</td>
+<td>计算量约为 B 倍，开放式生成中容易平淡、重复</td>
+</tr>
+<tr>
+<td>Top-k Sampling</td>
+<td>只在概率最高的 k 个 Token 中按概率采样</td>
+<td>增加多样性，排除长尾低质量词</td>
+<td>k 固定，无法适应分布的尖锐或平坦</td>
+</tr>
+<tr>
+<td>Top-p（Nucleus）Sampling</td>
+<td>在累计概率达到 p 的最小候选集合中采样</td>
+<td>候选数量随分布自适应，生成更自然</td>
+<td>p 过大时仍可能采到低质量词</td>
+</tr>
+<tr>
+<td>Temperature</td>
+<td>采样前用 T 缩放 logits，调节分布平滑度</td>
+<td>控制随机性</td>
+<td>本身不是独立的解码算法</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>实际服务中常用组合是 Temperature + Top-p（有时再加 Top-k），并配合重复惩罚（repetition penalty）。</li>
+<li>还有 Min-p 采样（只保留概率不低于最高概率一定比例的 Token）、对比搜索（Contrastive Search）等变体；投机解码属于加速手段，不改变输出分布。</li>
+<li>需要确定性结果的场景（代码、结构化抽取、评测）一般用 Greedy 或很低的 Temperature。</li>
+</ul></div></article><article class="q core" id="q40"><h3><a class="q-link" href="#q40">Top-p、Top-k、Temperature 这些解码参数有什么作用？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">三个参数共同决定采样时&quot;从哪些候选里选&quot;以及&quot;选得多随机&quot;。执行顺序一般是：先用 Temperature 缩放 logits，再用 Top-k、Top-p 截断候选集合，最后在剩余候选上重新归一化并采样（不同框架的顺序细节可能略有差异）。</p>
+<p><strong>Temperature（温度）</strong></p>
+<ul>
+<li>公式：<code>p_i = exp(z_i / T) / Σ exp(z_j / T)</code>，z 为 logits。</li>
+<li>T = 1：原始分布。</li>
+<li>T &lt; 1：分布变尖锐，高概率 Token 更占优，输出更确定、保守；T → 0 近似 Greedy。</li>
+<li>T &gt; 1：分布变平坦，低概率 Token 被选中的机会增加，输出更多样，但连贯性和准确性可能下降。</li>
+<li>经验值：代码、问答 0–0.3；通用对话 0.7 左右；创意写作 0.8–1.0。</li>
+</ul>
+<p><strong>Top-k</strong></p>
+<ul>
+<li>只保留概率最高的 k 个 Token，其余概率置为 0，再在这 k 个中按概率采样。</li>
+<li>k = 1 就是 Greedy。缺点是 k 固定：分布很尖时 k 个里会混入无关词，分布很平时又可能截掉合理选项。</li>
+</ul>
+<p><strong>Top-p（核采样）</strong></p>
+<ul>
+<li>按概率从大到小排序，取累计概率首次达到 p 的最小集合，在集合内采样。p 取值 0–1。</li>
+<li>例：候选为 我 0.40、你 0.25、他 0.15、今天 0.10、苹果 0.06、跑步 0.04，设 p = 0.8。累加 我 0.40 → 我+你 0.65 → 我+你+他 0.80，达到阈值，只在&quot;我、你、他&quot;中按重新归一化后的概率采样，其余被丢弃。</li>
+<li>候选集合大小随分布自适应：模型很确定时只剩一两个词，不确定时候选更多。</li>
+</ul>
+<p>一般建议主要调 Temperature 和 Top-p 之一，不要同时大幅调整多个参数。</p></div></article><article class="q core" id="q41"><h3><a class="q-link" href="#q41">大模型推理的两个阶段（Prefill 和 Decode）是什么？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">大模型推理分为 Prefill（预填充）和 Decode（解码）两个阶段：Prefill 并行处理整个 Prompt 并建立 KV Cache，决定首 Token 延迟；Decode 基于 KV Cache 逐 Token 自回归生成，决定生成速度。</p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>Prefill</th>
+<th>Decode</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>输入</td>
+<td>完整 Prompt 的所有 Token</td>
+<td>每步只输入上一步生成的 1 个 Token</td>
+</tr>
+<tr>
+<td>计算方式</td>
+<td>所有 Token 并行计算，大矩阵乘法</td>
+<td>串行迭代，每步是矩阵 - 向量乘法</td>
+</tr>
+<tr>
+<td>瓶颈</td>
+<td>计算密集（Compute-bound）</td>
+<td>访存密集（Memory-bound），每步都要读取全部权重和 KV Cache</td>
+</tr>
+<tr>
+<td>产出</td>
+<td>全部 Prompt Token 的 KV Cache + 第一个输出 Token</td>
+<td>每步一个新 Token，并把它的 K、V 追加到 Cache</td>
+</tr>
+<tr>
+<td>对应指标</td>
+<td>TTFT（首 Token 时间）</td>
+<td>TPOT（每个输出 Token 的时间）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>为什么要单独做 Prefill</strong></p>
+<ul>
+<li>避免重复计算：先一次性把 Prompt 的 K、V 算好并缓存，之后 Decode 每步只做增量计算，不必每生成一个 Token 都把历史序列重算一遍。</li>
+<li>提高算力利用率：完整输入序列天然适合并行，可以充分利用 GPU 的矩阵运算能力。</li>
+<li>便于分阶段优化：两阶段计算特性不同，可以分别优化。例如 Chunked Prefill 把长 Prompt 切块与 Decode 请求混合调度；PD 分离（Prefill-Decode Disaggregation）把两阶段部署到不同 GPU 集群，分别优化 TTFT 和吞吐。</li>
+</ul></div></article><article class="q core" id="q42"><h3><a class="q-link" href="#q42">什么是投机解码？和自回归解码有什么区别？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">投机解码（Speculative Decoding）是一种无损的推理加速方法：先用一个便宜的草稿模型（drafter）快速猜出后续 k 个 Token，再让目标大模型一次前向并行验证这 k 个 Token，接受与大模型分布一致的前缀，遇到第一个不一致的位置由大模型修正，然后继续下一轮。概括就是&quot;小模型先猜，大模型再验&quot;。</p>
+<p><strong>和自回归解码的区别</strong></p>
+<ul>
+<li>普通自回归：大模型每次前向只生成 1 个 Token，生成 n 个 Token 要做 n 次前向。</li>
+<li>投机解码：大模型一次前向就能验证 k 个草稿 Token，如果全部通过，一轮可以产出 k + 1 个 Token。</li>
+</ul>
+<p><strong>为什么能加速</strong></p>
+<ul>
+<li>Decode 阶段是访存瓶颈：大模型每次前向的主要开销是读取权重，处理 1 个 Token 和并行验证 k 个 Token 的耗时相差不大。</li>
+<li>很多 Token（常见搭配、标点、代码模板）小模型就能猜对，大模型不需要逐个生成，只需验证。</li>
+</ul>
+<p><strong>为什么是无损的</strong></p>
+<ul>
+<li>验证时使用基于概率比值的拒绝采样：草稿 Token 以 <code>min(1, p_target / p_draft)</code> 的概率被接受；被拒绝时从修正后的分布中重新采样。数学上可以证明最终输出分布与只用大模型采样完全一致（Greedy 时则与大模型的 Greedy 结果一致）。</li>
+</ul>
+<p><strong>加速效果取决于</strong></p>
+<ul>
+<li>接受率：草稿模型与大模型分布越接近，一次通过的 Token 越多。</li>
+<li>草稿成本：草稿模型要足够快，草稿长度 k 也要适中，过长会降低接受率、浪费计算。</li>
+<li>实践中加速比通常在 2–3 倍左右；batch 很大、本身已是计算瓶颈时收益会下降。</li>
+</ul>
+<p><strong>草稿来源</strong>：独立的小模型（同系列小参数版本，可蒸馏对齐）；Medusa（在大模型上加多个预测头）；EAGLE（在特征层做草稿）；DeepSeek-V3 的 MTP 模块；以及 Prompt Lookup / n-gram 从上下文中直接复制候选。</p></div></article><article class="q core" id="q43"><h3><a class="q-link" href="#q43">KV Cache 的动机和原理是什么？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">KV Cache 的本质是用显存换计算：把历史 Token 每一层的 Key 和 Value 缓存下来，后续生成时直接复用，避免重复计算。</p>
+<p><strong>动机</strong></p>
+<ul>
+<li>自回归生成时，每一步都要让新 Token 和所有历史 Token 做注意力。</li>
+<li>如果不缓存，第 t 步要把前 t 个 Token 全部重新过一遍模型，重新计算所有 K、V，生成 n 个 Token 总计算量约为 O(n²) 级别的重复前向，越往后越慢。</li>
+<li>在因果注意力下，历史 Token 的 K、V 只依赖它自己和更早的 Token，不会因为后续 Token 改变，因此可以安全复用。</li>
+</ul>
+<p><strong>原理</strong></p>
+<ul>
+<li>Prefill 阶段：对 Prompt 计算每一层所有 Token 的 K、V 并存入缓存。</li>
+<li>Decode 阶段：每步只把新 Token 输入模型，在每一层计算它的 q、k、v；把 k、v 追加到该层缓存；用 q 与缓存中全部 K 计算注意力分数，再对全部 V 加权求和。</li>
+<li>这样每步注意力的计算量从重算整段序列降为 O(t·d)，单步其余计算只与 1 个 Token 有关。</li>
+</ul>
+<p><strong>显存估算</strong>：<code>KV Cache 大小 = 2 × 层数 × KV头数 × head_dim × 序列长度 × batch × 每元素字节数</code>。例如 LLaMA-2-7B（32 层、32 头、head_dim 128、FP16），每个 Token 约 0.5 MB，4K 上下文单条请求约 2 GB。</p></div></article><article class="q core" id="q44"><h3><a class="q-link" href="#q44">KV Cache 有什么优缺点？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead"><strong>优点</strong></p>
+<ul>
+<li>消除重复计算：历史 Token 的 K、V 只算一次，注意力从全量重算变为增量计算。</li>
+<li>显著提升 Decode 速度：每步只需处理 1 个新 Token，生成 n 个 Token 的总计算量从近似平方级降到近似线性，是推理加速的基础技术。</li>
+<li>节省算力：相同硬件下可以支撑更高吞吐，Prefix Caching 等复用机制也建立在 KV Cache 之上。</li>
+</ul>
+<p><strong>缺点</strong></p>
+<ul>
+<li>显存占用大：缓存大小随层数、头数、序列长度和 batch 线性增长，长上下文和高并发时往往超过模型权重本身，成为限制并发数和上下文长度的主要瓶颈。</li>
+<li>访存压力：Decode 每步都要从显存读取全部 KV Cache，序列越长读取越多，Decode 是典型的访存瓶颈。</li>
+<li>无法解决串行问题：Decode 仍需逐 Token 生成，KV Cache 只是减少了每步的计算。</li>
+<li>工程复杂度高：变长请求的缓存分配、碎片、动态增长、回收和共享都需要推理框架精细管理（因此有了 PagedAttention）。</li>
+<li>长序列扩展性差：上下文达到几十 K 甚至百万 Token 时，需要 GQA/MLA、量化、分页、滑动窗口、卸载到 CPU 等额外手段。</li>
+</ul></div></article><article class="q core" id="q45"><h3><a class="q-link" href="#q45">为什么有 K、V Cache，没有 Q Cache？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">因为在自回归生成中，历史 Token 的 Q 不会再被用到，而历史 Token 的 K、V 每一步都要用。</p>
+<ul>
+<li>第 t 步只需要计算当前 Token 的输出，注意力是&quot;当前 Token 的 q_t&quot;与&quot;所有 Token 的 K、V&quot;交互：<code>out_t = softmax(q_t·[k_1..k_t]ᵀ / √d)·[v_1..v_t]</code>。</li>
+<li>历史 Token 的 q_1..q_(t-1) 只在它们各自被生成的那一步用过，之后不再参与任何计算（因果掩码下，历史位置的输出也不会因新 Token 改变，不需要重算）。</li>
+<li>K、V 是所有后续 Query 都要查询的&quot;记忆库&quot;，每步都被反复读取，缓存收益很大。</li>
+<li>缓存 Q 只会增加显存开销而没有计算收益，所以只有 KV Cache。</li>
+</ul></div></article><article class="q core" id="q46"><h3><a class="q-link" href="#q46">KV Cache 有哪些优化方式？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">优化思路分为三类：减少每个 Token 的 KV 大小（结构、量化）、减少需要保存的 Token 数（窗口、驱逐）、提高显存管理和复用效率（分页、前缀共享、卸载）。</p>
+<p><strong>模型结构层面</strong></p>
+<ul>
+<li>MQA：所有 Query 头共享一组 K、V，KV Cache 缩小为 MHA 的 1/h，节省最多但可能掉点。</li>
+<li>GQA：Query 头分 g 组，每组共享一套 K、V，MHA 与 MQA 的折中，LLaMA 2 70B、LLaMA 3、Qwen2/3、Mistral 等采用。</li>
+<li>MLA：DeepSeek-V2/V3 把 K、V 低秩压缩成低维潜向量缓存，推理时还原，KV 大幅减少且效果接近 MHA。</li>
+<li>跨层共享 KV（如 CLA）、局部滑动窗口层与全局层交替（如 Gemma 2/3）。</li>
+</ul>
+<p><strong>存储与压缩层面</strong></p>
+<ul>
+<li>量化：FP8 / INT8 / INT4 存 K、V，显存减半或更多，需权衡精度。</li>
+<li>滑动窗口：只保留最近 W 个 Token 的 KV，大小固定但丢远处信息。</li>
+<li>Token 驱逐：StreamingLLM 保留开头的 attention sink 加最近窗口；H2O 保留注意力累积得分高的 Token。</li>
+</ul>
+<p><strong>系统管理层面</strong></p>
+<ul>
+<li>PagedAttention：vLLM 按固定大小块按需分配，消除碎片和预留浪费，高性能推理框架标配。</li>
+<li>前缀缓存：相同前缀（系统提示、多轮历史）复用已有 KV，跳过重复 Prefill，如 vLLM 的 Automatic Prefix Caching、SGLang 的 RadixAttention。</li>
+<li>卸载到 CPU / SSD；PD 分离（Prefill 与 Decode 分开部署，通过高速网络传 KV）。</li>
+</ul></div></article><article class="q core" id="q47"><h3><a class="q-link" href="#q47">LLM 的复读机现象是什么？如何解决？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">复读机现象指模型在生成时反复输出相同或相似的字、词、句子甚至段落，例如&quot;很好很好很好&quot;或整段内容循环。本质是自回归生成陷入了低多样性的局部循环。</p>
+<p><strong>成因</strong></p>
+<ul>
+<li>自我强化：在确定性解码（Greedy、Beam Search）下，一旦某段内容出现，它在上下文中会提高自己再次出现的概率（模型学到了&quot;上下文中出现过的内容倾向于再出现&quot;的复制模式），形成正反馈循环。</li>
+<li>安全选择：遇到不确定、信息不足或难以继续的内容时，模型倾向于选择上下文里已有的高概率片段。</li>
+<li>训练数据：语料中存在重复文本、模板化表达；SFT 数据多样性不足；预训练的极大似然目标也会让模型偏向高频模式。</li>
+<li>长文本生成与输入问题：生成越长越容易进入循环；Prompt 不清晰、上下文不足会放大问题。小模型和量化后的模型更容易出现。</li>
+</ul>
+<p><strong>解决方法</strong></p>
+<ul>
+<li>推理阶段：
+<ul>
+<li>避免纯 Greedy，使用 Top-k / Top-p 采样或适当提高 Temperature。</li>
+<li>重复惩罚（repetition penalty）：对已出现 Token 的 logits 做惩罚（正 logit 除以惩罚系数、负 logit 乘以系数）；也可用 OpenAI 风格的 presence penalty / frequency penalty（按是否出现、出现次数扣分）。</li>
+<li><code>no_repeat_ngram_size</code>：禁止重复出现相同的 n-gram。</li>
+<li>Beam Search 加多样性约束（Diverse Beam Search），或使用对比搜索。</li>
+<li>设置合理的 max_tokens 和停止条件，优化 Prompt 让任务更明确。</li>
+</ul>
+</li>
+<li>训练阶段：
+<ul>
+<li>清洗训练数据中的重复样本和噪声，提高 SFT 数据多样性。</li>
+<li>在训练目标中引入对重复的约束，如 Unlikelihood Training 惩罚生成重复 Token。</li>
+<li>通过 RLHF / DPO 把重复回答作为负样本进行对齐。</li>
+</ul>
+</li>
+</ul></div></article></section><section class="grp" id="g7"><h2 class="grp-title">推理部署与长上下文 <span class="cnt"><span class="n-all">11</span><span class="n-core">高频 0</span></span></h2><article class="q" id="q48"><h3><a class="q-link" href="#q48">vLLM 并发推理的原理是什么？</a></h3><div class="a"><p class="lead">vLLM 是一个高吞吐的大模型推理引擎，核心是围绕 KV Cache 做精细化的显存管理和请求调度，让尽可能多的请求同时在 GPU 上高效运行。</p>
+<ul>
+<li>PagedAttention：借鉴操作系统虚拟内存分页，把 KV Cache 切成固定大小的块（block，如每块 16 个 Token），每个请求通过块表（block table）记录逻辑块到物理块的映射，不要求连续显存，按需分配。显存浪费从传统方案的 60%–80% 降到 4% 以内，同等显存下能放下更多并发请求。这是 vLLM 最核心的创新。</li>
+<li>Continuous Batching（迭代级调度）：调度以 Decode 的每一步为粒度，请求完成后立即退出 batch，新请求立即加入，GPU 一直处于满载状态。</li>
+<li>内存共享与复用：并行采样、Beam Search 的多个序列共享 Prompt 的 KV 块（引用计数 + Copy-on-Write）；Automatic Prefix Caching 让相同前缀的请求复用已有 KV 块，跳过重复 Prefill。</li>
+<li>抢占与换出：显存不足时，调度器可以把低优先级请求的 KV 块换出到 CPU 或直接丢弃并在之后重算，保证系统不 OOM。</li>
+<li>其他优化：Chunked Prefill、CUDA Graph、优化的注意力 kernel、张量并行 / 流水线并行、量化、投机解码、OpenAI 兼容 API 等。</li>
+</ul></div></article><article class="q" id="q49"><h3><a class="q-link" href="#q49">PagedAttention 是什么？有什么优势？</a></h3><div class="a"><p class="lead">PagedAttention 是 vLLM 提出的注意力计算与 KV Cache 管理机制：借鉴操作系统的分页内存管理，把每个请求的 KV Cache 拆成固定大小的块（block），块在物理显存中可以不连续，通过块表把逻辑块映射到物理块；计算注意力时，kernel 按块表找到对应的物理块读取 K、V。模型的数学计算不变，只是改变了 KV Cache 的组织方式。</p>
+<p><strong>传统方案的问题</strong>：为每个请求按最大可能长度预先分配一块连续显存，存在三类浪费：预留但未使用的空间（输出长度未知）、内部碎片、不同请求之间的外部碎片。</p>
+<p><strong>优势</strong></p>
+<ul>
+<li>按需分配：生成新 Token 时，当前块满了才分配新的物理块，不需要按最大长度预留，浪费只发生在每个请求的最后一个块内。</li>
+<li>几乎消除碎片：所有块大小相同，可以灵活复用任意空闲块，没有外部碎片。</li>
+<li>无需按最长序列对齐 Padding：每个请求只占用实际长度所需的块，短请求不会因为同批长请求而多占显存。</li>
+<li>跨序列共享：多个序列可以把逻辑块映射到同一个物理块（引用计数），写入时 Copy-on-Write。适合并行采样、Beam Search、共享系统提示、多轮对话前缀缓存等场景。</li>
+<li>提升吞吐：显存利用率提高后，同一 GPU 能容纳更大的 batch。vLLM 论文报告吞吐相比 HuggingFace Transformers 提升可达一个数量级以上、相比当时的 TGI 提升数倍。</li>
+<li>代价是注意力 kernel 需要按块表做间接寻址，需要专门优化的 kernel 实现。</li>
+</ul></div></article><article class="q" id="q50"><h3><a class="q-link" href="#q50">什么是 Continuous Batching？</a></h3><div class="a"><p class="lead">Continuous Batching（连续批处理，又称迭代级调度 iteration-level scheduling，最早由 Orca 提出）是一种动态批处理机制：以每一次 Decode 迭代为调度粒度，请求完成后立即离开 batch，新请求可以立即加入，而不是等整批请求全部结束。</p>
+<p><strong>传统静态批处理的问题</strong></p>
+<ul>
+<li>一批请求必须&quot;齐头并进&quot;，直到最长的那个请求生成完毕，整批才结束。</li>
+<li>短请求早早结束后，它的位置只能空转等待；新请求也要排队等下一批，GPU 利用率低、排队延迟高。</li>
+</ul>
+<p><strong>Continuous Batching 的做法</strong></p>
+<ul>
+<li>每一步迭代后，调度器检查：已生成 <code>&lt;EOS&gt;</code> 或达到长度上限的请求立即移除并返回结果；如果显存（KV Cache 块）允许，就把等待队列中的新请求加入。</li>
+<li>不同请求处于不同阶段：新请求在做 Prefill，旧请求在做 Decode，调度器把它们当前这一步的 Token 拼在一起计算（配合 Chunked Prefill 可以把长 Prompt 切块，避免卡住其他请求的 Decode）。</li>
+<li>每个请求的 KV Cache 独立维护（配合 PagedAttention 的块表），调度器跟踪每个请求的进度和对应缓存，保证不同用户的生成互不干扰。</li>
+</ul>
+<p><strong>效果</strong>：batch 始终接近满载，显著提高吞吐，同时降低排队延迟。vLLM、TGI、TensorRT-LLM、SGLang 等主流推理框架都支持。</p></div></article><article class="q" id="q51"><h3><a class="q-link" href="#q51">大模型推理的上下文长度和哪些因素有关？</a></h3><div class="a"><p class="lead">推理能支持的上下文长度受计算、显存、架构和训练四方面共同制约。</p>
+<ul>
+<li>计算复杂度：标准自注意力中每个 Token 都要与所有 Token 交互，注意力矩阵为 n×n，计算量为 O(n²d)，上下文越长，Prefill 延迟增长越快。如果没有 softmax，可以先算 <code>KᵀV</code>（d×d）再乘 Q，把复杂度降为线性（这是线性注意力的思路），但标准 softmax 需要完整的 QKᵀ 才能逐行归一化，所以仍是平方复杂度。</li>
+<li>显存：推理时 KV Cache 随 Token 数线性累积，长上下文下往往超过模型权重本身，是限制上下文长度的核心瓶颈。不用 FlashAttention 时，Prefill 还需要存 n×n 的注意力矩阵。</li>
+<li>模型架构：全局注意力缺乏对超长序列的天然扩展能力；GQA/MLA、滑动窗口、稀疏注意力、线性注意力或状态空间模型等结构能缓解计算和存储压力。位置编码也决定了能否处理超过训练长度的位置。</li>
+<li>参数规模：模型越大，每个 Token 的计算量和每层 KV 越大（层数、hidden size 更大），在长输入下计算负担和延迟进一步放大。</li>
+<li>训练长度与数据分布：模型预训练和长文本继续训练中见过的最大长度决定了它真正擅长的范围。即使结构上允许更长输入，超出训练长度后也可能效果明显下降或不稳定，因此需要位置插值和长文本训练。</li>
+<li>硬件与推理框架：GPU 显存容量和带宽、是否支持 FlashAttention、分页 KV Cache、序列并行等，也决定了实际可用的上下文长度。</li>
+</ul></div></article><article class="q" id="q52"><h3><a class="q-link" href="#q52">长上下文会带来什么问题？</a></h3><div class="a"><ul>
+<li>计算开销大：自注意力计算量随序列长度平方增长，长 Prompt 的 Prefill 耗时长，首 Token 延迟（TTFT）明显增加。</li>
+<li>显存压力大：KV Cache 随长度线性增长，单个长请求就可能占用数十 GB，容易 OOM，也会大幅降低可同时服务的并发数。</li>
+<li>生成变慢：Decode 每一步都要读取并处理全部历史 KV，序列越长每个 Token 越慢（TPOT 上升）。</li>
+<li>成本高：输入 Token 计费，长上下文直接增加调用费用。</li>
+<li>效果下降：
+<ul>
+<li>Lost in the Middle：模型对开头和结尾的信息利用较好，对中间部分的信息容易忽略。</li>
+<li>注意力被稀释：无关内容越多，干扰越大，检索和推理准确率下降；超过训练长度还可能出现位置外推失效。</li>
+<li>有效上下文往往小于标称上下文，需要用&quot;大海捞针&quot;（Needle in a Haystack）、RULER 等评测验证。</li>
+</ul>
+</li>
+</ul></div></article><article class="q" id="q53"><h3><a class="q-link" href="#q53">如何扩展大模型的上下文长度？</a></h3><div class="a"><p class="lead">扩展上下文的方法分为两类：让模型&quot;能处理更长的位置&quot;（位置编码插值 + 长文本训练），以及让长序列&quot;算得动、存得下&quot;（注意力结构、KV Cache 与算子优化）。此外还可以用 RAG 等外部手段间接扩展。</p>
+<p><strong>位置编码与训练</strong>（最常用）</p>
+<ul>
+<li>RoPE 插值 / 缩放 + 长文本继续训练：LLaMA 3、Qwen 等都是先短后长分阶段扩展。</li>
+<li>也可用外推性更好的位置编码，如 ALiBi。</li>
+</ul>
+<p><strong>插值是什么</strong>：把位置编号按比例压回训练见过的范围。如训练长度 2048、推理 8192，就把位置除以 4，模型看到的仍是熟悉范围的位置编码。</p>
+<ul>
+<li>PI（Meta 2023）：所有维度线性压缩。简单，但高频维度也被压缩，局部分辨率下降，扩展倍数大时受损。</li>
+<li>NTK-aware：增大 RoPE 的 base，高频维度几乎不变、低频维度被拉伸，甚至可不微调直接用；Dynamic NTK 按当前长度动态调整。</li>
+<li>YaRN：高频不插值、低频线性插值、中间平滑过渡，并对注意力 logits 做温度修正，Qwen 等使用。</li>
+<li>LongRoPE（微软）：搜索每个维度的非均匀缩放因子，配合渐进扩展到 2M 级别 Token。</li>
+</ul>
+<p><strong>注意力与结构</strong></p>
+<ul>
+<li>滑动窗口注意力（O(nW)，常与全局层交替）、稀疏注意力（Longformer、BigBird、DeepSeek 的 NSA / DSA）。</li>
+<li>GQA / MQA / MLA 减小 KV；线性注意力、Mamba 及混合架构从根本上改变平方复杂度。</li>
+</ul>
+<p><strong>系统与算子</strong></p>
+<ul>
+<li>FlashAttention：分块计算不存 n×n 矩阵，显存从 O(n²) 降到 O(n)。</li>
+<li>KV Cache 分页、量化、驱逐、卸载；序列并行 / Ring Attention 把超长序列切到多卡。</li>
+</ul>
+<p><strong>外部方法</strong>：RAG / 外部记忆检索相关片段注入上下文；或 Map-Reduce 分段总结、递归摘要。输入超窗口时常用带重叠的滑动窗口切分（如块长 512、重叠 128），或按段落、章节等语义边界切分。</p></div></article><article class="q" id="q54"><h3><a class="q-link" href="#q54">什么是 TTFT 和 TPOT？</a></h3><div class="a"><p class="lead">TTFT 和 TPOT 是衡量大模型推理延迟的两个核心指标，分别对应 Prefill 和 Decode 两个阶段。</p>
+<ul>
+<li>TTFT（Time To First Token，首 Token 时间）：从请求发出到收到第一个输出 Token 的时间，包括排队、Prefill 计算和网络开销。主要受 Prompt 长度、排队情况和 Prefill 效率影响，决定用户&quot;等多久才开始看到回复&quot;。</li>
+<li>TPOT（Time Per Output Token，每个输出 Token 的时间）：第一个 Token 之后相邻 Token 之间的平均间隔，计算方式为 <code>(总延迟 - TTFT) / (输出 Token 数 - 1)</code>。主要受模型大小、显存带宽、batch 大小和 KV Cache 长度影响，决定流式输出&quot;打字速度&quot;。</li>
+<li>总延迟约为 <code>TTFT + TPOT × (输出 Token 数 - 1)</code>。相关指标还有 ITL（Inter-Token Latency，单次 Token 间隔，关注其分布和抖动）和吞吐（每秒输出 Token 数）。</li>
+<li>优化方向：TTFT 靠 Prefix Caching、Chunked Prefill、PD 分离、减少排队；TPOT 靠量化、GQA/MLA、投机解码、合理控制 batch 大小。两者与吞吐之间存在权衡，batch 越大吞吐越高，但单请求 TPOT 会变差。</li>
+</ul></div></article><article class="q" id="q55"><h3><a class="q-link" href="#q55">流式输出时用户关闭浏览器断开了，如何保证恢复后还能保留之前的输出？</a></h3><div class="a"><p class="lead">核心思路是把生成过程和前端连接解耦：服务端在转发每个 Token 的同时，按 <code>conversation_id</code> / <code>message_id</code> 把已生成内容增量持久化，前端断开不影响服务端继续生成或保存，用户重新进入后从服务端读取。</p>
+<p><strong>可以这样设计</strong></p>
+<ul>
+<li>生成与推送解耦：服务端收到请求后创建 <code>message_id</code>，把调用模型的任务放到后台异步执行（不绑定在当前 SSE / WebSocket 连接上），生成的 Token 一边写入存储，一边推给当前在线的连接。</li>
+<li>增量持久化：Token 先追加到 Redis（如 String append 或 Stream，记录已生成的偏移量 / 序号），按一定频率或在结束时落库到 MySQL 等数据库，并记录消息状态（generating / completed / failed / cancelled）。</li>
+<li>断开处理：检测到客户端断开后，可以选择继续生成直到完成（用户回来能看到完整回答），或按业务策略停止生成以节省成本，但已生成部分要保存并标记状态。</li>
+<li>恢复展示：用户重新打开页面时，先根据会话 ID 拉取历史消息；如果某条消息仍在 generating，前端带上最后收到的偏移量（如 SSE 的 <code>Last-Event-ID</code>）重新订阅，服务端从该位置继续推送增量；已完成的直接展示全文。</li>
+<li>前端兜底：可以在 localStorage 中缓存已收到的内容，作为网络短暂中断时的补充。</li>
+<li>注意点：给存储设置过期时间，避免 Redis 堆积；断线续传时要按序号去重，避免内容重复。</li>
+</ul></div></article><article class="q" id="q56"><h3><a class="q-link" href="#q56">什么是大模型压测？</a></h3><div class="a"><p class="lead">大模型压测是对大模型推理服务进行的压力测试：模拟大量用户同时调用模型，在接近或超过设计上限的负载下运行，评估系统的性能、稳定性和资源利用情况。</p>
+<ul>
+<li>目的：找出服务在多大并发下仍能满足延迟要求（SLO），发现性能瓶颈（GPU 算力、显存/KV Cache、网络、网关、限流），观察高负载下是否出现响应变慢、请求失败、OOM 或服务崩溃，为容量规划、实例数量、扩缩容策略和成本控制提供依据。</li>
+<li>与普通 Web 压测的区别：
+<ul>
+<li>请求耗时长（秒级到分钟级）且是流式输出，需要分别统计 TTFT、TPOT 等阶段性指标，而不只是单次响应时间。</li>
+<li>性能强烈依赖输入和输出长度分布，压测数据要贴近真实业务（Prompt 长度、输出长度、多轮对话比例）。</li>
+<li>吞吐除了 QPS，更关注每秒 Token 数。</li>
+<li>受 KV Cache 显存和 batch 调度影响大，并发上去后延迟可能非线性恶化。</li>
+</ul>
+</li>
+<li>常用工具：vLLM 自带的 benchmark 脚本、LLMPerf、Locust / JMeter 编写流式请求脚本、evalscope 的性能压测等。</li>
+<li>常见压测方式：阶梯式逐步增加并发，观察延迟和吞吐拐点；固定并发长时间运行，检验稳定性；突发流量测试，检验限流和扩容能力。</li>
+</ul></div></article><article class="q" id="q57"><h3><a class="q-link" href="#q57">大模型压测关注哪些指标？</a></h3><div class="a"><p class="lead"><strong>性能指标</strong></p>
+<ul>
+<li>延迟：
+<ul>
+<li>TTFT（首 Token 时间）、TPOT / ITL（Token 间隔）、端到端延迟（E2E Latency）。</li>
+<li>除平均值外更要看尾延迟 P90 / P95 / P99，衡量极端情况下的体验。</li>
+</ul>
+</li>
+<li>吞吐量：
+<ul>
+<li>请求维度：QPS / RPS（每秒完成请求数）。</li>
+<li>Token 维度：输出 Token/s、总 Token/s（输入 + 输出），是衡量 LLM 服务能力的核心指标。</li>
+</ul>
+</li>
+<li>并发数：系统在满足延迟 SLO 的前提下能同时处理的最大请求数；Goodput（满足 SLO 的有效吞吐）也是常用口径。</li>
+</ul>
+<p><strong>稳定性与可靠性</strong></p>
+<ul>
+<li>错误率：超时、5xx、限流（429）、OOM、生成中断的比例。</li>
+<li>崩溃与恢复：极限压力下是否宕机，是否能自动恢复。</li>
+<li>长时间稳定性：持续高压运行下延迟是否漂移，是否有显存或内存泄漏。</li>
+</ul>
+<p><strong>资源利用率</strong></p>
+<ul>
+<li>GPU 利用率、显存占用、KV Cache 使用率（如 vLLM 的 cache usage）、排队请求数、被抢占请求数。</li>
+<li>CPU、内存使用率（Tokenize、前后处理、网关可能成为瓶颈）。</li>
+<li>网络与 I/O：带宽、多卡/多机通信开销，分布式部署时尤其关键。</li>
+</ul>
+<p><strong>可扩展性</strong></p>
+<ul>
+<li>水平扩展：增加实例或 GPU 后，吞吐是否接近线性增长，延迟是否改善。</li>
+<li>动态伸缩：流量突增时扩容速度（模型加载时间往往较长）和期间的服务质量。</li>
+</ul>
+<p><strong>成本指标</strong>：单位 Token 成本、每 GPU 每秒 Token 数，用于评估性价比。</p></div></article><article class="q" id="q58"><h3><a class="q-link" href="#q58">如何提高大模型的并发性能？</a></h3><div class="a"><p class="lead">提升并发的核心是：降低每个请求占用的计算和显存，并让 GPU 尽量满载运转。可以从模型、推理引擎、调度、缓存和系统架构几个层面入手。</p>
+<ul>
+<li>模型层面：
+<ul>
+<li>量化：权重用 FP8 / INT8 / INT4（AWQ、GPTQ），KV Cache 也可量化，降低显存和带宽需求，从而放下更大的 batch。</li>
+<li>选择合适规模的模型，或通过蒸馏、剪枝得到小模型；按任务难度路由到大小不同的模型。</li>
+<li>采用 GQA / MLA / MoE 等对推理友好的结构。</li>
+</ul>
+</li>
+<li>推理引擎：使用 vLLM、SGLang、TensorRT-LLM 等高性能引擎，利用 PagedAttention、FlashAttention、CUDA Graph、投机解码等优化。</li>
+<li>批处理与调度：
+<ul>
+<li>Continuous Batching 让 batch 始终满载。</li>
+<li>Chunked Prefill 避免长 Prompt 阻塞 Decode。</li>
+<li>合理设置最大 batch、最大 Token 数等参数，在吞吐与延迟之间取舍。</li>
+<li>请求优先级与排队控制，超载时限流降级。</li>
+</ul>
+</li>
+<li>缓存与复用：
+<ul>
+<li>Prefix Caching 复用系统提示和多轮对话前缀的 KV。</li>
+<li>对高频相同或语义相似的请求做结果缓存（语义缓存）。</li>
+<li>缓存 Embedding 等中间结果。</li>
+</ul>
+</li>
+<li>系统架构：
+<ul>
+<li>多实例部署 + 负载均衡（可以按 KV Cache 命中率做感知路由）。</li>
+<li>张量并行 / 流水线并行 / 专家并行支持大模型，数据并行扩展副本数。</li>
+<li>PD 分离部署，分别扩容 Prefill 和 Decode。</li>
+<li>异步非阻塞的服务端（流式输出、异步 IO），避免线程被长连接阻塞。</li>
+<li>自动扩缩容应对流量波动。</li>
+</ul>
+</li>
+<li>业务层面：控制 Prompt 长度（压缩上下文、精简历史）、限制 max_tokens、对非实时任务走离线批处理。</li>
+</ul></div></article></section><section class="grp has-core" id="g8"><h2 class="grp-title">幻觉 <span class="cnt"><span class="n-all">3</span><span class="n-core">高频 3</span></span></h2><article class="q core" id="q59"><h3><a class="q-link" href="#q59">什么是大模型的幻觉？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">大模型的幻觉（Hallucination）是指模型生成的内容看起来流畅、合理，但与事实不符、与输入不一致，或者没有可靠依据，相当于&quot;一本正经地胡说八道&quot;。根源在于模型按概率生成文本，本身不具备事实校验能力。</p>
+<p><strong>常见分类</strong></p>
+<ul>
+<li>事实性幻觉（Factuality）：与真实世界事实不符，如编造不存在的论文、人名、API、法条，或给出错误的日期和数据。</li>
+<li>忠实性幻觉（Faithfulness）：与用户输入或给定上下文不一致，如摘要中出现输入文本里没有的信息、不遵循指令、前后自相矛盾。在 RAG 场景中表现为回答没有依据检索到的文档。</li>
+</ul>
+<p><strong>典型表现</strong>：虚构引用和链接、捏造代码库中不存在的函数、对不知道的问题给出确定的错误答案、推理链中某一步出错导致结论错误。</p></div></article><article class="q core" id="q60"><h3><a class="q-link" href="#q60">为什么大模型会产生幻觉？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">根本原因是大模型本质上是概率模型：训练时学习的是语言模式和数据分布，推理时预测&quot;最可能出现的下一个 Token&quot;，而不是检索并验证事实。当事实依据不足、约束不够，或生成过程出现偏移时，就会输出看似合理但错误的内容。</p>
+<p><strong>数据层面</strong></p>
+<ul>
+<li>训练数据本身有错误、过时、矛盾或偏见的信息。</li>
+<li>知识有截止日期，模型不知道之后发生的事。</li>
+<li>长尾知识在语料中出现次数少，模型记忆不牢，容易张冠李戴。</li>
+</ul>
+<p><strong>训练层面</strong></p>
+<ul>
+<li>预训练目标只奖励&quot;像人话&quot;，不直接奖励&quot;真实&quot;。</li>
+<li>SFT 让模型学会了对各种问题都给出流畅回答，即使问题超出其知识范围；训练和评测中&quot;猜一个答案&quot;往往比&quot;承认不知道&quot;得分更高，模型缺乏拒答的激励。</li>
+<li>对齐过程中可能出现迎合用户（sycophancy），顺着错误前提回答。</li>
+</ul>
+<p><strong>推理层面</strong></p>
+<ul>
+<li>采样的随机性（Temperature 偏高）可能采到低概率的错误 Token。</li>
+<li>自回归生成中一旦某一步出错，后续会基于错误继续生成，错误累积放大。</li>
+<li>长上下文中注意力分散，没能利用到关键信息；Prompt 含糊或带有错误前提也会诱发幻觉。</li>
+</ul></div></article><article class="q core" id="q61"><h3><a class="q-link" href="#q61">如何解决大模型的幻觉问题？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">幻觉无法彻底消除，只能在数据、训练、推理和系统各层面进行缓解和控制。</p>
+<p><strong>推理与应用层面（成本最低、最常用）</strong></p>
+<ul>
+<li>RAG：检索可信的外部知识作为依据，要求模型&quot;只根据给定资料回答，并标注引用来源&quot;；涉及实体关系的复杂问题可以用 GraphRAG 结合知识图谱。</li>
+<li>工具调用：计算交给计算器 / 代码执行，实时信息交给搜索和数据库查询，而不是让模型凭记忆回答。</li>
+<li>Prompt 约束：明确要求&quot;不确定时回答不知道&quot;，提供 Few-shot 示例和上下文，限定回答范围，引导分步推理（CoT）。</li>
+<li>解码参数：事实类任务使用较低的 Temperature。</li>
+</ul>
+<p><strong>训练层面</strong></p>
+<ul>
+<li>数据：清洗错误和过时数据；构造包含&quot;我不知道&quot;等拒答标注的数据，让模型在不确定时表达不确定。</li>
+<li>对齐：通过 RLHF / DPO 等方法设计奖励，惩罚编造、鼓励在不确定时保守回答；使用事实性偏好数据训练。</li>
+<li>领域微调或继续预训练，补充专业知识。</li>
+</ul>
+<p><strong>系统层面（后验校验）</strong></p>
+<ul>
+<li>自洽性检查：多次采样比对答案是否一致（Self-Consistency、SelfCheckGPT 的思路），不一致时视为可疑。</li>
+<li>多模型交叉验证或用另一个模型做 Judge，检查回答是否被检索资料支持。</li>
+<li>规则校验：对结构化输出、引用链接、数值进行程序化校验。</li>
+<li>关键场景（医疗、法律、金融）加入人工审核，并在界面上展示引用来源供用户核实。</li>
+</ul></div></article></section><section class="grp has-core" id="g9"><h2 class="grp-title">Prompt Engineering <span class="cnt"><span class="n-all">5</span><span class="n-core">高频 5</span></span></h2><article class="q core" id="q62"><h3><a class="q-link" href="#q62">什么是 Prompt Engineering？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">Prompt Engineering（提示词工程）是在推理阶段，通过设计和优化输入给模型的指令、上下文、示例和输出约束，引导模型产生更符合预期结果的方法。它不修改模型参数，在不重新训练的前提下提升模型在特定任务上的效果、稳定性和可控性。</p>
+<ul>
+<li>核心手段：清晰的任务描述、角色设定、补充背景信息、Few-shot 示例、思维链引导、输出格式约束、拆分复杂任务为多步。</li>
+<li>与微调的关系：Prompt 工程成本低、迭代快、可随时调整，是应用落地的首选；当 Prompt 无法稳定达到要求（如需要特定领域知识或固定风格）时，再考虑 RAG 或微调。</li>
+<li>在 Agent 场景下，Prompt 工程进一步扩展为上下文工程（Context Engineering）：不仅设计指令，还要管理系统提示、工具描述、检索结果、记忆和对话历史等放进上下文的全部内容。</li>
+</ul></div></article><article class="q core" id="q63"><h3><a class="q-link" href="#q63">提示词可以分为哪几部分？分别起什么作用？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">按消息角色划分，提示词通常分为系统提示词、开发者提示词和用户提示词（OpenAI 的指令层级中，优先级依次降低）；按内容结构划分，一个完整的 Prompt 一般包含角色、任务、上下文、示例、约束和输出格式。</p>
+<p><strong>按消息角色</strong></p>
+<ul>
+<li>系统提示词（System Prompt）：最高层级，定义模型的身份、整体行为边界和长期规则，如&quot;你是一个专业的客服助手，回答要准确简洁，不得泄露内部信息&quot;。决定总体风格和基本原则，在整个会话中持续生效。</li>
+<li>开发者提示词（Developer Prompt）：应用开发者为模型设置的任务级约束，规定业务逻辑、输出格式、工具使用规则等，让模型按产品需求工作。OpenAI 较新的模型和 API 中有独立的 developer 角色，很多平台则把它和系统提示合并在 system 中。</li>
+<li>用户提示词（User Prompt）：用户当前输入的具体问题或任务，如&quot;帮我总结这段话&quot;，决定本次推理处理什么。</li>
+<li>此外还有 Assistant 消息（模型历史回复，用于多轮上下文和 Few-shot）以及工具调用结果消息。</li>
+</ul>
+<p><strong>按内容结构</strong></p>
+<ul>
+<li>角色：模型扮演的身份和专业领域。</li>
+<li>任务指令：要做什么，目标是什么。</li>
+<li>上下文：背景信息、参考资料、检索结果。</li>
+<li>示例：输入输出样例，展示期望的模式。</li>
+<li>约束：必须遵守和禁止的规则、长度、语气。</li>
+<li>输出格式：JSON、Markdown、表格等，便于解析。</li>
+</ul></div></article><article class="q core" id="q64"><h3><a class="q-link" href="#q64">如何优化大模型的提示词？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">优化的核心是让任务更清晰、信息更充分、输出更可控，并通过评测迭代验证效果。</p>
+<ul>
+<li>指令清晰具体：明确目标、受众、长度、风格；避免含糊表述，用&quot;要做什么&quot;代替&quot;不要做什么&quot;；复杂要求分点列出。</li>
+<li>角色设定：为模型设定明确身份（如资深 Java 工程师、法律顾问），使回答风格和专业领域保持一致。</li>
+<li>补充上下文：提供任务背景、应用场景、相关条件和参考材料，必要时结合 RAG 检索结果，让生成有据可依。</li>
+<li>Few-shot 示例：提供少量有代表性的输入输出样例，帮助模型理解任务模式和格式；示例要覆盖多种情况，避免模型过度模仿某一个。</li>
+<li>分步骤推理：要求模型先分析再回答（CoT），或把复杂任务拆成多个子任务、多次调用串联（Prompt Chaining）。</li>
+<li>输出格式约束：明确要求 JSON、表格或要点形式输出，必要时给出 Schema 或使用模型的结构化输出功能。</li>
+<li>结构化组织：用 Markdown 标题或 XML 标签（如 <code>&lt;context&gt;</code>、<code>&lt;instructions&gt;</code>）分隔不同部分，避免指令与资料混淆。</li>
+<li>自洽性增强：让模型从多个角度分析或多次生成，再综合得出结论，提高结果可靠性。</li>
+<li>允许不确定：明确告诉模型&quot;信息不足时请说明&quot;，减少编造。</li>
+<li>迭代与评测：建立测试集，对比不同版本 Prompt 的效果，针对失败案例调整；也可以让模型帮忙改写和优化 Prompt。</li>
+</ul></div></article><article class="q core" id="q65"><h3><a class="q-link" href="#q65">如何评价一个提示词的好坏？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">好的提示词应该让模型在目标任务上稳定、高效地产出符合要求的结果。评价时需要基于一个有代表性的测试集，从效果、格式、稳定性、清晰度和成本几个维度衡量。</p>
+<ul>
+<li>任务效果（定量）：用任务相关指标衡量，如分类准确率、F1，摘要的 ROUGE，翻译的 BLEU，或者业务 KPI（解决率、转化率）。开放式任务可以用 LLM-as-a-Judge 按评分标准打分，再配合人工抽检。</li>
+<li>格式符合度：输出是否符合预期的格式或模板（如 JSON 能否被正确解析、字段是否完整），保证可解析、可复用。</li>
+<li>稳定性：同类输入、多次运行下输出是否一致，是否容易跑偏；对输入的轻微变化是否鲁棒。</li>
+<li>清晰度与歧义：指令是否明确，能否降低误解任务、答非所问和幻觉的概率；边界情况（空输入、超范围问题）是否有明确处理方式。</li>
+<li>安全性：能否抵御提示词注入，是否会输出不当内容或泄露系统提示。</li>
+<li>成本与效率：Prompt 的 Token 长度、响应延迟，在效果相当时越短越好。</li>
+<li>可维护性：结构是否清晰，方便后续修改和版本管理。</li>
+</ul></div></article><article class="q core" id="q66"><h3><a class="q-link" href="#q66">提示词如何压缩？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">提示词压缩的目标是在保留关键信息的前提下减少 Token 数，从而降低成本和延迟，并减少无关内容对模型的干扰。</p>
+<p><strong>人工 / 工程方法</strong></p>
+<ul>
+<li>删冗余：去掉重复要求、无关背景、客套话和冗长修饰，只保留任务目标、必要上下文、约束和输出格式。</li>
+<li>摘要压缩：长文档、多轮历史、大段背景先提炼为关键信息、核心结论或事实列表，再放入 Prompt。</li>
+<li>结构化表达：把冗长的自然语言改成要点、模板、表格或键值对，通常更短也更利于模型理解。</li>
+<li>按需保留上下文：只放入当前任务真正需要的信息，如通过 RAG 只取最相关的若干片段，而不是把所有资料都塞进去。</li>
+<li>精简示例与历史：Few-shot 只保留最有代表性的少量样例；多轮对话历史压缩为&quot;已知事实 + 当前目标 + 未解决问题&quot;，或采用滑动窗口加摘要的方式，而不是不断拼接完整对话。</li>
+</ul>
+<p><strong>算法方法</strong></p>
+<ul>
+<li>基于信息量的 Token 裁剪：如 Selective Context、LLMLingua / LongLLMLingua，用小模型计算每个 Token 的困惑度或重要性，删除信息量低的部分，可实现数倍压缩而效果损失较小；LLMLingua-2 用训练好的分类模型判断 Token 是否保留。</li>
+<li>软提示压缩：把长上下文压缩成少量向量（如 Gist Tokens、AutoCompressor），需要模型支持，通用 API 场景较少使用。</li>
+</ul>
+<p><strong>配合缓存</strong>：把不变的系统提示、工具定义放在 Prompt 开头，利用模型服务的 Prompt Caching / Prefix Caching 降低重复部分的成本和延迟。</p></div></article></section><section class="grp" id="g10"><h2 class="grp-title">CoT 思维链 <span class="cnt"><span class="n-all">4</span><span class="n-core">高频 0</span></span></h2><article class="q" id="q67"><h3><a class="q-link" href="#q67">什么是 CoT？</a></h3><div class="a"><p class="lead">思维链（Chain-of-Thought, CoT，Wei et al. 2022）是一种推理方法：引导大模型在回答复杂问题时先显式生成中间推理步骤，再给出最终答案，而不是从问题直接跳到结果。</p>
+<ul>
+<li>传统方式是&quot;输入 → 直接输出答案&quot;，复杂问题容易跳步或出现逻辑错误。CoT 让模型&quot;先思考再回答&quot;，更接近人类解题过程，在数学、逻辑、多步推理任务上效果明显更好。</li>
+<li>例：问&quot;小红有 10 块钱，坐地铁花了 5 块，妈妈又给了她 10 块，现在有多少钱&quot;，模型输出 <code>&lt;think&gt;原有 10 块，花 5 块剩 5 块，再加 10 块得 15 块&lt;/think&gt;&lt;answer&gt;15&lt;/answer&gt;</code>，<code>&lt;think&gt;</code> 中的内容就是思维链。</li>
+</ul>
+<p><strong>实现方式</strong></p>
+<ul>
+<li>Few-shot CoT：在示例中给出带推理过程的解答，模型模仿这种格式。</li>
+<li>Zero-shot CoT：在问题后加一句&quot;Let's think step by step / 请一步一步思考&quot;即可激发推理。</li>
+<li>训练内化：通过 SFT 和强化学习让模型自带长思维链能力，即推理模型（如 OpenAI o1、DeepSeek-R1、Qwen3 的思考模式），推理过程通常放在 <code>&lt;think&gt;</code> 标签中。</li>
+<li>扩展方法：Self-Consistency（多次采样推理链后投票）、Tree of Thoughts（树状搜索多条推理路径）、ReAct（推理与工具调用交替进行）。</li>
+</ul>
+<p>CoT 作为提示方法不改变模型结构，本质是让模型把计算&quot;展开&quot;到更多 Token 上，相当于增加了推理时的计算量（Test-time Compute），把隐式推理变成显式步骤。CoT 的效果通常在模型规模足够大时才明显，小模型使用 CoT 收益有限。</p></div></article><article class="q" id="q68"><h3><a class="q-link" href="#q68">CoT 有什么作用？</a></h3><div class="a"><p class="lead">CoT 的主要作用是通过显式的中间推理过程，提高大模型在复杂任务上的表现。</p>
+<ul>
+<li>分解复杂任务：把问题拆成多个中间步骤，每步只需解决一个小问题，避免从问题直接跳到答案带来的逻辑断裂。</li>
+<li>提升推理准确性：在数学应用题、逻辑推理、多跳问答、代码等任务上显著提升正确率。原理上，每个 Token 的计算量是固定的，生成中间步骤相当于给模型更多&quot;计算步数&quot;，中间结果也写在上下文中供后续步骤引用。</li>
+<li>增强可解释性：输出包含推理过程，用户和开发者可以检查模型是如何得出结论的，便于发现错误、调试 Prompt。</li>
+<li>支撑 Agent 能力：在 ReAct 等模式中，思考步骤帮助模型规划任务、决定调用哪个工具、根据观察结果调整计划。</li>
+<li>推理模型的基础：通过强化学习训练长 CoT 后，模型会出现自我反思、验证、回溯等行为，这是 o1、R1 类推理模型能力提升的核心。</li>
+</ul></div></article><article class="q" id="q69"><h3><a class="q-link" href="#q69">CoT 会带来什么问题？</a></h3><div class="a"><ul>
+<li>延迟增加：需要先生成大量中间推理 Token，用户等待最终答案的时间明显变长（推理模型可能思考数千到上万 Token）。</li>
+<li>成本上升：输出 Token 数大幅增加，计算和调用费用随之上升。</li>
+<li>占用上下文：推理过程占据上下文窗口，压缩了有效信息空间，在多轮对话或 Agent 长任务中尤其明显（通常不把历史轮次的思考内容带入后续上下文）。</li>
+<li>过度思考：简单问题也展开冗长推理（overthinking），甚至出现反复思考不收敛、循环重复的情况。</li>
+<li>错误传播：中间某一步出错，后续步骤会在错误基础上继续推理，得到看起来合理但错误的结论。</li>
+<li>推理不忠实：展示的推理链不一定是模型真实的决策过程，可能是事后合理化，可解释性有限。</li>
+<li>收益不稳定：对小模型或简单任务（如事实检索、简单分类），CoT 提升有限，甚至可能降低效果。</li>
+</ul></div></article><article class="q" id="q70"><h3><a class="q-link" href="#q70">如何在生成模型和思考模型之间选择？</a></h3><div class="a"><p class="lead">选择的本质是看任务是否需要复杂推理，并在准确性、延迟和成本之间权衡。</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>生成模型（非思考）</th>
+<th>思考模型（推理模型）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>适合任务</td>
+<td>对话、改写、翻译、摘要、信息抽取、简单问答</td>
+<td>数学、逻辑推理、复杂代码、多步规划、复杂决策</td>
+</tr>
+<tr>
+<td>延迟</td>
+<td>低，首 Token 快</td>
+<td>高，需要先完成思考过程</td>
+</tr>
+<tr>
+<td>成本</td>
+<td>低</td>
+<td>高，输出 Token 多</td>
+</tr>
+<tr>
+<td>准确性</td>
+<td>简单任务足够</td>
+<td>复杂任务明显更好</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>高并发、实时交互、创意写作</td>
+<td>对正确性要求高、可接受等待的场景</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>任务复杂度：简单生成类任务优先用生成模型；需要多步推理、反复验证的任务用思考模型。</li>
+<li>准确性要求：代码生成、数据分析、复杂 Agent 规划等对正确性要求高的场景，倾向用思考模型；更看重流畅度和创意时，生成模型往往更合适。</li>
+<li>实时性和成本：高并发、低延迟的在线服务（如客服、联想补全）优先生成模型。</li>
+<li>系统设计：可以按难度做路由，简单问题走生成模型，复杂问题路由到思考模型；也可以用混合思考模型（如 Qwen3 的思考 / 非思考模式切换、可设置思考预算的模型），按请求动态开关思考。在 Agent 中，常见做法是用思考模型做规划，用生成模型执行具体步骤。</li>
+</ul></div></article></section><section class="grp has-core" id="g11"><h2 class="grp-title">主流模型：DeepSeek 与 Qwen <span class="cnt"><span class="n-all">8</span><span class="n-core">高频 6</span></span></h2><article class="q core" id="q71"><h3><a class="q-link" href="#q71">DeepSeek 模型系列是怎么演变的？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">主线可以概括为：V2 引入 MLA 并改进 MoE，V3 扩大规模、无辅助损失负载均衡、MTP 和 FP8 训练，R1 用 GRPO 大规模强化学习训练推理能力，V3.2 引入稀疏注意力 DSA，V4 用混合压缩注意力进一步降低百万 Token 长上下文的成本。</p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>时间</th>
+<th>关键点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DeepSeek LLM</td>
+<td>2024.01</td>
+<td>7B / 67B Dense，研究 Scaling Law 超参数</td>
+</tr>
+<tr>
+<td>DeepSeekMoE</td>
+<td>2024.01</td>
+<td>细粒度专家切分 + 共享专家</td>
+</tr>
+<tr>
+<td>DeepSeek-V2</td>
+<td>2024.05</td>
+<td>236B 总参数、21B 激活；MLA（KV Cache 相比 67B 减少约 93%）；128K 上下文</td>
+</tr>
+<tr>
+<td>DeepSeek-V3</td>
+<td>2024.12</td>
+<td>671B 总参数、37B 激活；无辅助损失负载均衡、MTP、FP8 训练；约 278.8 万 H800 GPU 小时</td>
+</tr>
+<tr>
+<td>DeepSeek-R1</td>
+<td>2025.01</td>
+<td>基于 V3-Base；R1-Zero 证明纯 RL 可涌现长思维链；冷启动 + 多阶段 RL；蒸馏 1.5B–70B</td>
+</tr>
+<tr>
+<td>DeepSeek-V3.1</td>
+<td>2025.08</td>
+<td>一个模型支持思考 / 非思考，强化工具调用与 Agent</td>
+</tr>
+<tr>
+<td>DeepSeek-V3.2</td>
+<td>2025.09（Exp）/ 2025.12</td>
+<td>引入稀疏注意力 DSA</td>
+</tr>
+<tr>
+<td>DeepSeek-V4</td>
+<td>2026</td>
+<td>Pro（约 1.6T 总参数）和 Flash，百万 Token 上下文；混合压缩注意力、mHC、Muon</td>
+</tr>
+</tbody>
+</table>
+<p><strong>V3.2 的 DSA</strong>：轻量的 Lightning Indexer（头数少、可用 FP8）为每个 Query 给历史 Token 打分，只选 Top-k（如 2048 个）参与真正的 MLA 计算。核心注意力从 O(L²) 降为 O(L·k)，索引器仍是 O(L²) 但开销很小。</p>
+<p><strong>V4 的主要改进</strong></p>
+<ul>
+<li>混合注意力：压缩稀疏注意力（CSA，先压缩合并 KV 再稀疏选取精算）与重度压缩注意力（HCA，高压缩比后做全局计算）交替。官方报告百万 Token 场景下，V4-Pro 单 Token 计算量约为 V3.2 的 27%、KV Cache 约为 10%。</li>
+<li>mHC（流形约束超连接）提升训练稳定性；Muon 优化器替代大部分参数上的 AdamW。</li>
+<li>后训练：先分方向训练专家模型，再用在线策略蒸馏合并进最终模型。</li>
+</ul></div></article><article class="q core" id="q72"><h3><a class="q-link" href="#q72">DeepSeek 如何实现 MoE？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">DeepSeekMoE 在标准 MoE 基础上做了两点核心改进：细粒度专家切分和共享专家隔离；V3 又提出了无辅助损失的负载均衡策略。</p>
+<p><strong>细粒度专家（Fine-grained Expert Segmentation）</strong></p>
+<ul>
+<li>把每个大专家拆成多个更小的专家（FFN 中间维度变小），同时按比例增加激活专家数，总计算量不变。</li>
+<li>可选的专家组合数量大幅增加，每个专家学到的知识更聚焦，专业化程度更高。DeepSeek-V3 每个 MoE 层有 256 个路由专家，每个 Token 激活其中 8 个。</li>
+</ul>
+<p><strong>共享专家（Shared Expert Isolation）</strong></p>
+<ul>
+<li>每层设置少量共享专家（V3 为 1 个），所有 Token 都会经过；路由专家由门控网络按 Token 选择。</li>
+<li>类比医院会诊：共享专家像全科医生，处理通用、基础的知识；路由专家像专科医生，只处理擅长的细分问题。</li>
+<li>价值在于：通用知识集中由共享专家承担，避免每个路由专家都重复学习同样的通用知识，减少参数冗余，促进专家分工。</li>
+</ul>
+<p><strong>路由与负载均衡（V3）</strong></p>
+<ul>
+<li>门控用 sigmoid 计算 Token 对每个专家的亲和度，选 Top-k 后对选中的分数归一化作为权重。</li>
+<li>无辅助损失负载均衡（Auxiliary-Loss-Free）：给每个专家加一个偏置项 bias，只在选择 Top-k 时使用（不影响加权的门控值）。训练中持续监控专家负载，过载的专家降低 bias，负载不足的提高 bias，从而动态均衡。相比传统辅助损失，减少了对主任务学习目标的干扰。</li>
+<li>仍保留一个权重很小的序列级均衡损失，防止单个序列内极端不均衡。</li>
+<li>节点受限路由：每个 Token 最多分发到 4 个节点，控制跨节点通信；训练中不丢弃 Token。</li>
+<li>工程上配合专家并行和自研的 DualPipe 流水线、All-to-All 通信优化，让计算与通信重叠。</li>
+</ul></div></article><article class="q core" id="q73"><h3><a class="q-link" href="#q73">DeepSeek 的 MLA 原理是什么？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">MLA（Multi-head Latent Attention，多头潜在注意力，DeepSeek-V2 提出）的核心是用低秩联合压缩，把每个 Token 的 K、V 压缩成一个低维潜在向量来缓存，从而大幅减少 KV Cache，同时效果接近甚至优于标准 MHA。</p>
+<p><strong>原理</strong></p>
+<ul>
+<li>下投影压缩：输入 h_t 先经过下投影矩阵得到低维潜在向量 <code>c_KV = W_DKV · h_t</code>（V3 中维度 512，远小于 MHA 每 Token 每层需要缓存的 <code>2 × 头数 × head_dim</code>）。推理时只缓存 c_KV。</li>
+<li>上投影恢复：计算注意力时，通过上投影矩阵从 c_KV 得到各头的 K、V：<code>k = W_UK · c_KV</code>，<code>v = W_UV · c_KV</code>。不是丢弃信息，而是压缩存储、需要时恢复。</li>
+<li>矩阵吸收：推理时 W_UK 可以合并进 Query 投影，W_UV 可以合并进输出投影，因此不必真正把 K、V 显式还原出来，直接在潜在空间里计算注意力，节省计算和访存。</li>
+<li>解耦 RoPE：RoPE 的位置旋转矩阵夹在中间会破坏上述矩阵吸收，因此 MLA 额外用一个小维度（如 64 维）的共享 Key 分量单独承载 RoPE 位置信息，与 c_KV 一起缓存。</li>
+<li>Query 也做了低秩压缩，主要用于降低训练时的激活显存。</li>
+</ul>
+<p><strong>效果</strong></p>
+<ul>
+<li>每 Token 每层只需缓存约 512 + 64 个元素，显著小于 MHA，也小于常见的 GQA 配置，DeepSeek-V2 的 KV Cache 相比 DeepSeek 67B 减少约 93%。</li>
+<li>长上下文和高并发推理时显存占用大幅降低，生成吞吐显著提高；与 MQA/GQA 相比，效果损失更小。</li>
+</ul></div></article><article class="q core" id="q74"><h3><a class="q-link" href="#q74">DeepSeek 的 MTP 是怎么实现的？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">MTP（Multi-Token Prediction，多 Token 预测）是 DeepSeek-V3 在训练中加入的额外目标：除了预测下一个 Token，还通过串联的 MTP 模块预测更远的未来 Token，增加训练信号密度；推理时可以丢弃 MTP 模块，或把它用作投机解码的草稿模型来加速。</p>
+<p><strong>实现方式</strong></p>
+<ul>
+<li>主模型照常预测第 i+1 个 Token。</li>
+<li>增加 D 个顺序连接的 MTP 模块（V3 中 D = 1，即额外预测第 i+2 个 Token）。第 k 个模块的输入是两部分拼接后经线性投影：上一层（主模型或前一个 MTP 模块）在位置 i 的隐藏状态（RMSNorm 后），以及第 i+k 个 Token 的 Embedding（RMSNorm 后）。再经过一个 Transformer Block，由输出头预测第 i+k+1 个 Token。</li>
+<li>MTP 模块与主模型共享 Embedding 层和输出头，只有自己的投影矩阵和 Transformer Block，额外参数不多。</li>
+<li>与 Meta 等方案用多个独立输出头并行预测不同，DeepSeek 的 MTP 是顺序预测，每一深度都保留完整的因果链。</li>
+<li>训练损失为主损失加上 MTP 损失乘以权重 λ（V3 训练中前期取 0.3，后期取 0.1）。</li>
+</ul>
+<p><strong>作用</strong></p>
+<ul>
+<li>训练：每个位置提供更多监督信号，提高数据效率；促使模型&quot;提前规划&quot;后续内容，提升效果。</li>
+<li>推理：作为投机解码的草稿，V3 中第二个 Token 的接受率约为 85%–90%，生成速度（TPS）提升约 1.8 倍；不需要时直接去掉 MTP 模块，主模型可独立工作。</li>
+</ul></div></article><article class="q core" id="q75"><h3><a class="q-link" href="#q75">DeepSeek 热门版本训练的关键步骤有哪些？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead"><strong>DeepSeek-V3</strong>
+一句话：V3 是&quot;高效架构 + 低成本大规模预训练 + SFT/RL&quot;，R1 是在 V3-Base 上&quot;冷启动 SFT + 两轮 GRPO 强化学习 + 拒绝采样再 SFT&quot;。</p>
+<p><strong>DeepSeek-V3</strong></p>
+<ol>
+<li>架构：MLA；DeepSeekMoE（671B 总参数、37B 激活）；无辅助损失负载均衡；MTP。</li>
+<li>预训练：约 14.8T Token，全程 FP8 混合精度，配合 DualPipe 和通信优化，全流程约 278.8 万 H800 GPU 小时。</li>
+<li>长上下文：用 YaRN 分两阶段扩展到 32K、再到 128K。</li>
+<li>SFT：约 150 万条指令数据，推理类由内部 R1 类模型生成筛选，非推理类由 DeepSeek-V2.5 生成并人工校验。</li>
+<li>RL：GRPO，规则奖励（数学、代码）+ 模型奖励（开放问题）。</li>
+</ol>
+<p><strong>DeepSeek-R1</strong></p>
+<ul>
+<li>前置 R1-Zero：V3-Base 上不经 SFT 直接 GRPO，奖励只有准确性和格式（思考放在 <code>&lt;think&gt;</code> 中）。自发涌现长思维链和自我反思（&quot;aha moment&quot;），但可读性差、中英混杂。</li>
+</ul>
+<ol>
+<li>冷启动：数千条高质量长 CoT 数据微调 V3-Base。</li>
+<li>推理 RL：可验证任务上 GRPO，奖励加入语言一致性奖励。</li>
+<li>拒绝采样 + SFT：约 60 万推理数据 + 约 20 万非推理数据，共约 80 万条，对 V3-Base 重新 SFT。</li>
+<li>全场景 RL：推理用规则奖励，通用任务用奖励模型衡量有用性和无害性。</li>
+</ol>
+<ul>
+<li>蒸馏：用这约 80 万条数据 SFT Qwen、LLaMA 小模型，得到 R1-Distill（1.5B–70B）。</li>
+</ul>
+<p>GRPO 用组内奖励均值和标准差归一化得到优势值，不需要与策略同规模的 Critic。</p></div></article><article class="q core" id="q76"><h3><a class="q-link" href="#q76">DeepSeek 的百万 Token 上下文和 RAG 各有什么优劣？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">核心区别：长上下文适合把一份规模可控的材料整体交给模型做全局理解，RAG 适合先从大规模知识库中检索相关内容，再基于检索结果生成。两者不是替代关系，实践中常结合使用。</p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>百万 Token 长上下文</th>
+<th>RAG</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>实现</td>
+<td>直接把材料放进上下文，无需切块、建索引、检索</td>
+<td>需要切块、Embedding、向量库、检索、重排等链路</td>
+</tr>
+<tr>
+<td>理解方式</td>
+<td>能做全局理解、跨段落关联和整体推理</td>
+<td>只能看到召回的片段，全局性问题容易遗漏</td>
+</tr>
+<tr>
+<td>知识规模</td>
+<td>受窗口限制（约数百万字）</td>
+<td>可扩展到任意规模的知识库</td>
+</tr>
+<tr>
+<td>知识更新</td>
+<td>每次请求重新输入</td>
+<td>更新索引即可，适合频繁变化的数据</td>
+</tr>
+<tr>
+<td>成本与延迟</td>
+<td>每次请求都要处理全部 Token，成本和 TTFT 高（Prefix Caching 可缓解重复部分）</td>
+<td>只送入少量相关片段，成本低、速度快</td>
+</tr>
+<tr>
+<td>准确性风险</td>
+<td>内容过多时注意力被稀释，可能出现 Lost in the Middle，关键信息未被利用</td>
+<td>高度依赖检索质量，切块不合理或召回不准，后续生成再强也会答偏</td>
+</tr>
+<tr>
+<td>可追溯性</td>
+<td>难以说明答案依据哪段内容</td>
+<td>可以返回引用来源，便于解释和审计</td>
+</tr>
+<tr>
+<td>权限控制</td>
+<td>难以对上下文内容做细粒度权限管理</td>
+<td>可在检索阶段按用户权限过滤</td>
+</tr>
+</tbody>
+</table>
+<p>选择建议：</p>
+<ul>
+<li>资料规模可控、问题依赖全局上下文（整本合同审阅、整个代码仓库分析、长报告总结），优先长上下文。</li>
+<li>知识库很大、更新频繁、对成本和可追溯性要求高（企业知识库问答、客服），优先 RAG。</li>
+<li>结合使用：先用 RAG 粗召回较多相关文档，再利用长上下文窗口放入更完整的内容，兼顾覆盖率和成本。</li>
+</ul></div></article><article class="q" id="q77"><h3><a class="q-link" href="#q77">Qwen 系列生成模型是怎么演变的？</a></h3><div class="a"><p class="lead">Qwen（通义千问）是阿里开源的大模型系列，演进主线是：从标准 Dense Transformer 起步，逐步引入 GQA、长上下文、MoE，Qwen3 加入思考 / 非思考混合推理，Qwen3-Next 和 Qwen3.5 引入 Gated DeltaNet 混合注意力和原生多模态。</p>
+<table>
+<thead>
+<tr>
+<th>版本</th>
+<th>时间</th>
+<th>主要特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Qwen（初代）</td>
+<td>2023</td>
+<td>标准 Dense Decoder-only（RoPE、SwiGLU、RMSNorm），1.8B–72B，SFT + RLHF</td>
+</tr>
+<tr>
+<td>Qwen1.5</td>
+<td>2024.02</td>
+<td>0.5B–110B，统一 32K 上下文；首个 MoE（Qwen1.5-MoE-A2.7B）</td>
+</tr>
+<tr>
+<td>Qwen2</td>
+<td>2024.06</td>
+<td>全系 GQA；Dense 0.5B–72B 和 57B-A14B MoE；128K 上下文（YaRN + Dual Chunk Attention）</td>
+</tr>
+<tr>
+<td>Qwen2.5</td>
+<td>2024.09</td>
+<td>0.5B–72B 七个 Dense 尺寸，预训练 18T Token，128K；衍生 Coder、Math、VL、Omni</td>
+</tr>
+<tr>
+<td>Qwen3</td>
+<td>2025.04</td>
+<td>Dense 0.6B–32B，MoE 30B-A3B / 235B-A22B；思考 / 非思考切换和思考预算；119 种语言；2507 版拆成独立模型、原生上下文 256K</td>
+</tr>
+<tr>
+<td>Qwen3-Next</td>
+<td>2025.09</td>
+<td>80B-A3B，Gated DeltaNet 与 Gated Attention 混合，超高稀疏 MoE，原生 MTP</td>
+</tr>
+<tr>
+<td>Qwen3.5</td>
+<td>2026</td>
+<td>混合注意力 + 高稀疏 MoE（旗舰 397B-A17B），原生多模态，约 200 种语言</td>
+</tr>
+<tr>
+<td>Qwen3.6</td>
+<td>2026</td>
+<td>强化编程和 Agent，开源 35B-A3B、27B 等，闭源旗舰 Plus / Max</td>
+</tr>
+</tbody>
+</table>
+<p><strong>关键技术点</strong></p>
+<ul>
+<li>混合思考：Qwen3 用 <code>/think</code>、<code>/no_think</code> 或 <code>enable_thinking</code> 控制，可设思考预算。</li>
+<li>Gated DeltaNet：带门控的线性注意力，计算随长度线性增长、推理状态大小固定；与少量全注意力层按比例（如 3:1）混合，长上下文下兼顾效率与精度。</li>
+<li>以小博大：每代中等规模模型常能追平上一代更大的模型。</li>
+</ul></div></article><article class="q" id="q78"><h3><a class="q-link" href="#q78">Qwen 系列模型如何选型？</a></h3><div class="a"><p class="lead">Qwen 生态覆盖生成、推理、Embedding、Rerank、视觉、语音、全模态等完整链路，既可以本地开源部署，也可以通过阿里云百炼（Model Studio）API 调用，能用统一技术栈搭建完整的 AI 应用。选型时先按任务类型选模型类别，再按效果、延迟、成本和部署条件选尺寸。</p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>代表模型</th>
+<th>核心能力</th>
+<th>典型应用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>生成（通用对话）</td>
+<td>Qwen3 / 3.5 / 3.6，API 的 Max / Plus / Flash</td>
+<td>指令遵循、长文本、结构化输出、多语言</td>
+<td>问答、RAG 生成端、信息抽取、SQL 生成</td>
+</tr>
+<tr>
+<td>推理（思考）</td>
+<td>Qwen3 思考模式、Qwen3-Thinking、QwQ-32B</td>
+<td>多步推理、数学、任务规划</td>
+<td>复杂问答、Agent 规划</td>
+</tr>
+<tr>
+<td>代码</td>
+<td>Qwen2.5-Coder、Qwen3-Coder</td>
+<td>生成补全、仓库级理解、Agentic Coding</td>
+<td>编程助手、代码 Agent</td>
+</tr>
+<tr>
+<td>Embedding</td>
+<td>Qwen3-Embedding-0.6B / 4B / 8B</td>
+<td>多语言文本向量化</td>
+<td>语义检索、知识库构建</td>
+</tr>
+<tr>
+<td>Rerank</td>
+<td>Qwen3-Reranker-0.6B / 4B / 8B</td>
+<td>Cross-Encoder 式相关性打分</td>
+<td>RAG 精排、搜索排序</td>
+</tr>
+<tr>
+<td>视觉语言</td>
+<td>Qwen2.5-VL、Qwen3-VL</td>
+<td>OCR、图像定位、文档解析、视频理解</td>
+<td>票据合同解析、GUI Agent</td>
+</tr>
+<tr>
+<td>语音</td>
+<td>Qwen2-Audio、Qwen3-ASR 等</td>
+<td>识别、理解、合成</td>
+<td>语音助手、会议转写</td>
+</tr>
+<tr>
+<td>全模态</td>
+<td>Qwen2.5-Omni、Qwen3-Omni</td>
+<td>多模态统一输入，文本与语音输出</td>
+<td>实时语音视频助手</td>
+</tr>
+</tbody>
+</table>
+<p><strong>选尺寸的经验</strong></p>
+<ul>
+<li>端侧：0.6B–4B，或量化后的 8B。</li>
+<li>单卡私有化：8B–32B Dense 或 30B-A3B / 35B-A3B 小激活 MoE（注意显存按总参数算）。</li>
+<li>追求最佳效果：235B-A22B、397B-A17B 等旗舰 MoE，或 API 的 Max / Plus。</li>
+<li>典型 RAG 组合：Qwen3-Embedding 召回 + Qwen3-Reranker 精排 + Qwen 生成，复杂问题路由到思考模式。</li>
+</ul></div></article></section><section class="grp has-core" id="g12"><h2 class="grp-title">智能体产品与平台 <span class="cnt"><span class="n-all">8</span><span class="n-core">高频 4</span></span></h2><article class="q core" id="q79"><h3><a class="q-link" href="#q79">用过 OpenClaw 吗？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">OpenClaw（社区俗称&quot;龙虾&quot;）是一个开源、自托管的个人 AI 助手 / Agent 运行框架。它把 Slack、Telegram、WhatsApp、Discord 等聊天渠道接入 AI 智能体，让 AI 不仅能对话，还能调用工具、执行任务、维护长期记忆，并以常驻服务的形式持续在线。适合构建个人 AI 助手、自动化工作流和长期运行的 Agent 系统。</p>
+<p>回答时可以先说明它的定位和核心能力，再结合自己的使用场景（如接入某个聊天工具做日程、信息整理或自动化任务）说明体验和遇到的问题。</p>
+<p><strong>主要功能</strong></p>
+<ul>
+<li>多渠道接入：直接在现有聊天软件中和 AI 交互，无需切换到单独的应用。</li>
+<li>工具调用与自动化：支持工具调用、多轮会话、记忆管理、定时任务和任务路由，能完成浏览网页、读写文件、执行命令等复杂操作；能力可以通过技能（Skills）扩展。</li>
+<li>统一运行入口：以 Gateway 为中心，统一管理消息渠道、Web 控制台、移动端等设备节点，以及智能体的工具、会话和记忆。</li>
+</ul>
+<p><strong>优势</strong></p>
+<ul>
+<li>接入自然：贴合日常聊天习惯，使用门槛低。</li>
+<li>自托管可控：部署在本地设备或自有服务器，数据和运行环境由自己掌控，可以接入不同的模型提供商。</li>
+<li>扩展性强：可以接入多种渠道、外部服务和技能，适合多场景 Agent 应用。</li>
+<li>持续在线：不是一次性问答工具，而是长期运行的 AI 入口，适合持续任务和长期协作。</li>
+</ul></div></article><article class="q core" id="q80"><h3><a class="q-link" href="#q80">OpenClaw 和其他智能体框架有什么区别？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">核心区别在于，OpenClaw 以一个常驻的统一网关（Gateway）为中心组织整个智能体系统，更像一个 Agent 运行底座和基础设施；而 LangChain、LangGraph、AutoGen、CrewAI 等框架主要关注&quot;如何编排一个或多个 Agent 完成任务&quot;的逻辑。</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>OpenClaw</th>
+<th>常见 Agent 开发框架</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>定位</td>
+<td>开箱即用的自托管助手运行系统</td>
+<td>供开发者写代码构建 Agent 的库</td>
+</tr>
+<tr>
+<td>核心</td>
+<td>Gateway：统一接入渠道、控制端、设备节点</td>
+<td>Agent 的推理循环、工具编排、状态图</td>
+</tr>
+<tr>
+<td>运行形态</td>
+<td>常驻进程，长期在线</td>
+<td>通常随应用调用运行，一次任务结束即退出</td>
+</tr>
+<tr>
+<td>入口</td>
+<td>多种聊天渠道、Web 控制台、移动端节点</td>
+<td>需要自己开发接口和前端</td>
+</tr>
+<tr>
+<td>系统边界</td>
+<td>管理连接、认证、节点、会话、记忆、定时任务等</td>
+<td>主要管理 Agent 逻辑本身</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>统一接入：聊天渠道、控制端和设备节点不是各自对接，而是统一进入 Gateway 这一个入口。</li>
+<li>长期运行：Gateway 常驻，天然适合持续在线的助手，可以主动执行定时任务和响应事件。</li>
+<li>系统边界更大：Gateway 负责的不只是消息转发，还包括连接管理、能力接入和节点管理。</li>
+<li>架构重心不同：其他框架的核心是 Agent 本身，OpenClaw 的核心是&quot;用网关把整个智能体系统组织起来&quot;，更偏基础设施和产品形态。</li>
+</ul></div></article><article class="q core" id="q81"><h3><a class="q-link" href="#q81">OpenClaw 的记忆系统是如何设计的？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">OpenClaw 的记忆系统可以概括为&quot;文件化记忆 + 检索工具 + 后台整理&quot;：短期信息写入按日期的日记文件，长期信息沉淀到 <code>MEMORY.md</code>，通过语义搜索召回，再通过压缩前刷写和 Dreaming 机制完成记忆沉淀。</p>
+<ul>
+<li>文件化存储：记忆以 Markdown 文件形式保存在工作区中，可读可改。
+<ul>
+<li><code>MEMORY.md</code>：长期记忆，保存持久的事实、用户偏好和重要决策。</li>
+<li><code>memory/YYYY-MM-DD.md</code>：每日笔记，记录日常运行中的上下文和观察。</li>
+<li><code>DREAMS.md</code>（可选）：记录 Dreaming 整理扫描和审阅的结果。</li>
+</ul>
+</li>
+<li>分层加载：私聊会话开始时加载 <code>MEMORY.md</code>，同时自动加载今天和昨天的日记，而不是把全部历史塞进上下文，形成&quot;长期记忆 + 近期上下文&quot;的组织方式。</li>
+<li>工具检索：提供 <code>memory_search</code>（语义搜索）和 <code>memory_get</code>（读取指定文件或行范围）两个工具。配置 Embedding 模型后，<code>memory_search</code> 使用向量相似度与关键词匹配结合的混合检索。</li>
+<li>压缩前刷写：会话接近上下文上限、即将触发 compaction 前，系统会触发一个静默回合，提醒智能体先把重要信息写入记忆文件，避免压缩导致关键信息丢失。</li>
+<li>Dreaming 后台整理（可选）：分阶段收集短期信号、打分、筛选，只有通过深度阶段的内容才被提升写入 <code>MEMORY.md</code>，保证长期记忆的质量，而不是把所有临时信息都直接写入。</li>
+</ul>
+<p>这种设计的好处是透明、可人工编辑、易于迁移和版本管理；代价是检索效果依赖 Embedding 和写入质量，记忆规模变大后需要持续整理。</p></div></article><article class="q core" id="q82"><h3><a class="q-link" href="#q82">OpenClaw 还有哪些局限性？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">主要局限集中在系统复杂度高、网关中心化、对模型和运行环境要求较高，以及权限面大带来的安全风险。它更适合有一定工程能力的个人或团队搭建和维护。</p>
+<ul>
+<li>部署运维成本高：需要配置 Gateway，处理认证、渠道接入、健康检查和故障排查，门槛高于一般的 Agent 框架或 SaaS 产品。</li>
+<li>网关中心化：单个长期运行的 Gateway 统一管理消息入口和节点接入，便于统一控制，但系统高度依赖这个中心节点，存在单点问题，水平扩展能力有限。</li>
+<li>对本地模型和轻量后端不够友好：完整的 Agent 运行时提示词结构大、工具 Schema 重，一些本地或自托管兼容后端在简单调用下可以工作，但在完整运行时中可能失败或不稳定，实际效果依赖能力较强的模型；长期运行的 Token 成本也不低。</li>
+<li>状态恢复有边界：事件不会重放，客户端出现缺口时需要自己刷新状态，断连恢复和状态追赶并不是完全透明的。</li>
+<li>安全与权限风险：
+<ul>
+<li>权限范围大：不仅能对话，还能调用工具、执行命令、访问文件，节点侧还可以暴露摄像头、设备、系统类命令接口；没有分级授权时风险远高于普通聊天 Agent。</li>
+<li>攻击面集中：聊天渠道、Gateway、控制端和节点在同一系统中，一旦认证或权限控制不到位，影响范围大；来自聊天渠道或网页内容的提示词注入可能诱导 Agent 执行危险操作；第三方技能也存在供应链风险。</li>
+<li>需要默认收紧：官方加固建议包括默认关闭自动化、运行时、扩展文件系统访问等高风险能力，把执行类工具设为拒绝或每次询问，并把文件系统限制在工作区内。</li>
+<li>远程访问要求高：推荐保持 Gateway 本地绑定，通过 Tailscale 等方式由外层提供身份认证和路由，而不是把服务直接暴露到公网。</li>
+</ul>
+</li>
+</ul></div></article><article class="q" id="q83"><h3><a class="q-link" href="#q83">介绍一下 Coze，有什么优劣势？</a></h3><div class="a"><p>Coze（扣子）是字节跳动推出的低代码 AI 智能体开发平台，通过可视化界面和丰富的功能模块，让用户以&quot;搭积木&quot;的方式构建聊天机器人、内容创作、工作流自动化等智能体应用，并一键发布到豆包、飞书、微信等平台，或通过 API / SDK 集成到企业系统中。2025 年起，Coze 的核心组件以 Coze Studio（开发平台）和 Coze Loop（调试评测）的形式开源，可以私有化部署。</p>
+<p><strong>优势</strong></p>
+<ul>
+<li>插件生态丰富：插件商店提供大量现成插件，智能体可以方便地接入搜索、图像、文档、办公等外部服务和数据源。</li>
+<li>可视化编排：工作流、对话流通过拖拽节点完成，门槛低，非开发人员也能搭建较复杂的流程。</li>
+<li>提示词控制灵活：支持角色设定、提示词库和模板管理，便于对智能体行为做细粒度控制。</li>
+<li>多平台发布：同一个智能体可以发布到多个渠道，越来越多的终端和硬件厂商也支持接入。</li>
+<li>一站式能力：模型、知识库、数据库、变量、卡片、评测、发布管理都集成在一个平台内；还可以搭建带界面的 AI 应用（网页、小程序、H5）。</li>
+</ul>
+<p><strong>局限</strong></p>
+<ul>
+<li>平台锁定：主要在字节生态内运行，SaaS 版本数据存放在平台上，对数据合规敏感的企业需要评估；编排导出格式是平台专有的压缩包，不能像 Dify、n8n 那样导出通用 JSON 在其他平台复用（同平台内可以复制粘贴编排）。</li>
+<li>复杂配置仍有门槛：需要 API Key 或高级参数的插件、复杂工作流中的代码节点（JavaScript / Python），都需要一定技术基础。</li>
+<li>灵活性受限：深度定制、复杂业务逻辑和精细的工程控制不如代码框架；对 MCP 等开放协议的支持程度也需要按当前版本确认。</li>
+<li>成本与配额：高级功能、调用量和团队协作功能依赖付费版本。</li>
+</ul></div></article><article class="q" id="q84"><h3><a class="q-link" href="#q84">Coze 有哪些功能模块？</a></h3><div class="a"><p class="lead">Coze 平台可以按&quot;开发工作区 + 配套资源&quot;两部分理解。</p>
+<p><strong>开发工作区</strong></p>
+<ul>
+<li>项目开发：创建智能体（单智能体自主规划模式、单智能体对话流模式、多智能体模式）或 AI 应用（网页、小程序、H5 界面）。</li>
+<li>项目空间、资源库（工作流、插件、知识库、数据库、卡片、提示词库等）、效果评测、空间配置。</li>
+</ul>
+<p><strong>配套资源</strong>：官方模板、插件商店、智能体社区、API 管理、教程文档、企业管理。</p>
+<p><img src="images/Java+AI%E5%85%AB%E8%82%A1-JadqbNWJMoRa26xk8sVcHyOhn6P.png" alt="扣子智能体平台整体示意图"></p>
+<p><strong>各模块在智能体中的作用</strong></p>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>提示词</td>
+<td>定义角色、技能和回复逻辑</td>
+</tr>
+<tr>
+<td>插件</td>
+<td>调用外部 API 和服务</td>
+</tr>
+<tr>
+<td>工作流</td>
+<td>用节点（大模型、代码、条件、插件、知识库等）编排确定性多步流程</td>
+</tr>
+<tr>
+<td>对话流</td>
+<td>面向多轮对话的工作流，可引用会话历史</td>
+</tr>
+<tr>
+<td>知识库</td>
+<td>上传文档、表格、图片，提供 RAG 检索</td>
+</tr>
+<tr>
+<td>数据库 / 变量</td>
+<td>结构化存储用户数据、记录偏好，跨会话持久化记忆</td>
+</tr>
+<tr>
+<td>卡片</td>
+<td>以结构化 UI 组件展示结果</td>
+</tr>
+<tr>
+<td>效果评测</td>
+<td>批量测试和评估效果</td>
+</tr>
+<tr>
+<td>发布管理</td>
+<td>发布到豆包、飞书、微信、API 等渠道并管理版本</td>
+</tr>
+</tbody>
+</table></div></article><article class="q" id="q85"><h3><a class="q-link" href="#q85">介绍一下 Dify，有什么优劣势？</a></h3><div class="a"><p class="lead">Dify 是一个开源的大模型应用开发平台，融合了 BaaS（后端即服务）和 LLMOps 理念，提供从原型设计到生产部署的全流程支持：可视化工作流（Workflow / Chatflow）、Agent、RAG 知识库管道、模型管理、Prompt 编排、日志监控与标注等。</p>
+<ul>
+<li>架构：前端 Next.js，后端 Python（Flask + Celery），依赖 PostgreSQL、Redis 和向量数据库；1.0 版本后插件化，模型、工具、Agent 策略都以插件扩展。</li>
+</ul>
+<p><img src="images/Java+AI%E5%85%AB%E8%82%A1-image-31.png" alt=""></p>
+<p><strong>优势</strong></p>
+<ul>
+<li>模型中立：通过供应商插件接入各家商业 / 开源模型，以及任何兼容 OpenAI API 的模型（如 Ollama、vLLM 部署的）。</li>
+<li>开源可私有化：Docker Compose 一键部署、支持 Kubernetes，也有 SaaS；社区活跃。</li>
+<li>一站式 + 可扩展：RAG、工作流、Agent、可观测性集成在一起，又能写代码节点、自定义插件，支持 MCP；DSL（YAML）可导入导出工作流。</li>
+<li>企业能力：团队空间、权限管理，企业版有 SSO、审计。</li>
+</ul>
+<p><strong>局限</strong></p>
+<ul>
+<li>性能：服务端以 Python 实现，高并发需水平扩展调优，节点多时开销明显。</li>
+<li>复杂逻辑、精细状态控制不如 LangGraph 等代码框架灵活；复杂工作流调试需要经验。</li>
+<li>以文本为主，多模态端到端支持有限。</li>
+<li>许可证有附加条件（如多租户 SaaS 需商业授权）；对外 API 是自定义格式，不直接兼容 OpenAI 接口。</li>
+</ul></div></article><article class="q" id="q86"><h3><a class="q-link" href="#q86">Dify 的会话记忆是怎么实现的？</a></h3><div class="a"><p class="lead">Dify 的会话记忆分两层：平台内置的对话历史记忆，以及基于会话变量（Conversation Variables）的自定义记忆。</p>
+<p><strong>内置记忆</strong></p>
+<ul>
+<li>Chatflow 中的 LLM 节点可以开启&quot;记忆&quot;开关，把当前会话的历史消息自动拼接进上下文，可以设置窗口大小（保留最近 N 轮）控制 Token 消耗。</li>
+<li>历史消息按 <code>conversation_id</code> 存储在数据库中，调用 API 时传入同一个 <code>conversation_id</code> 即可延续会话。</li>
+</ul>
+<p><strong>基于会话变量的自定义记忆，可以概括为&quot;存、读、判、改、引&quot;五步</strong></p>
+<ol>
+<li>存：创建一个会话变量作为记忆载体（如字符串或数组），每轮对话结束后，通过变量赋值节点把本轮的问答（或摘要）追加写入。</li>
+<li>读：新一轮对话开始时，读取会话变量中的历史内容。</li>
+<li>判：用 LLM 节点或条件节点判断新问题与历史对话是否相关。</li>
+<li>改：如果相关，结合历史对问题做改写（指代消解、省略补全），如把&quot;它多少钱&quot;改写成&quot;iPhone 16 多少钱&quot;，方便后续精准检索知识库。</li>
+<li>引：生成回答时，把相关的历史内容放进 LLM 节点的上下文，让模型在完整语境下回答。</li>
+</ol>
+<p><strong>注意点</strong></p>
+<ul>
+<li>会话变量只在当前会话内有效，新开会话即清空。需要跨会话的长期记忆，可以把信息写入外部数据库、通过 HTTP 节点或插件对接外部记忆服务（如 Mem0），或利用用户级变量。</li>
+<li>历史过长时需要控制轮次，或用 LLM 把历史压缩成摘要再存储，避免上下文膨胀。</li>
+</ul></div></article></section><nav class="pager"><a href="design-pattern.html" class="prev"><small>上一章</small>设计模式</a><a href="finetune.html" class="next"><small>下一章</small>训练与微调</a></nav>
+  </div>
+</main>
+<div class="backdrop" id="backdrop"></div>
+<button class="to-top" id="to-top" aria-label="回到顶部">↑</button>
+<script id="outline" type="application/json">[{"id":"g1","title":"大模型基础","n":8,"core":3},{"id":"g2","title":"Transformer","n":11,"core":8},{"id":"g3","title":"自注意力","n":9,"core":8},{"id":"g4","title":"位置编码与归一化","n":7,"core":0},{"id":"g5","title":"MoE","n":3,"core":3},{"id":"g6","title":"解码与 KV Cache","n":9,"core":9},{"id":"g7","title":"推理部署与长上下文","n":11,"core":0},{"id":"g8","title":"幻觉","n":3,"core":3},{"id":"g9","title":"Prompt Engineering","n":5,"core":5},{"id":"g10","title":"CoT 思维链","n":4,"core":0},{"id":"g11","title":"主流模型：DeepSeek 与 Qwen","n":8,"core":6},{"id":"g12","title":"智能体产品与平台","n":8,"core":4}]</script>
+<script src="assets/app.js?v=ab30056e"></script>
+</body>
+</html>

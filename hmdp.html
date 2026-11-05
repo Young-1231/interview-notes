@@ -1,0 +1,1047 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="darkreader-lock">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>黑马点评项目 · 八股笔记</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' font-weight='bold' fill='white' text-anchor='middle'%3E八%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css?v=ab30056e">
+<script>
+  (function () {
+    var t = localStorage.getItem('iv.theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+</head>
+<body data-part="more" data-sec="hmdp">
+<header class="site-header">
+  <button class="icon-btn menu-btn" id="menu-btn" aria-label="目录">☰</button>
+  <a href="index.html" class="brand"><span class="dot">●</span> 八股笔记</a>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="search">
+    <input id="search" type="search" placeholder="搜索题目  /" autocomplete="off" aria-label="搜索题目">
+    <span id="search-info"></span>
+    <div class="search-pop" id="search-pop" hidden></div>
+  </div>
+  <button class="icon-btn" id="theme-toggle" aria-label="切换主题">◐</button>
+</header>
+<aside class="side" id="side"><nav id="toc"></nav></aside>
+<main class="main">
+  <div id="article">
+<header class="page-head"><div class="crumb">场景 &amp; 真题</div><h1>黑马点评项目 <span class="cnt">46 题</span></h1><div class="tools"><button type="button" class="tool" id="t-core" aria-pressed="false">只看高频 <b>4</b></button><button type="button" class="tool" id="t-quiz" aria-pressed="false">自测模式</button><a class="tool resume" id="t-resume" hidden></a><span class="kbd-hint"><kbd>j</kbd>/<kbd>k</kbd> 上下题 · 自测时 <kbd>空格</kbd> 看答案 · <kbd>/</kbd> 搜索</span></div><nav class="overview"><div class="ov-groups"><a href="#g1" class="no-core">项目概述与登录<span><span class="n-all">7</span><span class="n-core">0</span></span></a><a href="#g2">缓存设计与一致性<span><span class="n-all">7</span><span class="n-core">2</span></span></a><a href="#g3" class="no-core">多级缓存<span><span class="n-all">6</span><span class="n-core">0</span></span></a><a href="#g4" class="no-core">Redis 高可用与分布式锁<span><span class="n-all">4</span><span class="n-core">0</span></span></a><a href="#g5">秒杀与防超卖<span><span class="n-all">4</span><span class="n-core">1</span></span></a><a href="#g6">异步下单的可靠性<span><span class="n-all">5</span><span class="n-core">1</span></span></a><a href="#g7" class="no-core">防刷限流与高并发架构<span><span class="n-all">5</span><span class="n-core">0</span></span></a><a href="#g8" class="no-core">社交与位置功能<span><span class="n-all">5</span><span class="n-core">0</span></span></a><a href="#g9" class="no-core">大模型智能客服扩展<span><span class="n-all">3</span><span class="n-core">0</span></span></a></div></nav></header><section class="grp" id="g1"><h2 class="grp-title">项目概述与登录 <span class="cnt"><span class="n-all">7</span><span class="n-core">高频 0</span></span></h2><article class="q" id="q1"><h3><a class="q-link" href="#q1">介绍一下黑马点评项目的整体架构和亮点</a></h3><div class="a"><p class="lead">黑马点评是一个类似大众点评的本地生活 App 后端，技术栈为 Spring Boot + MyBatis-Plus + MySQL + Redis（含 Redisson），前端由 Nginx 部署并反向代理到后端集群。项目的核心是把 Redis 的各种数据结构用到具体业务里。</p>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>关键技术</th>
+<th>数据结构</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>短信登录</td>
+<td>验证码和登录态存 Redis，替代 Session，解决集群 Session 共享</td>
+<td>String、Hash</td>
+</tr>
+<tr>
+<td>商户查询缓存</td>
+<td>Cache Aside，缓存穿透 / 击穿 / 雪崩的解决方案，封装缓存工具类</td>
+<td>String</td>
+</tr>
+<tr>
+<td>优惠券秒杀</td>
+<td>全局唯一 ID、乐观锁防超卖、分布式锁实现一人一单、Lua + 异步下单</td>
+<td>String、Set、Stream</td>
+</tr>
+<tr>
+<td>达人探店</td>
+<td>点赞、点赞排行榜</td>
+<td>ZSet</td>
+</tr>
+<tr>
+<td>好友关注</td>
+<td>关注、共同关注、Feed 流推送与滚动分页</td>
+<td>Set、ZSet</td>
+</tr>
+<tr>
+<td>附近商户</td>
+<td>按距离查询附近店铺</td>
+<td>GEO</td>
+</tr>
+<tr>
+<td>用户签到</td>
+<td>签到、连续签到统计</td>
+<td>BitMap</td>
+</tr>
+<tr>
+<td>UV 统计</td>
+<td>海量数据近似去重计数</td>
+<td>HyperLogLog</td>
+</tr>
+</tbody>
+</table>
+<p>回答时先用一两句话说清&quot;做了什么、为什么用 Redis&quot;，再挑两到三个最熟的模块（推荐：缓存三大问题、秒杀一人一单 + 分布式锁、Lua + 异步下单）深入讲演进过程和取舍。</p></div></article><article class="q" id="q2"><h3><a class="q-link" href="#q2">登录模块怎么设计的？为什么用 Redis 代替 Session？</a></h3><div class="a"><p class="lead"><strong>基于 Session 的问题</strong>：Tomcat 的 Session 保存在单机内存里，部署多台 Tomcat 时请求被 Nginx 轮询到其他节点就拿不到登录态。Session 复制会占用内存、存在同步延迟，所以改用 Redis 集中存储，所有节点共享。</p>
+<p><strong>流程</strong></p>
+<ol>
+<li><strong>发送验证码</strong>：校验手机号格式 → 生成 6 位验证码 → <code>SET login:code:{phone} code EX 120</code>（2 分钟有效）→ 调用短信服务（项目中用日志模拟）。</li>
+<li><strong>登录 / 注册</strong>：校验手机号和验证码（与 Redis 中的比对）→ 根据手机号查用户，不存在就自动注册 → 生成随机 token（UUID）→ 把用户信息转为 <code>UserDTO</code>（只含 id、昵称、头像，不存密码等敏感字段）以 Hash 结构存入 <code>login:token:{token}</code>，TTL 30 分钟 → 把 token 返回前端，前端放在请求头 <code>authorization</code> 里。</li>
+<li><strong>登录校验</strong>：拦截器从请求头取 token → 去 Redis 查用户 → 存在就放入 ThreadLocal（<code>UserHolder</code>）并刷新 TTL，不存在就拦截返回 401。</li>
+</ol>
+<p><strong>为什么用 Hash 存用户信息</strong>：可以单独读写某个字段，比 String 存整个 JSON 更灵活，内存也略省。注意 <code>StringRedisTemplate</code> 要求所有 value 为字符串，<code>BeanUtil.beanToMap</code> 时要把 <code>Long</code> 类型的 id 转成 String，否则会抛 <code>ClassCastException</code>，这是项目中一个常见的坑。</p>
+<p><strong>为什么 key 用随机 token 而不是手机号</strong>：token 要返回给前端保存，用手机号既泄露隐私，也容易被伪造。</p></div></article><article class="q" id="q3"><h3><a class="q-link" href="#q3">登录拦截器为什么要拆成两个？</a></h3><div class="a"><p class="lead">如果只有一个拦截器，并且只拦截需要登录的路径（如 <code>/user/me</code>、下单），那么用户一直只访问首页、商户详情这类不需要登录的页面时，token 的 TTL 不会刷新，30 分钟后即使用户在活跃使用也会被强制登出。</p>
+<p>拆成两个：</p>
+<ul>
+<li><strong>RefreshTokenInterceptor</strong>（<code>order(0)</code>，拦截所有路径 <code>/**</code>）：有 token 就去 Redis 查用户，查到就存入 ThreadLocal 并刷新 TTL；没有 token 或查不到都直接放行，不做拦截。</li>
+<li><strong>LoginInterceptor</strong>（<code>order(1)</code>，只拦截需要登录的路径）：只判断 ThreadLocal 里有没有用户，没有就返回 401。</li>
+</ul>
+<p>在 <code>RefreshTokenInterceptor.afterCompletion()</code> 中调用 <code>UserHolder.removeUser()</code> 清理 ThreadLocal。拦截器的 <code>order</code> 值越小越先执行。</p></div></article><article class="q" id="q4"><h3><a class="q-link" href="#q4">ThreadLocal 里存了哪些信息？有什么问题？为什么 value 不能被 GC 回收？</a></h3><div class="a"><p class="lead"><strong>项目中存了什么</strong>：<code>UserHolder</code> 用 ThreadLocal 保存当前请求的登录用户 <code>UserDTO</code>（id、昵称、头像），业务代码随时 <code>UserHolder.getUser()</code> 获取，不必层层传参。</p>
+<p><strong>底层实现</strong>：每个 <code>Thread</code> 持有一个 <code>ThreadLocalMap</code>，数据存在线程自己身上，天然隔离。<code>Entry extends WeakReference&lt;ThreadLocal&lt;?&gt;&gt;</code>：key 是 ThreadLocal 的<strong>弱引用</strong>，value 是<strong>强引用</strong>。</p>
+<p><strong>为什么 value 回收不了</strong>：外部不再强引用 ThreadLocal 后，key 在 GC 时被回收，Entry 变成 key 为 null 的条目；但 value 仍沿 <code>Thread → ThreadLocalMap → Entry → value</code> 强引用可达。Tomcat 工作线程来自线程池、长期存活，value 就一直留在内存里。</p>
+<p><strong>更现实的问题是数据串号</strong>：线程复用时上一个请求没清理，下一个请求可能读到上一个用户的信息。</p>
+<p><strong>怎么办</strong></p>
+<ul>
+<li>在 <code>finally</code> 或拦截器 <code>afterCompletion</code> 中调用 <code>remove()</code>。</li>
+<li><code>get</code>/<code>set</code>/<code>remove</code> 会顺带清理 key 为 null 的条目，但只是兜底；key 用弱引用是为了让 ThreadLocal 对象本身能被回收。</li>
+<li>异步线程拿不到父线程的值，可用 <code>InheritableThreadLocal</code>（线程池下无效）或 <code>TransmittableThreadLocal</code>。</li>
+</ul></div></article><article class="q" id="q5"><h3><a class="q-link" href="#q5">如果改用 JWT，令牌怎么刷新？怎么注销？</a></h3><div class="a"><p class="lead">项目本身用的是&quot;随机 token + Redis&quot;，登录态在服务端，注销直接删除 Redis 中的 key 即可，刷新就是延长 TTL。JWT 是无状态的，签发后服务端无法让它提前失效，所以需要额外设计。</p>
+<p><strong>刷新：双 token 机制</strong></p>
+<ul>
+<li>登录时签发短期的 access token（如 15 到 30 分钟）和长期的 refresh token（如 7 天）。</li>
+<li>请求只携带 access token；过期后，客户端用 refresh token 调用刷新接口。</li>
+<li>服务端校验 refresh token（签名、有效期、是否在黑名单或已被使用）后签发新的 access token，通常同时轮换一个新的 refresh token，旧的作废，防止 refresh token 被盗后长期可用。</li>
+<li>refresh token 建议在服务端（Redis）留存，便于吊销。</li>
+</ul>
+<p><strong>注销</strong></p>
+<ul>
+<li><strong>黑名单</strong>：退出登录时把 access token 的 <code>jti</code>（唯一 ID）写入 Redis，TTL 设为 token 剩余有效期，每次请求校验是否在黑名单中；同时删除或拉黑 refresh token。</li>
+<li><strong>版本号</strong>：Redis 中为每个用户存一个 token 版本号，JWT 载荷带上版本号，修改密码或强制下线时版本号加 1，旧 token 全部失效。</li>
+</ul>
+<p><strong>权衡</strong>：一旦引入黑名单，每次请求都要查 Redis，JWT&quot;无状态&quot;的优势就被削弱了。所以在需要随时踢人下线的业务中，&quot;token + Redis 存会话&quot;往往更简单直接，这也是项目选择这种方式的原因。</p></div></article><article class="q" id="q6"><h3><a class="q-link" href="#q6">数据库主键怎么做的？订单 ID 为什么不用自增？</a></h3><div class="a"><p class="lead">普通表（用户、商户、博客）用 MySQL 自增主键；<strong>优惠券订单表用自己实现的全局唯一 ID 生成器</strong>。</p>
+<p><strong>订单不用自增的原因</strong></p>
+<ul>
+<li><strong>规律性太明显</strong>：订单号连续，用户或竞争对手可以轻易推算出每天的订单量。</li>
+<li><strong>分库分表后会重复</strong>：多个库各自自增，ID 会冲突。</li>
+<li>单表数据量受限，未来必然要拆分。</li>
+</ul>
+<p><strong>全局 ID 生成器（RedisIdWorker）</strong>：64 位 long，1 位符号位 + 31 位时间戳 + 32 位序列号。</p>
+<ul>
+<li>时间戳：当前秒数减去一个自定义起始时间（如 2022-01-01），31 位秒数可以用约 68 年。</li>
+<li>序列号：Redis <code>INCR icr:{业务名}:{yyyy:MM:dd}</code>，按天拼接 key，既避免单个 key 自增到上限（32 位约 42 亿），又方便统计每天的订单量。</li>
+<li>最终 <code>timestamp &lt;&lt; 32 | count</code>，整体趋势递增，对 InnoDB 的 B+ 树插入友好。</li>
+</ul>
+<p><strong>其他方案对比</strong></p>
+<ul>
+<li>UUID：无序、36 个字符太长，作为主键会导致页分裂、索引膨胀，不推荐。</li>
+<li>雪花算法：1 位符号 + 41 位毫秒时间戳 + 10 位机器 ID + 12 位序列号，本地生成、性能最好，但依赖机器时钟，时钟回拨可能产生重复 ID，需要额外处理（等待、报错或借用备用位）。</li>
+<li>号段模式（美团 Leaf、滴滴 TinyID）：从数据库批量取一段 ID 缓存在本地，适合大规模场景。</li>
+</ul></div></article><article class="q" id="q7"><h3><a class="q-link" href="#q7">这个项目中遇到的最大技术挑战是什么？怎么解决的？</a></h3><div class="a"><p class="lead">建议选&quot;秒杀下单的并发安全与性能&quot;这条主线，因为它有清晰的问题演进，也能自然串联 Spring 事务、锁、Redis、MQ 等多个考点。可以按以下顺序讲：</p>
+<ol>
+<li><strong>超卖</strong>：最初&quot;先查库存再扣减&quot;，并发下多个线程同时查到库存 &gt; 0，导致超卖。用乐观锁 <code>update ... set stock = stock - 1 where id = ? and stock &gt; 0</code> 解决，比&quot;版本号必须相等&quot;的写法失败率更低。</li>
+<li><strong>一人一单的并发问题</strong>：先查订单是否存在再插入，并发下同一个用户可以下多单。用 <code>synchronized (userId.toString().intern())</code> 按用户加锁。这里遇到两个坑：
+<ul>
+<li>锁必须加在<strong>事务外面</strong>，否则锁释放了事务还没提交，其他线程依然查不到订单。</li>
+<li>在同一个类中调用 <code>@Transactional</code> 方法是自调用，事务不生效，需要通过 <code>AopContext.currentProxy()</code> 拿到代理对象来调用（并开启 <code>exposeProxy = true</code>）。</li>
+</ul>
+</li>
+<li><strong>集群下 synchronized 失效</strong>：多台 Tomcat 各自有 JVM 锁，改用 Redis 分布式锁。自己实现的 <code>SETNX</code> 锁又遇到误删他人锁、判断和删除非原子的问题，用&quot;线程标识 + Lua 脚本释放&quot;解决，最后换成 Redisson（可重入、可重试、看门狗续期）。</li>
+<li><strong>性能</strong>：全流程串行访问数据库，吞吐量很低。改为 Lua 脚本在 Redis 中原子判断库存和一人一单，成功就把订单信息放入消息队列，由后台线程异步写库，接口响应时间大幅下降。消息队列从 JVM 阻塞队列演进到 Redis Stream（或 MQ），解决内存上限和宕机丢失的问题。</li>
+</ol>
+<p>讲的时候要给出可量化的结果（如压测 QPS、平均响应时间的变化），并说明每一步方案的局限，体现思考过程。</p></div></article></section><section class="grp has-core" id="g2"><h2 class="grp-title">缓存设计与一致性 <span class="cnt"><span class="n-all">7</span><span class="n-core">高频 2</span></span></h2><article class="q" id="q8"><h3><a class="q-link" href="#q8">缓存是怎么设计的？key 和 value 分别存什么？</a></h3><div class="a"><p class="lead"><strong>缓存哪些数据</strong>：读多写少、对一致性要求不是特别高的数据。</p>
+<table>
+<thead>
+<tr>
+<th>业务</th>
+<th>key</th>
+<th>类型 / value</th>
+<th>TTL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>验证码</td>
+<td><code>login:code:{phone}</code></td>
+<td>String，6 位验证码</td>
+<td>2 分钟</td>
+</tr>
+<tr>
+<td>登录态</td>
+<td><code>login:token:{token}</code></td>
+<td>Hash，UserDTO 各字段</td>
+<td>30 分钟，访问时刷新</td>
+</tr>
+<tr>
+<td>商户详情</td>
+<td><code>cache:shop:{id}</code></td>
+<td>String，商户对象 JSON（名称、地址、坐标、评分、营业时间等静态信息）</td>
+<td>30 分钟 + 随机值</td>
+</tr>
+<tr>
+<td>商户空值</td>
+<td><code>cache:shop:{id}</code></td>
+<td>空字符串 <code>&quot;&quot;</code></td>
+<td>2 分钟</td>
+</tr>
+<tr>
+<td>商户类型列表</td>
+<td><code>cache:shop-type</code></td>
+<td>String（JSON 数组）或 List</td>
+<td>较长，变化极少</td>
+</tr>
+<tr>
+<td>互斥锁</td>
+<td><code>lock:shop:{id}</code></td>
+<td>String，<code>&quot;1&quot;</code></td>
+<td>10 秒</td>
+</tr>
+<tr>
+<td>秒杀库存</td>
+<td><code>seckill:stock:{voucherId}</code></td>
+<td>String，库存数量</td>
+<td>活动结束后过期</td>
+</tr>
+<tr>
+<td>一人一单</td>
+<td><code>seckill:order:{voucherId}</code></td>
+<td>Set，已下单的 userId</td>
+<td>同上</td>
+</tr>
+</tbody>
+</table>
+<p><strong>静态信息有没有缓存</strong>：商户的名称、地址、图片、营业时间，优惠券的标题、规则、面额、使用期限都属于静态或准静态信息，会和详情一起缓存；而库存这种高频变动的数据单独用一个 key 存储，扣减时不影响详情缓存。图片等静态资源本身走 Nginx / CDN。</p>
+<p><strong>设计原则</strong></p>
+<ul>
+<li>key 统一用 <code>业务:子业务:id</code> 的格式，可读、便于排查和批量管理。</li>
+<li>设置 TTL 兜底，避免冷数据长期占用内存，也作为一致性的最终保障。</li>
+<li>不同 key 的 TTL 加随机值，防止同时过期引发雪崩。</li>
+<li>控制 value 大小，避免 bigkey（单个 String 尽量不超过 10 KB）。</li>
+</ul></div></article><article class="q core" id="q9"><h3><a class="q-link" href="#q9">为什么&quot;先更新数据库再删除缓存&quot;？为什么不更新缓存，也不先删缓存？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">项目采用 <strong>Cache Aside（旁路缓存）</strong>：读时缓存未命中就查库并写入缓存；写时<strong>先更新数据库，再删除缓存</strong>，并设置 TTL 兜底。</p>
+<p><strong>为什么删除而不是更新缓存</strong></p>
+<ul>
+<li><strong>写多读少时浪费</strong>：每次更新都去重算并写缓存，但中间这些值可能根本没人读；删除后等下次读时再懒加载即可。</li>
+<li><strong>并发更新会写入旧值</strong>：线程 A、B 先后更新数据库为 1、2，但写缓存的顺序可能变成 B 先、A 后，缓存最终是 1，与数据库的 2 不一致。删除操作是幂等的，不存在这个问题。</li>
+<li>缓存值可能需要多张表组合计算，更新成本高。</li>
+</ul>
+<p><strong>为什么不先删缓存再更新数据库</strong></p>
+<ol>
+<li>线程 A 删除缓存。</li>
+<li>线程 B 查询缓存未命中，读到数据库中的<strong>旧值</strong>，写回缓存。</li>
+<li>线程 A 更新数据库。</li>
+</ol>
+<p>结果缓存中一直是旧值，直到 TTL 过期。更新数据库比读数据库慢，第 2 步完全可能插进来，概率较高。</p>
+<p><strong>先更新数据库再删缓存也不是绝对安全</strong>：缓存恰好过期 → 线程 A 读到旧值 → 线程 B 更新数据库并删除缓存 → 线程 A 把旧值写入缓存。但这要求&quot;A 的读库 + 写缓存&quot;比&quot;B 的写库 + 删缓存&quot;还慢，而写库通常远慢于写缓存，所以概率很低，再加上 TTL 兜底，是工程上公认的较优方案。</p>
+<p><strong>保证操作的完整性</strong></p>
+<ul>
+<li>单体项目中，更新数据库和删除缓存放在同一个 <code>@Transactional</code> 方法中，删除缓存失败就抛异常回滚。分布式系统中则依靠 MQ 或 TCC 等方案。</li>
+<li>删除失败时：重试，或订阅 binlog（Canal）异步删除。</li>
+<li>如果对一致性要求更高，可以用<strong>延迟双删</strong>：删缓存 → 更新数据库 → 延迟几百毫秒再删一次。缺点是延迟时间不好确定。</li>
+<li>强一致需求（如账户余额）不应该依赖缓存，或者使用读写锁，牺牲性能。</li>
+</ul></div></article><article class="q" id="q10"><h3><a class="q-link" href="#q10">缓存删除失败，MQ 重试最多几次？超过次数怎么处理？</a></h3><div class="a"><p class="lead"><strong>方案</strong>：更新数据库后删除缓存，失败则把要删的 key 发送到 MQ，由消费者重试删除。更推荐的做法是用 Canal 订阅 MySQL binlog，把变更投递到 MQ 后由消费者删除缓存，与业务代码解耦，也不会因为应用宕机而漏删。</p>
+<p><strong>重试次数</strong>：没有统一标准，一般 3 到 5 次，间隔递增（如 1s、5s、30s），避免在 Redis 故障时频繁重试雪上加霜。RocketMQ 消费失败默认最多重试 16 次，间隔从 10 秒逐步增加到 2 小时，可以通过 <code>maxReconsumeTimes</code> 调小。</p>
+<p><strong>超过次数之后</strong></p>
+<ol>
+<li>进入<strong>死信队列</strong>（RocketMQ 为 <code>%DLQ%{消费组}</code>；RabbitMQ 需要配置死信交换机），持久化保存不丢失。</li>
+<li>记录日志并触发监控告警，人工排查 Redis 故障或网络问题。</li>
+<li>由定时任务或人工从死信队列中重新投递。</li>
+<li><strong>TTL 兜底</strong>：缓存总会过期，过期后重新从数据库加载最新值，保证最终一致。所以缓存的 TTL 不能设成永久。</li>
+</ol></div></article><article class="q core" id="q11"><h3><a class="q-link" href="#q11">缓存穿透、缓存击穿、缓存雪崩是什么？怎么解决？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>含义</th>
+<th>解决方案</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>缓存穿透</td>
+<td>请求的数据在缓存和数据库中<strong>都不存在</strong>，缓存永远不生效，每次都打到数据库，常见于恶意攻击（随机或负数 ID）</td>
+<td>缓存空值；布隆过滤器；参数校验（ID 格式、范围）；限流、拉黑异常用户</td>
+</tr>
+<tr>
+<td>缓存击穿</td>
+<td><strong>某个热点 key</strong> 过期或缓存重建耗时较长，大量并发请求同时未命中，瞬间全部打到数据库（热点 key 问题）</td>
+<td>互斥锁；逻辑过期；热点 key 预热</td>
+</tr>
+<tr>
+<td>缓存雪崩</td>
+<td><strong>大量 key 同一时间过期</strong>，或 Redis 服务宕机，大量请求打到数据库</td>
+<td>TTL 加随机值；Redis 高可用（哨兵、集群）；限流、熔断、降级；多级缓存；提前预热</td>
+</tr>
+</tbody>
+</table>
+<p><strong>项目中的实现</strong></p>
+<ul>
+<li><strong>穿透：缓存空值</strong>。数据库查不到时写入空字符串 <code>&quot;&quot;</code>，TTL 2 分钟。缺点是占额外内存，TTL 内可能短暂不一致。</li>
+<li><strong>击穿：互斥锁</strong>。未命中时 <code>SETNX lock:shop:{id}</code>（TTL 10 秒）抢锁，抢到的线程<strong>再查一次缓存</strong>（double check）后查库重建，没抢到的休眠 50 ms 重试。</li>
+<li><strong>击穿：逻辑过期</strong>。热点 key 不设 TTL，value 中存 <code>expireTime</code>，需要预热。发现逻辑过期就抢锁、<strong>开独立线程</strong>异步重建，所有线程直接返回旧数据。</li>
+<li>用泛型 + <code>Function&lt;ID, R&gt; dbFallback</code> 封装成工具类 <code>CacheClient</code> 复用。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>互斥锁</th>
+<th>逻辑过期</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>一致性</td>
+<td>强</td>
+<td>弱（重建完成前返回旧数据）</td>
+</tr>
+<tr>
+<td>性能</td>
+<td>线程需要等待</td>
+<td>不等待</td>
+</tr>
+<tr>
+<td>适用</td>
+<td>一致性优先</td>
+<td>可用性优先，如活动页面</td>
+</tr>
+</tbody>
+</table></div></article><article class="q" id="q12"><h3><a class="q-link" href="#q12">布隆过滤器是什么？原理、优缺点？为什么是假阳性而不是假阴性？</a></h3><div class="a"><p class="lead">布隆过滤器是一种空间效率很高的<strong>概率型数据结构</strong>，用来判断&quot;一个元素是否可能在集合中&quot;。在项目中用于缓存穿透：请求进来先问布隆过滤器，判断不存在就直接返回，不再查 Redis 和数据库。</p>
+<p><strong>原理</strong>：一个长度为 m 的 bit 数组 + k 个哈希函数。</p>
+<ul>
+<li>添加：对元素做 k 次哈希，得到 k 个位置，全部置为 1。</li>
+<li>查询：同样算出 k 个位置，<strong>只要有一个是 0，元素一定不存在</strong>；全部为 1，元素<strong>可能</strong>存在。</li>
+</ul>
+<p><strong>为什么只有假阳性，没有假阴性</strong></p>
+<ul>
+<li>假阳性：哈希位置会重叠，未添加的元素的 k 个位置可能恰好都被其他元素置 1。</li>
+<li>没有假阴性：添加过的元素 k 个位置一定是 1，且 bit 只会从 0 变 1（不删除的前提下），查询不可能遇到 0。</li>
+<li>误判率随 m 增大而降低；给定 m 和 n，最优 <code>k = (m / n) · ln2</code>。Guava、Redisson 可按「预计元素数 + 期望误判率」自动计算。</li>
+</ul>
+<p><strong>优点</strong>：空间极小（1 亿元素、1% 误判率约 114 MB）；查询插入 O(k)；不存元素本身。</p>
+<p><strong>缺点</strong></p>
+<ul>
+<li>存在误判，数据量超过预估后误判率急剧上升，只能重建。</li>
+<li><strong>不支持删除</strong>：bit 被多个元素共享，置 0 会产生假阴性。</li>
+<li>需要预热已有 ID，新增数据必须同步写入，否则会被误拦截。</li>
+</ul>
+<p><strong>实现方式</strong>：单机 Guava <code>BloomFilter</code>；分布式用 Redisson <code>RBloomFilter</code>（基于 BitMap）或 RedisBloom 的 <code>BF.ADD</code> / <code>BF.EXISTS</code>。</p></div></article><article class="q" id="q13"><h3><a class="q-link" href="#q13">布隆过滤器不支持删除，有什么替代方案？用过计数布隆过滤器吗？</a></h3><div class="a"><p class="lead"><strong>计数布隆过滤器（Counting Bloom Filter）</strong></p>
+<ul>
+<li>把每个 bit 换成一个小计数器（通常 4 位）。添加时 k 个计数器加 1，删除时减 1，查询时判断 k 个计数器是否都大于 0。</li>
+<li>缺点：空间是普通布隆过滤器的数倍（4 位计数器就是 4 倍）；计数器有溢出风险（4 位最大 15，溢出后不能再正确删除）；<strong>只能删除确实添加过的元素</strong>，误删一个不存在的元素会把其他元素的计数减掉，产生假阴性。</li>
+</ul>
+<p><strong>布谷鸟过滤器（Cuckoo Filter）</strong></p>
+<ul>
+<li>存储元素的指纹（fingerprint），使用布谷鸟哈希，每个元素有两个候选桶，冲突时把旧指纹&quot;踢&quot;到另一个候选桶。</li>
+<li>支持删除；在误判率较低时空间效率比布隆过滤器更好；查询只需访问两个桶，速度快。</li>
+<li>缺点：容量满时插入可能失败；同一个元素重复插入有次数上限；同样不能删除未插入过的元素。RedisBloom 模块提供了 <code>CF.ADD</code> / <code>CF.DEL</code>。</li>
+</ul>
+<p><strong>定期重建</strong>：最常用、最简单。保留普通布隆过滤器，定时（如每天凌晨）扫描数据库中有效的 ID 重新构建一个新的过滤器，构建完成后原子切换（例如 Redis 中写入新 key 后再切换引用，或用 <code>RENAME</code>）。</p>
+<p><strong>接受少量误判</strong>：被删除的数据在过滤器中仍判断为存在时，请求会继续查 Redis 和数据库，最终查不到，再配合缓存空值即可，对数据库的压力很小。</p></div></article><article class="q" id="q14"><h3><a class="q-link" href="#q14">商户删除或更新后，布隆过滤器怎么更新？秒杀场景用布隆过滤器还有什么问题？</a></h3><div class="a"><p class="lead"><strong>商户信息更新</strong>：布隆过滤器只存 ID，不存商户的具体内容，所以修改商户的名称、地址等信息<strong>不需要更新布隆过滤器</strong>，只需要按照&quot;更新数据库 → 删除缓存&quot;处理缓存一致性即可。</p>
+<p><strong>新增商户</strong>：在写入数据库的同时（或通过 binlog / MQ 异步）把新 ID <code>add</code> 到布隆过滤器。注意上线前必须先写入，否则会被误判为不存在而拦截，效果上相当于假阴性。</p>
+<p><strong>删除商户</strong>：过滤器中的 bit 无法清除，会一直判断为&quot;可能存在&quot;，请求会继续走到缓存和数据库，查不到就缓存空值返回，业务上没有错误，只是这部分请求没被拦截。处理方式：</p>
+<ul>
+<li>容忍：删除操作占比通常很低，影响可以忽略。</li>
+<li>定期重建：清理掉已删除 ID 积累的误判。</li>
+<li>需要实时删除时，换用计数布隆过滤器或布谷鸟过滤器。</li>
+</ul>
+<p><strong>秒杀场景中除了误判之外的问题</strong></p>
+<ul>
+<li><strong>实时性</strong>：秒杀的优惠券、商品是临时上架的，必须保证上架前已写入过滤器，否则会误拦截真实请求。</li>
+<li><strong>热点集中</strong>：分布式布隆过滤器存储在 Redis 的一个 key 中，所有请求都访问这个 key，形成热点 key 和 bigkey，可能成为瓶颈。可以在本地也放一份（Guava），或者按 ID 分片到多个 key。</li>
+<li><strong>作用有限</strong>：秒杀的商品数量少且固定，攻击者刷的往往是真实存在的商品，布隆过滤器拦不住，还是要靠限流、验证码、一人一单校验。</li>
+<li><strong>扩容困难</strong>：数据量超出预估时误判率上升，只能整体重建。</li>
+<li><strong>增加复杂度</strong>：多一个需要维护一致性的组件，以及重建期间的切换问题。</li>
+</ul></div></article></section><section class="grp" id="g3"><h2 class="grp-title">多级缓存 <span class="cnt"><span class="n-all">6</span><span class="n-core">高频 0</span></span></h2><article class="q" id="q15"><h3><a class="q-link" href="#q15">本地缓存和 Redis 怎么协同？什么时候优先用本地缓存？</a></h3><div class="a"><p class="lead">采用 <strong>Caffeine（L1，进程内）+ Redis（L2，分布式）+ MySQL</strong> 的多级缓存。</p>
+<p><strong>读流程</strong></p>
+<ol>
+<li>先查 Caffeine，命中直接返回（纳秒到微秒级，没有网络开销）。</li>
+<li>未命中查 Redis，命中则回填 Caffeine 后返回。</li>
+<li>Redis 也未命中，按缓存击穿的方案（互斥锁）查询数据库，回填 Redis 和 Caffeine。数据库也没有就缓存空值。</li>
+</ol>
+<p><strong>写流程</strong>：更新数据库 → 删除 Redis 缓存 → 通知所有节点删除本地缓存（Redis Pub/Sub 或 MQ 广播）。更彻底的方式是由 Canal 监听 binlog，统一触发 Redis 和各节点本地缓存的删除。</p>
+<p><strong>适合放本地缓存的数据</strong></p>
+<ul>
+<li>极热点数据：秒杀活动的商品和优惠券详情、首页推荐、店铺类型列表。</li>
+<li>变化很少、能接受短暂不一致的数据：配置、字典、类目。</li>
+<li>体量小的数据：本地缓存占用 JVM 堆内存，必须限制 <code>maximumSize</code>，否则会影响 GC 甚至 OOM。</li>
+</ul>
+<p><strong>不适合放本地缓存的数据</strong>：库存、余额这类实时变动、要求强一致的数据；数据量大的数据；用户维度的个性化数据（命中率低）。</p>
+<p><strong>本地缓存的 TTL 要明显短于 Redis</strong>（如本地 1 到 5 分钟、Redis 30 分钟），让本地缓存的不一致窗口有上限。</p></div></article><article class="q" id="q16"><h3><a class="q-link" href="#q16">集群环境下，各节点的本地缓存不同步，怎么保证一致性？</a></h3><div class="a"><p class="lead">本地缓存在每个 JVM 里各有一份，不可能做到强一致，目标是<strong>缩短不一致的窗口</strong>，可以组合使用以下方案：</p>
+<ol>
+<li><strong>广播失效（主要手段）</strong>：数据变更后，通过 Redis Pub/Sub 或 MQ 的广播模式（RocketMQ <code>MessageModel.BROADCASTING</code>、Kafka 每个节点用独立的消费组）发送失效消息，各节点收到后 <code>invalidate</code> 对应的 key，下次读时再从 Redis 加载。</li>
+<li><strong>短 TTL 兜底</strong>：本地缓存设置较短的过期时间（<code>expireAfterWrite</code>），即使通知丢失，过期后也会自动加载最新数据。Redis Pub/Sub 不持久化，节点断线期间的消息会丢失，所以 TTL 兜底是必需的。</li>
+<li><strong>binlog 驱动</strong>：Canal 监听数据库变更，把失效事件投递到 MQ 广播，避免业务代码漏发通知。</li>
+<li><strong>版本号校验</strong>：Redis 中为数据维护一个版本号，本地缓存中也保存版本号；读取时比较两者（只读一个很小的版本号 key），不一致就重新加载。代价是每次读都多一次 Redis 访问。</li>
+<li><strong>请求路由</strong>：网关或 Nginx 按 key 做一致性哈希，让同一数据的请求固定落在同一个节点上，每份数据只有一个本地副本，但节点扩缩容时会发生迁移，负载也可能不均衡。</li>
+</ol>
+<p><strong>本地缓存删除失败怎么办</strong>：本地删除就是内存操作，几乎不会失败；真正的风险是<strong>通知没送达</strong>（节点宕机、网络抖动、Pub/Sub 消息丢失）。处理方式是用可靠的 MQ 替代 Pub/Sub，加上短 TTL 兜底，必要时由定时任务对比版本号。业务上必须强一致的数据，就不要放本地缓存。</p></div></article><article class="q" id="q17"><h3><a class="q-link" href="#q17">热点数据只用 Redis 行不行？会有什么问题？</a></h3><div class="a"><p class="lead">可以，大多数场景只用 Redis 就够了。单个 Redis 节点可以支撑数万到十万级 QPS，在 QPS 只有几千的场景下引入本地缓存只会增加一致性维护的复杂度，属于过度设计。</p>
+<p><strong>流量大了之后只用 Redis 的问题</strong></p>
+<ul>
+<li><strong>热 key 单点瓶颈</strong>：Redis Cluster 中同一个 key 只会落在一个分片上，加机器也分散不了。秒杀开始的瞬间所有请求都访问同一个商品 key，会把这一个分片的 CPU 或网卡打满，进而影响该分片上的其他 key。</li>
+<li><strong>网络开销</strong>：每次访问都有一次网络往返（通常 0.x 到 1 ms），本地缓存只需要纳秒到微秒级；网卡带宽也可能被大 value 打满。</li>
+<li><strong>可用性</strong>：Redis 一旦故障或发生主从切换，所有请求直接打到数据库，没有缓冲层。</li>
+</ul>
+<p><strong>本地缓存的价值</strong>：扛住热 key、降低 Redis 负载、降低响应时间，在 Redis 故障时还能作为降级的兜底。</p>
+<p><strong>热 key 的其他解决方式</strong>：把热 key 复制成多份（<code>key_1</code> 到 <code>key_N</code>，读取时随机选一个）分散到不同分片；使用读写分离让从节点分担读流量；用京东 hotkey 这类热点探测框架自动识别热 key 并推送到本地缓存。</p></div></article><article class="q" id="q18"><h3><a class="q-link" href="#q18">Caffeine 的淘汰策略是什么？为什么选它？</a></h3><div class="a"><p class="lead">Caffeine 使用 <strong>W-TinyLFU（Window TinyLFU）</strong>，结合了 LRU 和 LFU 的优点，命中率接近理论最优，是 Spring Boot 2.x 起官方推荐的本地缓存（取代了 Guava Cache）。</p>
+<p><strong>结构</strong></p>
+<ul>
+<li><strong>Window 区（约占 1%）</strong>：LRU。新数据先进入这里，让突发的新热点有机会留下来，不会因为一开始频率低就被立刻淘汰。</li>
+<li><strong>Main 区（约占 99%）</strong>：分段 LRU（SLRU），分为 Probation（试用区，约 20%）和 Protected（保护区，约 80%）。Probation 中的数据再次被访问就晋升到 Protected。</li>
+<li><strong>TinyLFU 准入过滤</strong>：Window 区淘汰出来的候选者要与 Probation 区的淘汰者比较<strong>访问频率</strong>，频率高的留下。频率由 <strong>Count-Min Sketch</strong> 统计：多个哈希函数映射到 4 bit 的计数器数组，取最小值作为估计频率，占用空间极小。</li>
+<li><strong>衰减（保鲜）</strong>：总访问次数达到阈值后，所有计数器减半，让过去的热点逐渐冷却，适应访问模式的变化。</li>
+<li>Window 与 Main 的比例会根据命中率通过爬山算法动态调整。</li>
+</ul>
+<p><strong>为什么选它</strong></p>
+<ul>
+<li>纯 LRU：一次批量扫描（如遍历全表）就会把真正的热点数据全部挤出去，抗扫描能力差。</li>
+<li>纯 LFU：需要为每个 key 维护精确计数，内存开销大；历史热点即使不再访问，计数仍然很高，长期赖着不走，对新热点反应慢。</li>
+<li>W-TinyLFU 用很小的空间近似统计频率，既能抵抗扫描，又能快速接纳新热点，还能淘汰过气热点，综合命中率比 LRU、LFU 都高。</li>
+</ul>
+<p>此外 Caffeine 的读写操作先写入环形缓冲区再异步批量处理，减少锁竞争，并发性能也优于 Guava Cache。常用配置：<code>maximumSize</code>、<code>expireAfterWrite</code>、<code>expireAfterAccess</code>、<code>refreshAfterWrite</code>、<code>recordStats</code>。</p></div></article><article class="q" id="q19"><h3><a class="q-link" href="#q19">秒杀 8 点开始，缓存的过期时间设置为覆盖这个时间点，能解决什么问题？有什么缺点？</a></h3><div class="a"><p class="lead"><strong>解决的问题</strong>：本质是<strong>缓存预热 + 避免热点 key 在活动期间过期</strong>。活动开始前就把商品详情、库存加载进缓存，并让 TTL 覆盖整个活动时间段（例如 7:50 预热，到活动结束后再过期），可以：</p>
+<ul>
+<li>避免缓存击穿：活动开始瞬间所有请求都命中缓存，不会出现&quot;热点 key 刚好过期，大量请求同时去查数据库&quot;的情况。</li>
+<li>避免冷启动：第一批请求不需要回源数据库，数据库只承担下单写入。</li>
+</ul>
+<p><strong>缺点</strong></p>
+<ul>
+<li><strong>数据提前暴露</strong>：缓存里有数据不代表活动已开始。如果后端接口不做时间校验，用户可以绕过前端倒计时提前抢购，所以下单接口必须校验 <code>beginTime</code> / <code>endTime</code>，秒杀地址也可以在活动开始后才下发（动态 URL）。</li>
+<li><strong>一致性问题</strong>：预热到活动开始之间如果运营修改了商品信息，必须同步更新缓存，否则用户看到旧数据。</li>
+<li><strong>时间点难以精确</strong>：活动延期或提前，TTL 都要跟着调整；如果大量 key 设置同一个过期时间点，活动结束时会同时过期，可能引发小规模雪崩，需要加随机偏移。</li>
+<li><strong>内存占用</strong>：TTL 偏长，活动结束后数据还在占用内存。</li>
+<li><strong>无法防穿透</strong>：请求不存在的商品 ID 依然会穿透，仍需空值缓存或布隆过滤器。</li>
+</ul>
+<p><strong>更好的做法</strong>：预热 + <strong>逻辑过期</strong>（热点 key 物理上不过期，靠 value 中的过期时间字段异步重建），活动结束后由定时任务或 TTL 统一清理。</p></div></article><article class="q" id="q20"><h3><a class="q-link" href="#q20">Redis 集群宕机有什么兜底方案？二级缓存场景下怎么避免雪崩？</a></h3><div class="a"><p class="lead"><strong>Redis 整体不可用时的兜底</strong></p>
+<ol>
+<li><strong>本地缓存兜底</strong>：Caffeine 中还有的热点数据继续提供服务，可以在故障时延长本地缓存的有效期，牺牲新鲜度保证可用。</li>
+<li><strong>熔断降级</strong>：Sentinel / Resilience4j 检测到 Redis 调用异常率过高时触发熔断，快速失败，避免线程被 Redis 超时拖住。</li>
+<li><strong>限流后读数据库</strong>：降级到数据库时必须严格限流，只放少量请求过去，否则会把数据库也一起打垮。</li>
+<li><strong>业务降级</strong>：非核心功能（点赞、推荐、排行榜）直接关闭或返回默认值；秒杀这类强依赖 Redis 的功能暂停，返回&quot;活动火爆，请稍后再试&quot;。</li>
+<li><strong>高可用部署</strong>：哨兵或 Cluster + 持久化，跨机房部署；更高要求下同城双活 / 异地多活，通过 DNS 或网关切换流量。</li>
+</ol>
+<p><strong>二级缓存下避免雪崩</strong></p>
+<ul>
+<li><strong>TTL 加随机偏移</strong>：Redis 和本地缓存的过期时间都加上随机值，避免同一批 key 同时过期；本地缓存的 TTL 要和 Redis 错开。</li>
+<li><strong>热点 key 不过期或逻辑过期</strong>，后台异步刷新；Caffeine 可用 <code>refreshAfterWrite</code>，到期后第一次访问时异步刷新、先返回旧值。</li>
+<li><strong>缓存重建加锁</strong>：同一个 key 只允许一个线程回源，其他线程等待或返回旧值。</li>
+<li><strong>预热</strong>：服务启动或发版后先加载热点数据，避免冷启动时所有节点本地缓存同时为空。</li>
+<li><strong>限流和熔断</strong>作为最后一道防线，保护数据库。</li>
+<li><strong>热点探测</strong>：用滑动窗口统计 key 的访问频率，识别出热点后提前延长其过期时间或推送到本地缓存。</li>
+</ul></div></article></section><section class="grp" id="g4"><h2 class="grp-title">Redis 高可用与分布式锁 <span class="cnt"><span class="n-all">4</span><span class="n-core">高频 0</span></span></h2><article class="q" id="q21"><h3><a class="q-link" href="#q21">Redis 集群有哪几种方式？哨兵的主观下线和客观下线是什么？怎么选领导哨兵和新主节点？</a></h3><div class="a"><p class="lead"><strong>三种部署方式</strong></p>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>解决的问题</th>
+<th>局限</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>主从复制</td>
+<td>数据备份、读写分离</td>
+<td>主节点故障需要人工切换</td>
+</tr>
+<tr>
+<td>哨兵 Sentinel</td>
+<td>在主从基础上实现监控、自动故障转移、通知客户端新主地址</td>
+<td>写能力和容量仍受限于单个主节点</td>
+</tr>
+<tr>
+<td>Cluster 分片集群</td>
+<td>16384 个哈希槽分布在多个主节点上，水平扩展容量和写性能，内置故障转移</td>
+<td>多 key 操作要求在同一个槽（用 hash tag <code>{}</code>），不支持多数据库</td>
+</tr>
+</tbody>
+</table>
+<p><strong>主观下线（SDOWN）</strong>：哨兵每秒向各实例发 <code>PING</code>，某实例在 <code>down-after-milliseconds</code> 内没有有效回复，该哨兵就认为它主观下线。这只是单个哨兵的判断，可能是它自己网络有问题。</p>
+<p><strong>客观下线（ODOWN）</strong>：<strong>只针对主节点</strong>。哨兵通过 <code>SENTINEL is-master-down-by-addr</code> 询问其他哨兵，认为下线的数量达到 <strong>quorum</strong>（一般设为哨兵数的一半加一，可配置）即判定客观下线。</p>
+<p><strong>选举领导哨兵（类 Raft）</strong>：候选者把纪元 <code>epoch</code> 加 1 请求投票，每个哨兵一个纪元只投一票、<strong>先到先得</strong>；得票<strong>既超过半数又不少于 quorum</strong> 的成为 Leader，否则进入下一纪元重选。所以哨兵至少 3 个且为奇数。</p>
+<p><strong>选新主节点</strong></p>
+<ol>
+<li><strong>过滤</strong>：排除已下线、与主节点断开超过 <code>down-after-milliseconds × 10</code>、<code>replica-priority</code> 为 0 的从节点。</li>
+<li><strong>优先级</strong>：<code>replica-priority</code> <strong>值越小越优先</strong>，默认 100。</li>
+<li><strong>复制偏移量</strong>：offset 最大的，数据最新。</li>
+<li><strong>run ID</strong>：字典序最小的。</li>
+</ol>
+<p><strong>故障转移</strong>：新主执行 <code>REPLICAOF NO ONE</code>，其他从节点改为复制新主，旧主恢复后成为从节点，并通过发布订阅通知客户端新地址。</p></div></article><article class="q" id="q22"><h3><a class="q-link" href="#q22">秒杀场景下 Redis 主从会有什么问题？</a></h3><div class="a"><p class="lead">核心问题都源于<strong>主从复制是异步的</strong>。</p>
+<ul>
+<li><strong>故障切换导致超卖</strong>：已扣减的库存未同步就宕机，新主上库存比实际多；一人一单 Set 中的 userId 同样可能丢失。</li>
+<li><strong>分布式锁丢失</strong>：加锁未同步就宕机，其他客户端在新主上又能加锁成功。</li>
+<li><strong>读写分离读到旧数据</strong>：从从节点读库存会因复制延迟判断错误。</li>
+<li><strong>脑裂</strong>：分区期间旧主仍接受写入，恢复后降为从节点并清空数据，期间写入全部丢失。</li>
+</ul>
+<p><strong>应对方式</strong></p>
+<ul>
+<li>秒杀 key <strong>读写只走主节点</strong>，扣减和校验放在同一个 Lua 脚本中原子执行。</li>
+<li>配置 <code>min-replicas-to-write 1</code>、<code>min-replicas-max-lag 10</code>，没有从节点及时确认就拒绝写入，减少（不能杜绝）丢失；关键写可用 <code>WAIT</code>，但仍不是强一致。</li>
+<li><strong>以数据库为最终防线</strong>：库存乐观锁 <code>stock &gt; 0</code>，订单表 <code>(user_id, voucher_id)</code> 唯一索引，再定时对账修复 Redis 库存。</li>
+<li><strong>分布式锁</strong>：可用 MultiLock；RedLock 依赖时钟、防不住 GC 停顿，Redisson 已将 <code>RedissonRedLock</code> 标记为废弃。严格互斥用 ZooKeeper / etcd 或 fencing token。</li>
+</ul></div></article><article class="q" id="q23"><h3><a class="q-link" href="#q23">一人一单的分布式锁是怎么演进的？</a></h3><div class="a"><p class="lead"><strong>1. 单机 synchronized</strong>：按用户加锁 <code>synchronized (userId.toString().intern())</code>，同一用户串行、不同用户并行。<code>intern()</code> 保证相同值的字符串是同一个对象，否则每次 <code>toString()</code> 都是新对象，锁不住。注意两点：锁要包住整个事务方法（先提交事务再释放锁）；事务方法要通过代理对象调用，避免自调用导致事务失效。</p>
+<p><strong>2. 集群下失效</strong>：多个 Tomcat 节点各有自己的 JVM 和锁监视器，同一用户的请求被负载到不同节点时会同时拿到锁，必须使用分布式锁。</p>
+<p><strong>3. 基于 Redis 的简单分布式锁</strong></p>
+<ul>
+<li>加锁：<code>SET lock:order:{userId} {threadFlag} NX EX 10</code>，一条命令原子地完成&quot;不存在才设置&quot;和设置过期时间。不能先 <code>SETNX</code> 再 <code>EXPIRE</code>，中间宕机会留下永不过期的锁。</li>
+<li><strong>误删问题</strong>：线程 1 业务阻塞超时，锁自动释放，线程 2 拿到锁；线程 1 执行完后把线程 2 的锁删了。解决：value 存线程标识（<code>UUID + 线程 ID</code>，UUID 区分不同 JVM），释放前判断是不是自己的锁。</li>
+<li><strong>判断与删除不是原子的</strong>：判断完是自己的锁后，正好发生 GC 停顿，期间锁过期被别人拿走，恢复后还是会误删。解决：用 Lua 脚本把&quot;判断 + 删除&quot;放在一起原子执行。</li>
+</ul>
+<pre><code class="language-lua">-- KEYS[1] 锁的 key，ARGV[1] 当前线程标识
+if redis.call('get', KEYS[1]) == ARGV[1] then
+    return redis.call('del', KEYS[1])
+end
+return 0
+</code></pre>
+<p><strong>4. 仍然存在的问题，于是换成 Redisson</strong></p>
+<ul>
+<li>不可重入：同一线程无法再次获取同一把锁。</li>
+<li>不可重试：获取失败直接返回，没有等待重试机制。</li>
+<li>超时释放：业务执行时间超过 TTL 时锁被提前释放，有安全隐患。</li>
+<li>主从一致性：主节点宕机时锁可能丢失。</li>
+</ul>
+<p>Redisson 分别用 Hash 结构计数实现<strong>可重入</strong>、用发布订阅 + 信号量实现<strong>等待重试</strong>、用<strong>看门狗</strong>自动续期、用 MultiLock 应对主从一致性问题。</p></div></article><article class="q" id="q24"><h3><a class="q-link" href="#q24">Redisson 看门狗机制是怎么实现自动续期的？可重入是怎么实现的？</a></h3><div class="a"><p class="lead">**看门狗（Watchdog）**解决&quot;业务执行时间不确定，锁的过期时间设短了会提前释放、设长了宕机后要等很久才释放&quot;的问题。</p>
+<ul>
+<li><strong>生效条件</strong>：只有在加锁时<strong>没有指定 leaseTime</strong>（如 <code>lock()</code>、<code>tryLock(waitTime, TimeUnit)</code>）才会启用。显式调用 <code>lock(10, TimeUnit.SECONDS)</code> 或 <code>tryLock(waitTime, leaseTime, unit)</code> 时不会自动续期，锁到时间就过期。</li>
+<li><strong>默认参数</strong>：锁的初始过期时间为 <code>lockWatchdogTimeout</code>，默认 <strong>30 秒</strong>；加锁成功后启动一个定时任务（基于 Netty 的 <code>HashedWheelTimer</code>），每隔 <code>lockWatchdogTimeout / 3</code> 即 <strong>10 秒</strong>检查一次：如果锁仍被当前线程持有，就用 Lua 脚本把过期时间重新设为 30 秒，然后安排下一次续期。</li>
+<li><strong>停止续期</strong>：调用 <code>unlock()</code> 时取消定时任务；如果客户端宕机，定时任务随之消失，锁最多 30 秒后自动过期，不会出现死锁。</li>
+<li>所以一定要在 <code>finally</code> 中 <code>unlock()</code>，并且只能由加锁的线程释放（否则抛 <code>IllegalMonitorStateException</code>）。</li>
+</ul>
+<p><strong>可重入</strong>：锁用 Hash 结构存储，key 为锁名，field 为 <code>UUID:threadId</code>，value 为重入次数。</p>
+<ul>
+<li>加锁 Lua：锁不存在则 <code>HINCRBY</code> 设为 1 并设置过期时间；存在且 field 是自己则计数加 1 并重置过期时间；否则返回锁的剩余 TTL。</li>
+<li>释放 Lua：计数减 1，减到 0 时删除 key，并 <code>PUBLISH</code> 一条解锁消息。</li>
+</ul>
+<p><strong>可重试</strong>：<code>tryLock(waitTime, ...)</code> 获取失败时不会忙等，而是订阅该锁的解锁频道，收到解锁消息或等待到锁的剩余 TTL 后再重试，直到超过 <code>waitTime</code>。</p></div></article></section><section class="grp has-core" id="g5"><h2 class="grp-title">秒杀与防超卖 <span class="cnt"><span class="n-all">4</span><span class="n-core">高频 1</span></span></h2><article class="q core" id="q25"><h3><a class="q-link" href="#q25">超卖怎么解决的？用乐观锁 CAS 还是 Redis + Lua？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">超卖的根因是&quot;查询库存&quot;和&quot;扣减库存&quot;不是原子操作：多个线程同时查到库存为 1，都去扣减，库存变成负数。</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>做法</th>
+<th>优点</th>
+<th>缺点</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>悲观锁</td>
+<td><code>synchronized</code> / 分布式锁串行化，或 <code>SELECT ... FOR UPDATE</code></td>
+<td>简单可靠</td>
+<td>串行执行，吞吐量低</td>
+<td>并发量不高</td>
+</tr>
+<tr>
+<td>数据库乐观锁</td>
+<td><code>UPDATE seckill_voucher SET stock = stock - 1 WHERE voucher_id = ? AND stock &gt; 0</code></td>
+<td>实现简单，数据库层面强一致</td>
+<td>高并发时所有请求打到数据库，行锁竞争激烈</td>
+<td>并发量中低</td>
+</tr>
+<tr>
+<td>Redis + Lua</td>
+<td>在 Redis 中原子判断并扣减库存，异步写入数据库</td>
+<td>纯内存操作，性能高</td>
+<td>Redis 与数据库是最终一致，需要处理同步、宕机、对账</td>
+<td>高并发秒杀</td>
+</tr>
+</tbody>
+</table>
+<p><strong>乐观锁的细节</strong>：版本号法或 CAS 法（<code>WHERE stock = 查询到的值</code>）要求数据没被改过，并发时 100 个请求只有 1 个成功，大量请求失败，库存卖不完。改为 <code>stock &gt; 0</code> 只要还有库存就能成功，失败率大大降低。InnoDB 执行这条 <code>UPDATE</code> 时会对该行加行锁，所以单条语句本身就是原子的。</p>
+<p><strong>项目的最终方案</strong>：Lua 脚本在 Redis 中原子完成&quot;库存判断 + 一人一单判断 + 扣减 + 记录用户 + 写入消息队列&quot;，异步下单时数据库仍保留 <code>stock &gt; 0</code> 的条件作为兜底。两层结合：Redis 挡住绝大部分流量，数据库保证最终不会超卖。</p></div></article><article class="q" id="q26"><h3><a class="q-link" href="#q26">Redis + Lua 防超卖的脚本怎么写？</a></h3><div class="a"><p class="lead"><strong>准备</strong>：新增秒杀券时把库存写入 Redis：<code>SET seckill:stock:{voucherId} 100</code>。</p>
+<p><strong>脚本逻辑</strong>：判断库存 → 判断用户是否已下单 → 扣减库存 → 记录用户 → 把订单信息写入 Stream 消息队列。返回 0 表示成功，1 表示库存不足，2 表示重复下单。</p>
+<pre><code class="language-lua">-- KEYS[1] 库存 key    seckill:stock:{voucherId}
+-- KEYS[2] 已下单用户  seckill:order:{voucherId}
+-- KEYS[3] 消息队列    stream.orders
+-- ARGV[1] voucherId  ARGV[2] userId  ARGV[3] orderId
+local stock = tonumber(redis.call('get', KEYS[1]))
+if stock == nil or stock &lt;= 0 then
+    return 1                                  -- 库存不足（key 不存在也视为不可售）
+end
+if redis.call('sismember', KEYS[2], ARGV[2]) == 1 then
+    return 2                                  -- 一人一单
+end
+redis.call('incrby', KEYS[1], -1)
+redis.call('sadd', KEYS[2], ARGV[2])
+redis.call('xadd', KEYS[3], '*', 'voucherId', ARGV[1], 'userId', ARGV[2], 'id', ARGV[3])
+return 0
+</code></pre>
+<pre><code class="language-java">Long r = stringRedisTemplate.execute(SECKILL_SCRIPT,
+        List.of(STOCK_KEY + voucherId, ORDER_KEY + voucherId, &quot;stream.orders&quot;),
+        voucherId.toString(), userId.toString(), String.valueOf(orderId));
+if (r != 0) return Result.fail(r == 1 ? &quot;库存不足&quot; : &quot;不能重复下单&quot;);
+return Result.ok(orderId);                    // 立即返回订单 ID，订单异步落库
+</code></pre>
+<p><strong>要点</strong></p>
+<ul>
+<li><strong>为什么用 Lua</strong>：Redis 单线程执行整个脚本，期间不会插入其他客户端的命令，&quot;判断 + 扣减&quot;是原子的；多条命令一次发送，也减少了网络往返。脚本预先加载（<code>DefaultRedisScript</code>），底层用 <code>EVALSHA</code> 执行。</li>
+<li><strong>所有写操作放在检查之后</strong>：Lua 脚本执行中途报错时，已执行的写命令<strong>不会回滚</strong>，所以先做完全部判断再写。</li>
+<li><strong><code>get</code> 不存在的 key 返回 false</strong>，<code>tonumber</code> 后是 nil，直接和数字比较会报错，要先判空。</li>
+<li><strong>Redis Cluster</strong>：脚本访问的所有 key 必须在同一个槽，应通过 <code>KEYS</code> 传入，并使用 hash tag 让它们落在同一节点，例如 <code>seckill:stock:{1001}</code>、<code>seckill:order:{1001}</code>。在脚本里拼接 key 的写法只适用于单机。</li>
+<li>用户的下单资格（活动是否开始、是否结束）在调用脚本之前校验，也可以把开始和结束时间放进 Redis 由脚本判断。</li>
+</ul></div></article><article class="q" id="q27"><h3><a class="q-link" href="#q27">秒杀下单怎么异步化？阻塞队列和 Redis Stream 怎么选？</a></h3><div class="a"><p class="lead"><strong>同步下单的问题</strong>：查询优惠券、判断库存、查询订单、扣减库存、创建订单全部串行访问数据库，还有分布式锁，耗时长、吞吐量低。</p>
+<p><strong>异步化思路</strong>：把&quot;有没有资格&quot;和&quot;真正下单&quot;拆开。资格判断由 Lua 在 Redis 中完成，成功后把订单信息（userId、voucherId、orderId）放入队列，立即返回订单 ID；后台线程从队列取出消息，写入数据库。</p>
+<p><strong>版本一：JVM 阻塞队列</strong></p>
+<ul>
+<li><code>BlockingQueue&lt;VoucherOrder&gt; orderTasks = new ArrayBlockingQueue&lt;&gt;(1024 * 1024)</code>，<code>@PostConstruct</code> 时向单线程线程池提交一个消费任务，循环 <code>take()</code> 后创建订单。</li>
+<li>问题：<strong>内存限制</strong>（队列占用 JVM 堆，容量有限，满了就丢或阻塞）、<strong>数据安全</strong>（服务宕机或重启时队列中的订单全部丢失；取出后处理失败也没有重试）、无法在多实例之间共享。</li>
+</ul>
+<p><strong>版本二：Redis Stream 消费者组（Redis 5.0+）</strong></p>
+<pre><code class="language-text">XGROUP CREATE stream.orders g1 0 MKSTREAM                              # 创建消费者组
+XREADGROUP GROUP g1 c1 COUNT 1 BLOCK 2000 STREAMS stream.orders &gt;      # 读取未消费的新消息
+XACK stream.orders g1 &lt;messageId&gt;                                       # 处理成功后确认
+XREADGROUP GROUP g1 c1 COUNT 1 STREAMS stream.orders 0                  # 读取 pending-list 中已读未确认的消息
+</code></pre>
+<ul>
+<li>消费流程：循环阻塞读取 <code>&gt;</code> 的新消息 → 创建订单 → <code>XACK</code>。出现异常时进入 pending-list 处理逻辑，用 ID <code>0</code> 读取已投递但未确认的消息并重试，直到 pending-list 为空。</li>
+<li>优点：消息持久化（依赖 Redis 持久化）；消费者组内多个消费者竞争消费，可水平扩展；有 ACK 和 pending-list，消费失败可重试；支持阻塞读取和消息回溯。</li>
+<li>局限：可靠性依赖 Redis 持久化和主从（主从切换可能丢消息）；没有死信队列、延迟消息等完善功能。</li>
+</ul>
+<p><strong>版本三：专业 MQ（RocketMQ / Kafka / RabbitMQ）</strong>：更大的流量、更严格的可靠性要求时使用，消息持久化、多副本、失败重试、死信队列、事务消息都更成熟。</p></div></article><article class="q" id="q28"><h3><a class="q-link" href="#q28">Lua 脚本执行出现异常，或 Redis 突然宕机，数据一致性怎么保证？</a></h3><div class="a"><p class="lead"><strong>Lua 执行异常</strong>：脚本执行是原子的（不会被其他命令打断），但<strong>不是事务性的</strong>：中途报错时，前面已执行的写命令不会回滚。所以：</p>
+<ul>
+<li>先校验后写入，把可能出错的逻辑（类型转换、参数判空）全放在写操作之前，脚本上线前充分测试。</li>
+<li>写操作尽量少、顺序合理，例如先扣库存再写用户集合，即使后续失败，结果也只是&quot;少卖&quot;而不会&quot;超卖&quot;，再由对账补偿。</li>
+<li>脚本执行超过 <code>busy-reply-threshold</code>（旧名 <code>lua-time-limit</code>，默认 5 秒）后，Redis 开始对其他命令返回 BUSY；没有执行过写操作的脚本可以 <code>SCRIPT KILL</code>，执行过写操作的只能 <code>SHUTDOWN NOSAVE</code>。所以脚本必须短小。</li>
+</ul>
+<p><strong>Redis 宕机</strong></p>
+<ul>
+<li><strong>持久化</strong>：开启 AOF，<code>appendfsync everysec</code> 最多丢失约 1 秒的数据；Redis 4.0+ 开启 RDB + AOF 混合持久化，加快重启恢复速度。</li>
+<li><strong>高可用</strong>：哨兵或 Cluster 自动故障转移；配置 <code>min-replicas-to-write</code> 减少切换时的数据丢失。</li>
+<li><strong>丢失后的影响分析</strong>：如果丢的是&quot;扣库存 + 写用户集合&quot;，Redis 库存比实际多，可能多卖；如果丢的是 Stream 中的消息，用户拿到了订单 ID 但订单没有落库。</li>
+<li><strong>数据库兜底</strong>：落库时数据库仍用 <code>stock &gt; 0</code> 扣减（防止超卖），订单表 <code>(user_id, voucher_id)</code> 唯一索引（防止一人多单）。</li>
+<li><strong>对账补偿</strong>：恢复后用数据库中的订单数据重建 Redis 库存和已下单用户集合；定时任务比对 Redis 与 MySQL，修复差异；对&quot;已返回成功但订单未落库&quot;的情况通知用户或自动补单。</li>
+<li><strong>幂等</strong>：每笔订单的 orderId 在进入 Redis 前就生成，重试、重复消费时都以 orderId 去重。</li>
+</ul></div></article></section><section class="grp has-core" id="g6"><h2 class="grp-title">异步下单的可靠性 <span class="cnt"><span class="n-all">5</span><span class="n-core">高频 1</span></span></h2><article class="q" id="q29"><h3><a class="q-link" href="#q29">库存扣减和订单创建在同一个消费者里处理吗？其中一步失败怎么回滚？</a></h3><div class="a"><p class="lead"><strong>项目中的分工</strong></p>
+<ul>
+<li><strong>Redis 层（同步，在请求线程中）</strong>：Lua 脚本扣减 Redis 库存、记录已下单用户、写入消息，立即返回结果。</li>
+<li><strong>数据库层（异步，在同一个消费者里）</strong>：消费者在<strong>同一个本地事务</strong>中完成 MySQL 库存扣减（<code>stock = stock - 1 WHERE stock &gt; 0</code>）和订单插入。两者在同一个数据库，用 <code>@Transactional</code> 就能保证要么都成功、要么都回滚，不需要分布式事务。</li>
+</ul>
+<p><strong>失败的处理</strong></p>
+<ul>
+<li><strong>数据库事务内任一步失败</strong>：事务整体回滚，消息不 ACK，留在 pending-list（或 MQ 重试队列）中重试。</li>
+<li><strong>重试多次仍失败</strong>（如库存已不足、数据异常）：进入死信，并<strong>补偿 Redis</strong>：库存加回 1，从已下单集合中移除该用户，让名额回到池子里；同时通知用户下单失败。补偿操作也要幂等，例如以 orderId 记录是否已补偿。</li>
+<li><strong>订单创建成功但用户未支付</strong>：属于另一条链路，用延迟消息（RocketMQ 延时消息、RabbitMQ TTL + 死信）或定时任务在超时（如 15 分钟）后关闭订单，在事务中回补 MySQL 库存，再回补 Redis 库存。</li>
+</ul>
+<p><strong>如果库存服务和订单服务拆成了两个微服务</strong>，就变成了分布式事务问题，常用方案：</p>
+<ul>
+<li><strong>本地消息表</strong>：订单服务在本地事务中同时写订单和一条&quot;待扣库存&quot;消息，定时任务扫描投递，库存服务幂等消费。</li>
+<li><strong>RocketMQ 事务消息</strong>：先发半消息 → 执行本地事务 → 根据结果提交或回滚消息；Broker 通过回查确认未决状态。</li>
+<li><strong>TCC</strong>：库存的 Try 阶段冻结库存，Confirm 正式扣减，Cancel 释放冻结。</li>
+<li><strong>Seata AT 模式</strong>：自动生成回滚日志，适合对性能要求不高的场景。</li>
+</ul></div></article><article class="q core" id="q30"><h3><a class="q-link" href="#q30">消费端出现重复消费等幂等问题怎么办？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead"><strong>为什么会重复</strong>：MQ 一般只保证 at least once。生产者重试、消费者处理成功但 ACK 前宕机、Redis Stream 中 pending 消息被重新读取、Rebalance 等都会导致同一条消息被消费多次，结果是重复创建订单或重复扣减库存。</p>
+<p><strong>核心思路</strong>：给每笔业务一个全局唯一 ID（秒杀中就是 Lua 调用前生成的 orderId），以它为依据去重。</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>做法</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>唯一索引</td>
+<td>订单表主键为 orderId，并对 <code>(user_id, voucher_id)</code> 建唯一索引，重复插入时捕获 <code>DuplicateKeyException</code> 视为成功</td>
+<td>订单创建，最可靠的兜底</td>
+</tr>
+<tr>
+<td>先查后写</td>
+<td>消费前按 orderId 查询，已存在就直接 ACK；需要配合唯一索引，因为并发时查询和插入之间有间隙</td>
+<td>降低异常开销</td>
+</tr>
+<tr>
+<td>状态机</td>
+<td><code>UPDATE ... SET status = 2 WHERE id = ? AND status = 1</code>，状态只能单向流转，重复执行影响行数为 0</td>
+<td>订单状态变更</td>
+</tr>
+<tr>
+<td>乐观锁 / 条件更新</td>
+<td><code>stock = stock - 1 WHERE id = ? AND stock &gt; 0</code>，或使用版本号</td>
+<td>库存扣减</td>
+</tr>
+<tr>
+<td>去重表 / Redis SETNX</td>
+<td>以消息 ID 为 key 执行 <code>SET NX EX</code>，成功才处理；或建去重表，与业务写入放在同一个事务中</td>
+<td>通用、高并发</td>
+</tr>
+</tbody>
+</table>
+<p><strong>项目中的组合</strong>：</p>
+<ol>
+<li>消息携带 orderId。</li>
+<li>消费时开启本地事务：插入订单（主键 + 唯一索引防重）与扣减库存在同一事务中。</li>
+<li>插入时如果唯一键冲突，说明已处理过，整个事务回滚（库存不会被重复扣减），然后直接 ACK。</li>
+<li>正常完成后 ACK。</li>
+</ol>
+<p>关键在于&quot;判重&quot;和&quot;业务写入&quot;要在同一个事务里，或者依赖数据库约束，单独用 Redis 判重在&quot;判重成功但业务失败&quot;时会丢消息，需要在失败时删除去重标记。</p></div></article><article class="q" id="q31"><h3><a class="q-link" href="#q31">消息的生产和消费流程是怎样的？如何保证消息不丢失、不重复消费？</a></h3><div class="a"><p class="lead">以 RocketMQ 为例（项目中如果使用 Redis Stream，答法类似：持久化 + ACK + pending-list 重试）。</p>
+<p><strong>流程</strong></p>
+<ol>
+<li><strong>生产者</strong>从 NameServer 获取 Topic 的路由信息，选择一个 MessageQueue 发送给对应的 Broker。发送方式有同步（等待 Broker 确认）、异步（回调）、单向（不关心结果，可能丢失）。</li>
+<li><strong>Broker</strong> 把所有消息顺序写入 CommitLog，再异步构建 ConsumeQueue（消费索引）和 IndexFile；根据配置同步或异步刷盘，主从之间同步或异步复制。</li>
+<li><strong>消费者</strong>（Push 模式本质是长轮询拉取）从 Broker 拉取消息，同一消费者组内按队列分配实现负载均衡，处理成功后提交消费位点 offset；失败则返回 <code>RECONSUME_LATER</code>，进入重试队列，超过最大次数（默认 16）进入死信队列。</li>
+</ol>
+<p><strong>不丢失：三个环节都要保证</strong></p>
+<table>
+<thead>
+<tr>
+<th>环节</th>
+<th>措施</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>生产端</td>
+<td>同步发送并检查结果，失败重试；或使用事务消息；发送失败落库，由定时任务补发</td>
+</tr>
+<tr>
+<td>Broker</td>
+<td>同步刷盘 <code>flushDiskType = SYNC_FLUSH</code>；主从同步复制（<code>SYNC_MASTER</code>）或使用 DLedger 多副本</td>
+</tr>
+<tr>
+<td>消费端</td>
+<td>业务处理成功后才返回 <code>CONSUME_SUCCESS</code>；不要在消费线程中再异步处理后立即返回成功</td>
+</tr>
+</tbody>
+</table>
+<p><strong>不重复</strong>：RocketMQ 和 Kafka 默认都只保证 at least once（Kafka 的幂等生产者和事务能实现 exactly once 语义，但仅限于 Kafka 内部的读写链路），所以重复消费无法完全避免，<strong>必须在消费端做幂等</strong>：唯一业务键 + 唯一索引、状态机、去重表等，见上一题。</p></div></article><article class="q" id="q32"><h3><a class="q-link" href="#q32">秒杀结束后 Redis 库存同步回 MySQL，部分失败怎么办？</a></h3><div class="a"><p class="lead">先澄清：在项目的设计中，每个订单的异步消费都会<strong>同时扣减 MySQL 库存</strong>，MySQL 本身就是逐笔更新的，不依赖&quot;活动结束后一次性同步&quot;。活动结束后要做的是<strong>对账</strong>，确认两边一致。</p>
+<p>如果采用&quot;Redis 扣减、结束后批量回写 MySQL&quot;的设计，部分失败的处理思路是<strong>记录状态 + 幂等重试 + 对账兜底</strong>：</p>
+<ul>
+<li><strong>以订单为准，而不是以 Redis 数字为准</strong>：MySQL 库存应等于&quot;初始库存 − 有效订单数&quot;，按订单表计算并更新，结果天然幂等，重复执行也不会扣多。</li>
+<li><strong>记录同步状态</strong>：每个券或商品一条同步记录（待同步 / 成功 / 失败），只重试失败的部分。</li>
+<li><strong>重试</strong>：失败项进入重试队列，采用指数退避（如 1 分钟、5 分钟、15 分钟），每次重试都是幂等的&quot;设置为某值&quot;或&quot;按订单重算&quot;，而不是&quot;再减一次&quot;。</li>
+<li><strong>死信与告警</strong>：超过重试次数进入死信，发出告警并人工介入。</li>
+<li><strong>定时全量对账</strong>：比对 Redis 已下单用户集合、Redis 库存、MySQL 订单数和 MySQL 库存，自动修复差异；对&quot;Redis 记录了用户但 MySQL 没有订单&quot;的数据补单或通知用户。</li>
+<li>对账完成后清理 Redis 中的秒杀 key。</li>
+</ul></div></article><article class="q" id="q33"><h3><a class="q-link" href="#q33">秒杀下单异步化后，怎么让用户及时知道下单结果？</a></h3><div class="a"><p class="lead">异步后接口只返回&quot;排队中&quot;和 orderId，真正的结果要另外通知。</p>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>做法</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>前端轮询</td>
+<td>每 1 秒左右调用结果查询接口，查询订单是否已落库</td>
+<td>实现最简单；请求量大，查询要走缓存</td>
+</tr>
+<tr>
+<td>结果缓存</td>
+<td>消费者处理完把结果写入 Redis，如 <code>seckill:result:{orderId}</code>（TTL 几分钟），查询接口只读 Redis</td>
+<td>配合轮询，避免查数据库</td>
+</tr>
+<tr>
+<td>WebSocket / SSE 推送</td>
+<td>处理完成后服务端主动推送</td>
+<td>实时性好；要维护长连接，多实例时需要通过 MQ 或 Redis Pub/Sub 把消息路由到持有该连接的节点</td>
+</tr>
+<tr>
+<td>站外通知</td>
+<td>短信、App 推送、站内信</td>
+<td>用户离开页面也能收到，作为补充</td>
+</tr>
+</tbody>
+</table>
+<p><strong>推荐组合</strong>：Lua 校验通过的那一刻，用户的抢购资格就已经确定，可以先提示&quot;抢购成功，订单处理中&quot;；前端以 1 秒间隔轮询结果缓存，最多轮询 5 到 10 次，超时后提示&quot;请稍后到订单列表查看&quot;；落库失败时补偿 Redis 库存并通知用户。</p></div></article></section><section class="grp" id="g7"><h2 class="grp-title">防刷限流与高并发架构 <span class="cnt"><span class="n-all">5</span><span class="n-core">高频 0</span></span></h2><article class="q" id="q34"><h3><a class="q-link" href="#q34">刷券请求有什么特征？限流规则怎么针对性地拦截？</a></h3><div class="a"><p class="lead"><strong>刷券请求的特征</strong></p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>表现</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>频率</td>
+<td>单用户 QPS 远超人类手速，例如每秒多次</td>
+</tr>
+<tr>
+<td>来源</td>
+<td>大量请求来自同一 IP 或 IP 段、机房 IP、代理 IP</td>
+</tr>
+<tr>
+<td>设备</td>
+<td>同一设备频繁切换账号，或设备指纹异常（模拟器、root、无头浏览器）</td>
+</tr>
+<tr>
+<td>账号</td>
+<td>新注册、批量注册的小号，没有正常浏览和历史订单</td>
+</tr>
+<tr>
+<td>行为</td>
+<td>请求间隔非常均匀；跳过详情页直接调用下单接口；在活动开始的第一毫秒就到达</td>
+</tr>
+<tr>
+<td>参数</td>
+<td>参数固定不变，缺少前端埋点，签名或 Referer 不合法</td>
+</tr>
+</tbody>
+</table>
+<p><strong>分层拦截</strong></p>
+<ol>
+<li><strong>前端</strong>：按钮在活动开始前置灰，点击后短时间内禁用；滑块或点选验证码；秒杀地址在活动开始后才下发（隐藏接口），带一次性 token。</li>
+<li><strong>网关 / Nginx</strong>：按 IP 限流（<code>limit_req</code>，漏桶）；黑名单 IP 直接拒绝；Sentinel 网关限流，按参数（userId、IP）维度做热点参数限流。</li>
+<li><strong>接口层</strong>：
+<ul>
+<li>用户维度：如每个用户每秒最多 1 次、每分钟最多 5 次，用 Redis <code>INCR</code> + <code>EXPIRE</code> 的固定窗口，或 ZSet 实现的滑动窗口计数。</li>
+<li>设备维度：按设备 ID 限流，同一设备关联的账号数量限制。</li>
+<li>活动维度：活动总 QPS 限流，保护后端（令牌桶，如 Guava <code>RateLimiter</code> 或 Redisson <code>RRateLimiter</code>）。</li>
+<li>接口签名（时间戳 + nonce + 签名）防止篡改和重放。</li>
+</ul>
+</li>
+<li><strong>业务层兜底</strong>：一人一单（Redis Set + 数据库唯一索引）；超过阈值的可疑请求触发二次验证码，而不是直接拒绝，减少误伤。</li>
+<li><strong>风控</strong>：基于账号画像、设备、IP 信誉、行为序列做实时评分，高风险请求拦截，事后还可以对异常订单回收券。</li>
+</ol></div></article><article class="q" id="q35"><h3><a class="q-link" href="#q35">秒杀中怎么防止有人用程序恶意刷优惠券？</a></h3><div class="a"><p class="lead">目标是让脚本&quot;拿不到地址、过不了验证、刷不出数量、抢到也会被回收&quot;。</p>
+<ul>
+<li><strong>提高门槛</strong>：下单前必须登录并完成验证码；秒杀接口地址在活动开始后动态生成（如 <code>/seckill/{path}/order</code>，path 与用户绑定、一次有效），脚本无法提前构造请求。</li>
+<li><strong>限制频率</strong>：IP、用户、设备多维度限流；短时间内频繁请求的账号自动拉黑一段时间。</li>
+<li><strong>限制数量</strong>：一人一单或一人限 N 张，在 Redis Lua 中原子校验，并由数据库唯一索引兜底；同一手机号、同一设备、同一收货地址视为同一个人。</li>
+<li><strong>防重放</strong>：请求带时间戳和随机数并签名，服务端校验签名有效期，nonce 在 Redis 中只能使用一次。</li>
+<li><strong>风控与事后处理</strong>：识别黑产账号（注册时间、行为轨迹、设备指纹）；领券后异步审核，异常领取进行回收或冻结；对异常订单进行对账，取消后回补库存。</li>
+</ul></div></article><article class="q" id="q36"><h3><a class="q-link" href="#q36">要实现一个支持百万级用户的秒杀系统，有哪些措施？</a></h3><div class="a"><p class="lead">核心思想是<strong>层层过滤</strong>：越往后请求越少，只有真正有资格的请求才到达数据库。</p>
+<ol>
+<li><strong>前端与接入层</strong>：页面静态化，静态资源上 CDN；按钮置灰、倒计时以服务器时间为准；验证码把瞬时峰值拉平；Nginx 限流和黑名单。</li>
+<li><strong>网关限流</strong>：Sentinel 网关限流、热点参数限流；超过系统容量的请求直接返回&quot;活动火爆&quot;。</li>
+<li><strong>独立部署</strong>：秒杀服务与普通业务隔离，单独部署和扩容，避免秒杀流量拖垮主站。</li>
+<li><strong>缓存预热</strong>：活动开始前把商品、库存加载到 Redis 和本地缓存；本地缓存可以加一个&quot;已售罄&quot;标记，售罄后不再访问 Redis。</li>
+<li><strong>库存原子扣减</strong>：Redis + Lua 原子判断库存和一人一单；热点商品的库存可以分段（拆成多个 key 分散到不同分片）。</li>
+<li><strong>异步削峰</strong>：抢到资格后写入 MQ，后端按数据库能承受的速度消费下单。</li>
+<li><strong>数据库保护</strong>：乐观锁 <code>stock &gt; 0</code> 兜底；订单表唯一索引；必要时分库分表、读写分离。</li>
+<li><strong>防刷</strong>：多维度限流、风控、一人一单。</li>
+<li><strong>高可用</strong>：Redis 集群 + 持久化、MQ 多副本；熔断降级预案；提前全链路压测，确定各层容量。</li>
+<li><strong>最终一致</strong>：对账任务、超时未支付订单自动关闭并回补库存。</li>
+</ol></div></article><article class="q" id="q37"><h3><a class="q-link" href="#q37">秒杀上线后流量增长 100 倍，现有架构哪里会出问题？怎么重构？</a></h3><div class="a"><p class="lead"><strong>先定位瓶颈</strong>（按请求链路从前往后，结合压测和监控）</p>
+<ul>
+<li><strong>数据库</strong>：连接池耗尽、行锁竞争（同一张券的库存行）、慢查询引发连锁超时，这是最先出问题的地方。</li>
+<li><strong>Redis</strong>：单个热点 key 打满一个分片的 CPU 或带宽；单实例内存和连接数不够；主从切换时丢数据。</li>
+<li><strong>应用服务</strong>：Tomcat 线程池被慢请求占满，请求排队；JVM 阻塞队列内存溢出。</li>
+<li><strong>异步链路</strong>：消息堆积，下单结果延迟很长；消费速度跟不上。</li>
+<li><strong>一致性</strong>：本地缓存在多节点间的同步问题被放大。</li>
+</ul>
+<p><strong>重构方向</strong></p>
+<ol>
+<li><strong>入口削峰</strong>：CDN、页面静态化、前端按钮控制和验证码；网关多维度限流，超过容量的请求快速失败。</li>
+<li><strong>服务水平扩展</strong>：应用无状态化（登录态已在 Redis），用 K8s 按 CPU / QPS 自动扩容；秒杀服务独立拆分部署。</li>
+<li><strong>缓存层</strong>：Redis 改为 Cluster 分片，热点 key 拆分或复制多份；加上 Caffeine 本地缓存和&quot;售罄标记&quot;，减少对 Redis 的访问。</li>
+<li><strong>消息队列</strong>：Redis Stream 替换为 RocketMQ / Kafka，增加分区和消费者实例，消费端批量写库。</li>
+<li><strong>数据库</strong>：读写分离；订单表按 userId 分库分表；库存热点行可以拆分为多行分别扣减，或者合并请求批量扣减。</li>
+<li><strong>熔断降级</strong>：Sentinel 熔断对下游的调用；非核心功能（推荐、评论、点赞）降级关闭，资源让给核心链路。</li>
+<li><strong>容量规划与压测</strong>：全链路压测确定每一层的极限，设定限流阈值；准备好降级开关和应急预案。</li>
+</ol>
+<p>回答时要先指出具体的瓶颈，再说对应的手段，而不是罗列技术名词。</p></div></article><article class="q" id="q38"><h3><a class="q-link" href="#q38">做过分库分表吗？怎么设计？</a></h3><div class="a"><p class="lead">如果项目没有实际做过，可以说明&quot;当前数据量单表足够，但考虑过扩展方案&quot;，然后讲设计思路。</p>
+<p><strong>什么时候需要</strong>：单表数据量达到千万级（经验值，取决于行大小和索引）、B+ 树层级增加导致查询变慢，或者单库的写入 QPS、连接数、磁盘成为瓶颈。在此之前优先考虑索引优化、读写分离、归档冷数据。</p>
+<p><strong>拆分方式</strong></p>
+<ul>
+<li><strong>垂直拆分</strong>：按业务拆库（用户库、商户库、订单库）；按字段拆表，把大字段或不常用字段拆出去。</li>
+<li><strong>水平拆分</strong>：同一张表的数据按分片键分布到多个库表中。</li>
+</ul>
+<p><strong>订单表的设计示例</strong></p>
+<ul>
+<li><strong>分片键选 user_id</strong>：最常见的查询是&quot;我的订单&quot;，同一用户的订单落在同一个分片，避免跨库查询。商家维度的查询通过异构索引表或同步到 Elasticsearch 解决。</li>
+<li><strong>路由算法</strong>：<code>hash(user_id) % 分片数</code>，分布均匀；或者按范围、按时间分片，便于扩容和归档，但可能产生热点。</li>
+<li><strong>基因法</strong>：把 user_id 的低几位嵌入订单号，按订单号查询时也能直接定位分片。</li>
+<li><strong>全局 ID</strong>：不能使用自增主键，改用雪花算法或号段模式，项目中的 Redis 全局 ID 生成器也可以。</li>
+<li><strong>中间件</strong>：ShardingSphere-JDBC（客户端分片，性能好）或 MyCat / ShardingSphere-Proxy（代理模式）。</li>
+</ul>
+<p><strong>带来的问题</strong>：跨分片的 join、排序、分页（需要归并或改用 ES）；分布式事务；扩容时的数据迁移（可以按 2 的倍数扩容，或使用一致性哈希减少迁移量）；运维复杂度提高。</p></div></article></section><section class="grp" id="g8"><h2 class="grp-title">社交与位置功能 <span class="cnt"><span class="n-all">5</span><span class="n-core">高频 0</span></span></h2><article class="q" id="q39"><h3><a class="q-link" href="#q39">附近的商户怎么实现？比如用户在天安门，查看附近的店铺</a></h3><div class="a"><p class="lead">用 <strong>Redis GEO</strong>。GEO 底层就是一个 ZSet：把经纬度通过 <strong>GeoHash</strong> 编码为 52 位整数作为 score，地理位置相近的点编码也相近，所以可以通过 score 范围查询快速找到附近的点。</p>
+<p><strong>存储</strong>：按商户类型分组，每种类型一个 key，member 为商户 ID：</p>
+<pre><code class="language-text">GEOADD shop:geo:{typeId} 116.397 39.908 1001     # 经度在前，纬度在后
+</code></pre>
+<p><strong>查询</strong>（Redis 6.2+ 推荐使用 <code>GEOSEARCH</code>，<code>GEORADIUS</code> 已被标记为废弃）：</p>
+<pre><code class="language-text">GEOSEARCH shop:geo:1 FROMLONLAT 116.397 39.908 BYRADIUS 5 km ASC COUNT 10 WITHDIST
+</code></pre>
+<pre><code class="language-java">GeoResults&lt;RedisGeoCommands.GeoLocation&lt;String&gt;&gt; results = stringRedisTemplate.opsForGeo().search(
+        &quot;shop:geo:&quot; + typeId,
+        GeoReference.fromCoordinate(x, y),
+        new Distance(5000),
+        RedisGeoCommands.GeoSearchCommandArgs.newGeoSearchArgs().includeDistance().limit(end));
+</code></pre>
+<p><strong>项目中的流程</strong></p>
+<ol>
+<li>启动时或通过定时任务，按类型把所有商户的坐标批量导入 GEO（数据量大时用 pipeline 分批写入）。</li>
+<li>前端传入用户的经纬度、商户类型和页码；没有坐标时退化为按数据库普通分页查询。</li>
+<li><code>GEOSEARCH</code> 查出距离由近到远的 0 到 <code>end</code> 条（<code>end = current × pageSize</code>），在代码中跳过前 <code>from</code> 条实现分页（GEO 不支持 offset，只能查到第 end 条再截取）。</li>
+<li>根据商户 ID 列表批量查询数据库，用 <code>ORDER BY FIELD(id, ...)</code> 保持距离顺序，并把距离设置到返回对象中。</li>
+</ol>
+<p><strong>注意点</strong>：商户坐标变更时要同步更新 GEO；GEO 只存 ID 和坐标，详情仍然查缓存或数据库；GeoHash 有精度误差，结果是近似的，适合&quot;附近店铺&quot;这种场景；全国范围的大量商户应按城市或类型拆分 key，避免 bigkey。</p></div></article><article class="q" id="q40"><h3><a class="q-link" href="#q40">点赞和点赞排行榜怎么实现？</a></h3><div class="a"><p class="lead"><strong>需求</strong>：同一用户对同一篇笔记只能点赞一次，再次点击取消点赞；详情页展示最早点赞的前 5 个用户。</p>
+<p><strong>数据结构选择</strong>：一开始可以用 Set（<code>SISMEMBER</code> 判断是否点过赞），但 Set 无序，做不了&quot;按点赞时间排序&quot;，所以改用 <strong>ZSet</strong>：key 为 <code>blog:liked:{blogId}</code>，member 为 userId，score 为点赞时间戳。</p>
+<p><strong>流程</strong></p>
+<ul>
+<li>点赞 / 取消：<code>ZSCORE</code> 判断当前用户是否已点赞（ZSet 没有 <code>ZISMEMBER</code>，用 <code>ZSCORE</code> 返回值是否为 null 判断）。未点赞：数据库 <code>liked = liked + 1</code>，成功后 <code>ZADD</code>；已点赞：数据库 <code>liked = liked - 1</code>，成功后 <code>ZREM</code>。</li>
+<li>排行榜：<code>ZRANGE blog:liked:{blogId} 0 4</code> 取最早点赞的 5 个 userId，再到数据库批量查询用户。用 <code>WHERE id IN (...)</code> 查询时数据库会按主键顺序返回，需要加 <code>ORDER BY FIELD(id, 5, 1, 3...)</code> 保持点赞顺序。</li>
+<li>查询笔记时，用 <code>ZSCORE</code> 判断当前登录用户是否已点赞，用于前端高亮。</li>
+</ul>
+<p><strong>注意点</strong>：数据库更新成功后再操作 Redis，保证计数一致；&quot;判断 + 修改&quot;并发时可能重复点赞，可以用 Lua 脚本或在数据库中建 <code>(user_id, blog_id)</code> 点赞记录表的唯一索引兜底；点赞量很大的热门内容可以只在 Redis 计数，定时批量回写数据库。</p></div></article><article class="q" id="q41"><h3><a class="q-link" href="#q41">关注、共同关注和 Feed 流是怎么做的？滚动分页怎么实现？</a></h3><div class="a"><p class="lead"><strong>关注与共同关注</strong>：关注关系存表 <code>tb_follow</code>，同时写入 Redis Set <code>follows:{userId}</code>；共同关注用 <code>SINTER follows:{me} follows:{other}</code> 求交集。</p>
+<p><strong>Feed 流</strong>：项目采用 Timeline（按时间排序），不做智能推荐。三种实现：</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>做法</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>拉模式（读扩散）</td>
+<td>发帖只写自己的发件箱，读时拉取所有关注者的发件箱并合并排序</td>
+<td>节省内存，写入简单</td>
+<td>读取延迟高，关注很多人时很慢</td>
+</tr>
+<tr>
+<td>推模式（写扩散）</td>
+<td>发帖时推送到所有粉丝的收件箱</td>
+<td>读取快，延迟低</td>
+<td>大 V 粉丝多时写入量巨大，内存占用高</td>
+</tr>
+<tr>
+<td>推拉结合</td>
+<td>普通用户推模式；大 V 对活跃粉丝推送，对普通粉丝改为拉取</td>
+<td>兼顾两者</td>
+<td>实现复杂</td>
+</tr>
+</tbody>
+</table>
+<p>项目用户量不大，采用<strong>推模式</strong>：发布笔记时把笔记 ID 写入每个粉丝的收件箱 ZSet <code>feed:{fanId}</code>，score 为发布时间戳。</p>
+<p><strong>为什么不用下标分页</strong>：翻页期间有新内容插入，下标整体后移，下一页会重复。所以用<strong>滚动分页</strong>：记住上一页最后一条的 score，从它之后继续查。</p>
+<pre><code class="language-text">ZREVRANGEBYSCORE feed:{userId} {max} 0 WITHSCORES LIMIT {offset} 3
+</code></pre>
+<ul>
+<li>第一次：<code>max</code> 为当前时间戳，<code>offset</code> 为 0。</li>
+<li>后续：<code>max</code> 为上一页最小时间戳 minTime，<code>offset</code> 为上一页中 score <strong>等于 minTime 的条数</strong>，跳过时间戳相同、已返回的数据。</li>
+<li>接口返回 <code>List&lt;Blog&gt;</code>、<code>minTime</code>、<code>offset</code>，前端下次带回。</li>
+</ul></div></article><article class="q" id="q42"><h3><a class="q-link" href="#q42">用户签到怎么实现？连续签到天数怎么统计？</a></h3><div class="a"><p class="lead">用 <strong>BitMap</strong>：每个用户每个月一个 key，<code>sign:{userId}:{yyyyMM}</code>，一个月最多 31 天，只需要 31 个 bit（4 字节）。同样的数据存数据库表，每次签到都是一行，1000 万用户一年就有几十亿行。BitMap 底层是 String，最大 512 MB，即 2^32 个 bit。</p>
+<p><strong>签到</strong>：<code>SETBIT sign:1010:202611 {dayOfMonth - 1} 1</code>（offset 从 0 开始，所以 1 号对应 offset 0）。</p>
+<p><strong>统计本月截至今天的连续签到天数</strong></p>
+<ol>
+<li>用 <code>BITFIELD sign:1010:202611 GET u{dayOfMonth} 0</code> 取出从 1 号到今天的所有 bit，得到一个无符号十进制数。</li>
+<li>从最低位（今天）开始往前，与 1 做按位与：结果为 1 说明当天签到了，计数加 1，然后右移一位继续判断；遇到 0（未签到）就停止。</li>
+</ol>
+<pre><code class="language-java">List&lt;Long&gt; result = stringRedisTemplate.opsForValue().bitField(key,
+        BitFieldSubCommands.create().get(BitFieldSubCommands.BitFieldType.unsigned(dayOfMonth)).valueAt(0));
+long num = result.get(0);
+int count = 0;
+while ((num &amp; 1) == 1) {   // 今天没签到时直接返回 0
+    count++;
+    num &gt;&gt;&gt;= 1;
+}
+</code></pre>
+<p><strong>其他统计</strong>：<code>BITCOUNT</code> 统计本月总签到天数；<code>GETBIT</code> 判断某天是否签到；<code>BITPOS key 1</code> 找到本月第一次签到的日期。跨月的连续签到需要把上个月的 key 也取出来接着判断。</p></div></article><article class="q" id="q43"><h3><a class="q-link" href="#q43">UV 统计怎么做？为什么用 HyperLogLog？</a></h3><div class="a"><p class="lead"><strong>UV（Unique Visitor）</strong> 是独立访客数，同一用户一天内多次访问只算一次，需要去重；PV（Page View）是页面访问量，直接计数即可。</p>
+<p>UV 用 Set 精确去重，用户量大时内存会爆炸；用 <strong>HyperLogLog（HLL）</strong>，是一种基于概率的基数估计算法：</p>
+<ul>
+<li>每个 key <strong>最多只占 12 KB</strong> 内存（数据量小时用稀疏编码，更省），就能统计接近 2^64 个不同元素的基数。</li>
+<li>存在误差，<strong>标准误差约 0.81%</strong>，对 UV 这种统计类指标完全可以接受。</li>
+<li>只能统计数量，不能取出元素本身，也不能判断某个元素是否存在。</li>
+</ul>
+<p><strong>命令</strong></p>
+<pre><code class="language-text">PFADD uv:shop:1001:20261106 user1 user2 user3    # 添加访问用户，重复添加不影响计数
+PFCOUNT uv:shop:1001:20261106                    # 当天的 UV
+PFMERGE uv:shop:1001:202611 uv:shop:1001:20261101 uv:shop:1001:20261102   # 合并多天，得到月 UV
+</code></pre>
+<p><strong>原理简述</strong>：对元素求 64 位哈希，用其中 14 位选出 16384 个桶（寄存器）中的一个，在剩余的 50 位中从低位开始数到第一个 1 出现的位置，每个桶记录见过的最大值；再根据所有桶的调和平均数估计基数。&quot;连续出现 k 个 0 的概率是 1/2^k&quot;，所以观察到的最长连续 0 越长，说明元素越多。</p>
+<p>需要精确值（如计费、结算）时不能用 HLL，应使用 Set 或 BitMap（userId 为连续整数时，BitMap 也能精确统计，1 亿用户约 12 MB）。</p></div></article></section><section class="grp" id="g9"><h2 class="grp-title">大模型智能客服扩展 <span class="cnt"><span class="n-all">3</span><span class="n-core">高频 0</span></span></h2><article class="q" id="q44"><h3><a class="q-link" href="#q44">智能客服的 Function Call 定义了哪些函数？</a></h3><div class="a"><p class="lead">Function Call（Tool Calling）的做法：把业务能力描述成带名称、说明和 JSON Schema 参数的函数提供给大模型，模型根据用户的问题决定调用哪个函数、填什么参数，由后端真正执行，再把结果交给模型组织成自然语言回复。</p>
+<p>结合点评业务，可以定义：</p>
+<table>
+<thead>
+<tr>
+<th>函数</th>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>searchNearbyShops</code></td>
+<td>经纬度、类型、半径</td>
+<td>调用 GEO 查询附近店铺</td>
+</tr>
+<tr>
+<td><code>getShopDetail</code></td>
+<td>shopId</td>
+<td>查询店铺详情、营业时间、评分（走缓存）</td>
+</tr>
+<tr>
+<td><code>listVouchers</code></td>
+<td>shopId</td>
+<td>查询店铺可用的优惠券和秒杀券、剩余库存</td>
+</tr>
+<tr>
+<td><code>queryMyOrders</code></td>
+<td>状态、时间范围</td>
+<td>查询当前用户的订单状态</td>
+</tr>
+<tr>
+<td><code>getVoucherRule</code></td>
+<td>voucherId</td>
+<td>查询使用规则、有效期</td>
+</tr>
+<tr>
+<td><code>transferToHuman</code></td>
+<td>问题摘要</td>
+<td>转人工客服</td>
+</tr>
+</tbody>
+</table>
+<p><strong>设计要点</strong></p>
+<ul>
+<li><strong>用户身份由后端注入</strong>：userId 从登录态（ThreadLocal）获取，不作为模型可填写的参数，防止模型被提示词诱导去查询其他人的数据。</li>
+<li><strong>只读优先</strong>：查询类函数可以直接执行；下单、退款、领券这类写操作要求用户在界面上二次确认，或者只返回操作链接，不让模型直接执行。</li>
+<li><strong>参数校验</strong>：模型生成的参数可能不合法或不存在，后端执行前要校验，并把错误信息返回给模型。</li>
+<li>函数说明要写清楚适用场景，函数数量不宜过多，以免模型选错。</li>
+<li>可以用 Spring AI 的 <code>@Tool</code> 注解或 LangChain4j 的 <code>@Tool</code> 来声明。</li>
+</ul></div></article><article class="q" id="q45"><h3><a class="q-link" href="#q45">大模型对话上下文在 Redis 中怎么存储？</a></h3><div class="a"><p class="lead">对话上下文是<strong>按会话、按顺序追加的消息列表</strong>，推荐用 <strong>List</strong>（或 Stream），会话元信息单独用 Hash 存储。</p>
+<pre><code class="language-text">chat:session:{sessionId}    Hash   userId、title、model、createTime、lastActiveTime
+chat:history:{sessionId}    List   每个元素是一条消息 JSON：{&quot;role&quot;:&quot;user|assistant|tool&quot;,&quot;content&quot;:&quot;...&quot;,&quot;ts&quot;:...}
+chat:sessions:{userId}      ZSet   member 为 sessionId，score 为最近活跃时间，用于会话列表
+</code></pre>
+<ul>
+<li><strong>追加</strong>：每轮对话 <code>RPUSH</code> 用户消息和模型回复，同时刷新 TTL（如 7 天无活动则过期）。</li>
+<li><strong>窗口截断</strong>：<code>LTRIM chat:history:{sid} -N -1</code> 只保留最近 N 条，或者在拼接 prompt 时用 <code>LRANGE</code> 取最近若干条，并按 token 数控制上限，避免超出模型的上下文窗口。</li>
+<li><strong>摘要记忆</strong>：更早的历史由模型压缩成一段摘要，存在 Hash 的 <code>summary</code> 字段中，拼接 prompt 时放在最前面。</li>
+<li><strong>持久化</strong>：Redis 只作为热数据缓存，完整的对话记录异步写入 MySQL，用于审计和后续查询。</li>
+<li>用 Hash 存一整段 JSON 的问题是每次都要整体读写，并发追加时还会覆盖；List 天然有序、可以原子追加，更合适。</li>
+</ul></div></article><article class="q" id="q46"><h3><a class="q-link" href="#q46">大模型服务超时或不可用时怎么处理？有什么降级方案？</a></h3><div class="a"><p class="lead"><strong>基础防护</strong></p>
+<ul>
+<li><strong>超时控制</strong>：设置连接超时和读取超时；使用流式输出（SSE），以首个 token 的延迟作为健康指标，用户也能更早看到内容。</li>
+<li><strong>有限重试</strong>：只对超时、429、5xx 等可重试的错误重试 1 到 2 次，带指数退避和抖动，避免重试风暴。</li>
+<li><strong>熔断</strong>：用 Sentinel / Resilience4j 统计失败率和慢调用比例，超过阈值后熔断一段时间，期间快速走降级逻辑，过后半开探测恢复。</li>
+<li><strong>隔离</strong>：大模型调用使用独立的线程池，避免拖垮其他业务接口。</li>
+</ul>
+<p><strong>多级降级</strong></p>
+<table>
+<thead>
+<tr>
+<th>等级</th>
+<th>触发条件</th>
+<th>策略</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>正常</td>
+<td>服务健康</td>
+<td>主模型提供完整对话能力</td>
+</tr>
+<tr>
+<td>一级</td>
+<td>主模型延迟升高或错误率上升</td>
+<td>切换到备用模型或其他供应商的模型（模型网关统一路由）</td>
+</tr>
+<tr>
+<td>二级</td>
+<td>所有模型都不可用</td>
+<td>使用 FAQ 知识库检索、关键词或规则匹配，返回预设答案；高频问题可以直接命中语义缓存</td>
+</tr>
+<tr>
+<td>三级</td>
+<td>核心依赖全部故障</td>
+<td>返回友好提示，引导用户稍后重试或转人工客服，并记录问题以便回访</td>
+</tr>
+</tbody>
+</table>
+<p>另外可以对高频问题做<strong>语义缓存</strong>（问题向量相似度足够高时直接返回已有答案），既能降低成本，也能在模型故障时继续服务一部分请求。</p></div></article></section><nav class="pager"><a href="scenario.html" class="prev"><small>上一章</small>场景题</a><a href="brain.html" class="next"><small>下一章</small>智力题</a></nav>
+  </div>
+</main>
+<div class="backdrop" id="backdrop"></div>
+<button class="to-top" id="to-top" aria-label="回到顶部">↑</button>
+<script id="outline" type="application/json">[{"id":"g1","title":"项目概述与登录","n":7,"core":0},{"id":"g2","title":"缓存设计与一致性","n":7,"core":2},{"id":"g3","title":"多级缓存","n":6,"core":0},{"id":"g4","title":"Redis 高可用与分布式锁","n":4,"core":0},{"id":"g5","title":"秒杀与防超卖","n":4,"core":1},{"id":"g6","title":"异步下单的可靠性","n":5,"core":1},{"id":"g7","title":"防刷限流与高并发架构","n":5,"core":0},{"id":"g8","title":"社交与位置功能","n":5,"core":0},{"id":"g9","title":"大模型智能客服扩展","n":3,"core":0}]</script>
+<script src="assets/app.js?v=ab30056e"></script>
+</body>
+</html>

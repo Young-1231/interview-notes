@@ -1,0 +1,1815 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="darkreader-lock">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spring · 八股笔记</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' font-weight='bold' fill='white' text-anchor='middle'%3E八%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css?v=ab30056e">
+<script>
+  (function () {
+    var t = localStorage.getItem('iv.theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+</head>
+<body data-part="java" data-sec="spring">
+<header class="site-header">
+  <button class="icon-btn menu-btn" id="menu-btn" aria-label="目录">☰</button>
+  <a href="index.html" class="brand"><span class="dot">●</span> 八股笔记</a>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="search">
+    <input id="search" type="search" placeholder="搜索题目  /" autocomplete="off" aria-label="搜索题目">
+    <span id="search-info"></span>
+    <div class="search-pop" id="search-pop" hidden></div>
+  </div>
+  <button class="icon-btn" id="theme-toggle" aria-label="切换主题">◐</button>
+</header>
+<aside class="side" id="side"><nav id="toc"></nav></aside>
+<main class="main">
+  <div id="article">
+<header class="page-head"><div class="crumb">Java 后端</div><h1>Spring <span class="cnt">75 题</span></h1><div class="tools"><button type="button" class="tool" id="t-core" aria-pressed="false">只看高频 <b>31</b></button><button type="button" class="tool" id="t-quiz" aria-pressed="false">自测模式</button><a class="tool resume" id="t-resume" hidden></a><span class="kbd-hint"><kbd>j</kbd>/<kbd>k</kbd> 上下题 · 自测时 <kbd>空格</kbd> 看答案 · <kbd>/</kbd> 搜索</span></div><nav class="overview"><div class="ov-block">Spring</div><div class="ov-groups"><a href="#g1">IoC 与依赖注入<span><span class="n-all">5</span><span class="n-core">4</span></span></a><a href="#g2">Bean 的定义、作用域与生命周期<span><span class="n-all">4</span><span class="n-core">2</span></span></a><a href="#g3" class="no-core">IoC 容器原理<span><span class="n-all">5</span><span class="n-core">0</span></span></a><a href="#g4">循环依赖与三级缓存<span><span class="n-all">4</span><span class="n-core">1</span></span></a><a href="#g5">AOP 与动态代理<span><span class="n-all">4</span><span class="n-core">2</span></span></a><a href="#g6">Spring 事务<span><span class="n-all">6</span><span class="n-core">4</span></span></a><a href="#g7">常用注解<span><span class="n-all">4</span><span class="n-core">2</span></span></a><a href="#g8">设计模式与版本演进<span><span class="n-all">3</span><span class="n-core">1</span></span></a></div><div class="ov-block">SpringMVC &amp; SpringBoot</div><div class="ov-groups"><a href="#g9">Spring MVC 核心<span><span class="n-all">6</span><span class="n-core">2</span></span></a><a href="#g10">Web 开发实战<span><span class="n-all">4</span><span class="n-core">1</span></span></a><a href="#g11">Spring Boot 基础与配置<span><span class="n-all">5</span><span class="n-core">2</span></span></a><a href="#g12">自动装配与启动原理<span><span class="n-all">5</span><span class="n-core">5</span></span></a><a href="#g13">生产实践<span><span class="n-all">7</span><span class="n-core">1</span></span></a></div><div class="ov-block">MyBatis</div><div class="ov-groups"><a href="#g14" class="no-core">框架定位与对比<span><span class="n-all">3</span><span class="n-core">0</span></span></a><a href="#g15">SQL 映射与动态 SQL<span><span class="n-all">5</span><span class="n-core">2</span></span></a><a href="#g16">执行原理与高级特性<span><span class="n-all">5</span><span class="n-core">2</span></span></a></div></nav></header><h2 class="block-title">Spring</h2><section class="grp has-core" id="g1"><h2 class="grp-title">IoC 与依赖注入 <span class="cnt"><span class="n-all">5</span><span class="n-core">高频 4</span></span></h2><article class="q core" id="q1"><h3><a class="q-link" href="#q1">什么是 IoC 和 AOP？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">IoC 管&quot;对象怎么来&quot;，AOP 管&quot;公共逻辑怎么加&quot;，两者是 Spring 的两大核心。</p>
+<ul>
+<li><strong>IoC（Inversion of Control，控制反转）</strong>：对象的创建权和依赖关系的管理权从业务代码转交给 Spring 容器。业务类不再自己 <code>new</code> 依赖，而是声明需要什么，由容器创建并注入。DI（依赖注入）是 IoC 的具体实现方式。</li>
+<li><strong>AOP（Aspect Oriented Programming，面向切面编程）</strong>：把日志、事务、权限校验、限流、幂等、监控埋点等横切逻辑从业务代码中抽出来，集中写在切面里，在不修改源码的前提下对方法做增强。</li>
+<li><strong>AOP 的实现</strong>：Spring AOP 基于运行时动态代理。容器为目标 Bean 生成代理对象，调用方拿到的是代理，代理在目标方法前后织入增强逻辑。代理方式有 JDK 动态代理（基于接口）和 CGLIB（基于继承生成子类）两种。</li>
+</ul></div></article><article class="q core" id="q2"><h3><a class="q-link" href="#q2">IoC 有什么好处？相比直接 new 对象</a><span class="tags"><i class="t-core">高频</i><i class="t-co bank">交通银行</i><i class="t-co">淘天</i></span></h3><div class="a"><p class="lead">核心好处是解耦：对象的使用方只依赖抽象，不关心具体实现由谁创建、怎么创建。</p>
+<ul>
+<li><strong>解耦、易替换</strong>：<code>OrderService</code> 依赖 <code>PayProcessor</code> 接口，具体是支付宝还是微信实现由容器注入；更换实现只改配置或 Bean 定义，不改业务代码。</li>
+<li><strong>创建与使用分离</strong>：复杂对象的构造、参数、依赖关系集中在配置里，业务代码更干净。</li>
+<li><strong>生命周期统一管理</strong>：初始化、销毁回调、作用域都交给容器，不必手动管理资源。</li>
+<li><strong>对象复用</strong>：Bean 默认单例，避免重复创建无状态对象。</li>
+<li><strong>便于测试</strong>：依赖通过构造器传入，单元测试时可以直接传 Mock 对象。</li>
+<li><strong>扩展能力</strong>：容器统一创建对象，才有了 BeanPostProcessor、AOP 代理、事务等在创建过程中&quot;插一脚&quot;的机会。</li>
+</ul></div></article><article class="q core" id="q3"><h3><a class="q-link" href="#q3">什么是 DI？注入方式有哪些？</a><span class="tags"><i class="t-core">高频</i><i class="t-co bank">农业银行</i><i class="t-co bank">招商银行</i><i class="t-co">字节</i></span></h3><div class="a"><p class="lead">DI（Dependency Injection，依赖注入）是 IoC 的实现方式：容器创建 Bean 时，把它依赖的对象自动注入进去。</p>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>写法</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>构造器注入</td>
+<td>依赖作为构造参数</td>
+<td>依赖不可变（可 <code>final</code>）、创建即完整、易测试；Spring 官方推荐。单构造器时 Spring 4.3+ 可省略 <code>@Autowired</code></td>
+</tr>
+<tr>
+<td>Setter 注入</td>
+<td><code>@Autowired</code> 标在 setter 上</td>
+<td>适合可选依赖、可重新注入</td>
+</tr>
+<tr>
+<td>字段注入</td>
+<td><code>@Autowired</code>/<code>@Resource</code> 标在字段上</td>
+<td>写法最简单，但隐藏依赖、不能 <code>final</code>、脱离容器难以测试</td>
+</tr>
+</tbody>
+</table>
+<p>&quot;接口注入&quot;是早期 IoC 理论中的一种方式，Spring 并不支持。实际开发推荐构造器注入，配合 Lombok 的 <code>@RequiredArgsConstructor</code> 很简洁。</p></div></article><article class="q" id="q4"><h3><a class="q-link" href="#q4">注入 Bean 的方式有哪些？为什么不推荐字段上直接用 @Autowired？</a><span class="tags"><i class="t-co bank">银行</i><i class="t-co">阿里</i></span></h3><div class="a"><p class="lead">注入方式就是构造器、Setter、字段三种。IDEA 提示 &quot;Field injection is not recommended&quot;，针对的是<strong>字段注入</strong>这种方式，而不是 <code>@Autowired</code> 注解本身：</p>
+<ul>
+<li>字段不能声明为 <code>final</code>，对象可能处于依赖未注入的状态，脱离容器 <code>new</code> 出来时直接 NPE。</li>
+<li>依赖关系藏在字段里，类依赖过多也不容易察觉（构造器参数一长就会暴露设计问题）。</li>
+<li>单元测试必须靠反射或启动容器才能注入 Mock。</li>
+<li>字段注入会掩盖循环依赖问题，构造器注入则会在启动时直接暴露。</li>
+<li><code>@Autowired</code> 是 Spring 专有注解，与容器强绑定；<code>@Resource</code> 是 Jakarta 标准注解。</li>
+</ul>
+<p>推荐做法：必选依赖用构造器注入，可选依赖用 Setter 注入。</p></div></article><article class="q core" id="q5"><h3><a class="q-link" href="#q5">@Autowired 和 @Resource 的区别</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">两者都能完成依赖注入，主要区别在来源和匹配规则。</p>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>@Autowired</th>
+<th>@Resource</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>来源</td>
+<td>Spring 注解</td>
+<td>JSR-250 标准（Boot 3 / Spring 6 为 <code>jakarta.annotation.Resource</code>，之前是 <code>javax.annotation.Resource</code>）</td>
+</tr>
+<tr>
+<td>匹配规则</td>
+<td>先按类型；找到多个时再看 <code>@Primary</code>、<code>@Priority</code>，最后按字段名/参数名匹配</td>
+<td>先按名称（<code>name</code> 属性，未指定则用字段名）；按名称找不到再按类型</td>
+</tr>
+<tr>
+<td>指定 Bean</td>
+<td>配合 <code>@Qualifier(&quot;xxx&quot;)</code></td>
+<td>直接 <code>@Resource(name = &quot;xxx&quot;)</code></td>
+</tr>
+<tr>
+<td>必须性</td>
+<td><code>required = true</code> 默认，找不到抛异常；可设为 false</td>
+<td>找不到抛异常</td>
+</tr>
+<tr>
+<td>可用位置</td>
+<td>构造器、方法、字段、参数</td>
+<td>字段、Setter 方法，不支持构造器</td>
+</tr>
+</tbody>
+</table>
+<p>同一接口有多个实现时：<code>@Autowired</code> 会因为找到多个候选而报 <code>NoUniqueBeanDefinitionException</code>（除非字段名恰好等于某个 Bean 名或有 <code>@Primary</code>），一般用 <code>@Qualifier</code> 解决。</p></div></article></section><section class="grp has-core" id="g2"><h2 class="grp-title">Bean 的定义、作用域与生命周期 <span class="cnt"><span class="n-all">4</span><span class="n-core">高频 2</span></span></h2><article class="q" id="q6"><h3><a class="q-link" href="#q6">什么是 Bean？声明 Bean 的方式有哪些？怎么控制创建顺序？</a><span class="tags"><i class="t-co bank">农业银行</i><i class="t-co bank">交通银行</i></span></h3><div class="a"><p class="lead">Bean 就是由 Spring IoC 容器创建、装配和管理生命周期的对象。容器先把配置解析成 <code>BeanDefinition</code>，再按定义通过反射实例化。</p>
+<p><strong>声明方式</strong></p>
+<ul>
+<li>XML：<code>&lt;bean id=&quot;...&quot; class=&quot;...&quot;/&gt;</code>（老项目）。</li>
+<li>注解扫描：<code>@Component</code> 及其派生 <code>@Controller</code>、<code>@Service</code>、<code>@Repository</code>，配合 <code>@ComponentScan</code>。</li>
+<li>Java 配置类：<code>@Configuration</code> + <code>@Bean</code> 方法，适合注册第三方类。</li>
+<li><code>@Import</code> 导入配置类、<code>ImportSelector</code>、<code>ImportBeanDefinitionRegistrar</code>（Spring Boot 自动配置和 <code>@EnableXxx</code> 就靠这个）。</li>
+<li>编程式注册：<code>BeanDefinitionRegistryPostProcessor</code>、<code>FactoryBean</code>。</li>
+</ul>
+<p><strong>控制创建顺序</strong></p>
+<ul>
+<li>依赖关系天然决定顺序：A 注入了 B，B 一定先创建。</li>
+<li>没有直接依赖但需要先初始化时，用 <code>@DependsOn(&quot;b&quot;)</code> 显式声明。</li>
+<li><code>@Lazy</code> 可推迟到第一次使用时才创建。</li>
+<li><code>@Order</code> / <code>Ordered</code> 不控制 Bean 的创建顺序，它只影响注入 <code>List&lt;X&gt;</code> 时的排序、切面和过滤器的执行顺序。</li>
+</ul></div></article><article class="q core" id="q7"><h3><a class="q-link" href="#q7">Spring Bean 的作用域有哪些？</a><span class="tags"><i class="t-core">高频</i><i class="t-co bank">交通银行</i><i class="t-co">阿里</i></span></h3><div class="a"><p class="lead">通过 <code>@Scope</code> 指定，默认 <code>singleton</code>。</p>
+<table>
+<thead>
+<tr>
+<th>作用域</th>
+<th>含义</th>
+<th>适用环境</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>singleton</td>
+<td>每个容器只有一个实例（默认）</td>
+<td>所有</td>
+</tr>
+<tr>
+<td>prototype</td>
+<td>每次 <code>getBean</code> 或注入都新建一个实例</td>
+<td>所有</td>
+</tr>
+<tr>
+<td>request</td>
+<td>每个 HTTP 请求一个实例</td>
+<td>Web</td>
+</tr>
+<tr>
+<td>session</td>
+<td>每个 HTTP Session 一个实例</td>
+<td>Web</td>
+</tr>
+<tr>
+<td>application</td>
+<td>每个 <code>ServletContext</code> 一个实例</td>
+<td>Web</td>
+</tr>
+<tr>
+<td>websocket</td>
+<td>每个 WebSocket 会话一个实例</td>
+<td>Web</td>
+</tr>
+</tbody>
+</table>
+<p>注意点：</p>
+<ul>
+<li>无状态的 Service、DAO、工具类用 singleton；需要隔离状态的对象才考虑 prototype。</li>
+<li>prototype Bean 容器只负责创建，不管理销毁，<code>@PreDestroy</code> 不会被调用。</li>
+<li>把 prototype/request Bean 注入 singleton 时，只会注入一次，后续不会变。需要每次拿新实例可以用 <code>ObjectProvider&lt;T&gt;</code>、<code>@Lookup</code> 方法，或 <code>@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)</code> 作用域代理。</li>
+</ul></div></article><article class="q core" id="q8"><h3><a class="q-link" href="#q8">Bean 的生命周期</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">主线是：实例化 → 属性填充 → 初始化 → 使用 → 销毁，扩展点穿插在初始化前后。</p>
+<ol>
+<li><strong>实例化</strong>：按 <code>BeanDefinition</code> 反射调用构造器或工厂方法创建对象，属性为空。循环依赖的提前暴露就在这之后。</li>
+<li><strong>属性填充（populateBean）</strong>：注入 <code>@Autowired</code>、<code>@Value</code>、<code>@Resource</code> 等依赖。</li>
+<li><strong>Aware 回调</strong>：<code>BeanNameAware</code>、<code>BeanFactoryAware</code> 等；<code>ApplicationContextAware</code> 由 <code>ApplicationContextAwareProcessor</code> 在下一步回调。</li>
+<li><strong>BeanPostProcessor 前置</strong>：<code>postProcessBeforeInitialization()</code>，<code>@PostConstruct</code> 在这里执行。</li>
+<li><strong>初始化</strong>：<code>InitializingBean.afterPropertiesSet()</code> → 自定义 <code>init-method</code>。</li>
+<li><strong>BeanPostProcessor 后置</strong>：<code>postProcessAfterInitialization()</code>，AOP 代理通常在这里生成，容器里最终放的可能是代理对象。</li>
+<li><strong>使用</strong>：单例放入一级缓存 <code>singletonObjects</code>。</li>
+<li><strong>销毁</strong>：容器关闭时 <code>@PreDestroy</code> → <code>DisposableBean.destroy()</code> → <code>destroy-method</code>。prototype Bean 不走这一步。</li>
+</ol></div></article><article class="q" id="q9"><h3><a class="q-link" href="#q9">Spring 的单例 Bean 是线程安全的吗？</a><span class="tags"><i class="t-co">滴滴</i><i class="t-co bank">银行</i><i class="t-co bank">农业银行</i></span></h3><div class="a"><p class="lead">不是。Spring 只保证单例 Bean 在容器中只有一个实例，不做任何并发控制，是否线程安全取决于 Bean 自身有没有可变的共享状态。</p>
+<ul>
+<li><strong>无状态 Bean 是安全的</strong>：常见的 Controller、Service、DAO 只持有其他 Bean 的引用，方法内用局部变量，不存在共享可变状态，所以实际开发中大多没有问题。</li>
+<li><strong>有状态 Bean 不安全</strong>：如果单例里有可修改的成员变量（计数器、缓存的 Map、当前用户等），多线程并发读写就会出问题。</li>
+</ul>
+<p>解决办法：</p>
+<ul>
+<li>首选把 Bean 设计成无状态，状态放到方法局部变量或参数中。</li>
+<li>必须保存线程相关状态时用 <code>ThreadLocal</code>（用完 <code>remove()</code>，防止线程池复用导致串数据和内存泄漏）。</li>
+<li>共享状态使用并发容器（<code>ConcurrentHashMap</code>）、原子类或加锁。</li>
+<li>改用 prototype / request 作用域，让每个线程或请求拿到独立实例。</li>
+</ul></div></article></section><section class="grp" id="g3"><h2 class="grp-title">IoC 容器原理 <span class="cnt"><span class="n-all">5</span><span class="n-core">高频 0</span></span></h2><article class="q" id="q10"><h3><a class="q-link" href="#q10">IoC 容器的初始化过程（refresh 流程）</a><span class="tags"><i class="t-co bank">招商银行</i><i class="t-co bank">交通银行</i><i class="t-co">PDD</i></span></h3><div class="a"><p class="lead">一句话：先把配置解析成 <code>BeanDefinition</code> 注册进 <code>BeanFactory</code>，经过后置处理器加工，最后实例化所有非懒加载的单例 Bean。入口是 <code>AbstractApplicationContext.refresh()</code>，主要步骤：</p>
+<ol>
+<li><code>prepareRefresh()</code>：初始化并校验 <code>Environment</code>。</li>
+<li><code>obtainFreshBeanFactory()</code>：获取 <code>DefaultListableBeanFactory</code>，XML 方式在这里加载 <code>BeanDefinition</code>。</li>
+<li><code>prepareBeanFactory()</code> / <code>postProcessBeanFactory()</code>：设置类加载器、内置后置处理器，留给子类扩展。</li>
+<li><code>invokeBeanFactoryPostProcessors()</code>：<code>ConfigurationClassPostProcessor</code> 解析 <code>@Configuration</code>、<code>@ComponentScan</code>、<code>@Import</code>、<code>@Bean</code>，注解方式的大部分 <code>BeanDefinition</code> 在此注册（Spring Boot 自动配置也在此生效）。</li>
+<li><code>registerBeanPostProcessors()</code>：注册所有 <code>BeanPostProcessor</code>。</li>
+<li><code>initMessageSource()</code>、<code>initApplicationEventMulticaster()</code>、<code>registerListeners()</code>：国际化、事件广播器、监听器。</li>
+<li><code>onRefresh()</code>：Spring Boot 在这里创建并启动内嵌 Tomcat。</li>
+<li><code>finishBeanFactoryInitialization()</code>：实例化所有非懒加载单例（含 AOP 代理）。</li>
+<li><code>finishRefresh()</code>：发布 <code>ContextRefreshedEvent</code>。</li>
+</ol></div></article><article class="q" id="q11"><h3><a class="q-link" href="#q11">BeanFactory 和 ApplicationContext 有什么区别？</a></h3><div class="a"><p class="lead"><code>BeanFactory</code> 是最底层的 IoC 容器接口，<code>ApplicationContext</code> 是它的子接口，在其基础上提供企业级功能。</p>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>BeanFactory</th>
+<th>ApplicationContext</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>定位</td>
+<td>基础容器，只负责 Bean 的创建、获取、依赖注入</td>
+<td>完整的应用上下文，实际开发都用它</td>
+</tr>
+<tr>
+<td>单例加载时机</td>
+<td>懒加载，第一次 <code>getBean</code> 时才创建</td>
+<td>启动 <code>refresh</code> 时预先实例化所有非懒加载单例，配置错误能尽早暴露</td>
+</tr>
+<tr>
+<td>扩展功能</td>
+<td>无</td>
+<td>国际化 <code>MessageSource</code>、事件发布、资源加载 <code>ResourceLoader</code>、<code>Environment</code> 环境与 Profile</td>
+</tr>
+<tr>
+<td>后置处理器</td>
+<td>需手动注册 BeanPostProcessor</td>
+<td>自动检测并注册 BeanFactoryPostProcessor / BeanPostProcessor</td>
+</tr>
+</tbody>
+</table>
+<p>常见实现：<code>AnnotationConfigApplicationContext</code>、<code>ClassPathXmlApplicationContext</code>，Spring Boot Web 应用用的是 <code>AnnotationConfigServletWebServerApplicationContext</code>。</p></div></article><article class="q" id="q12"><h3><a class="q-link" href="#q12">BeanDefinition 是什么？</a></h3><div class="a"><p class="lead"><code>BeanDefinition</code> 是 Bean 的&quot;图纸&quot;：Spring 先把 XML、注解、配置类解析成 <code>BeanDefinition</code>，注册到 <code>BeanDefinitionRegistry</code>（即 <code>DefaultListableBeanFactory</code> 内部的 <code>beanDefinitionMap</code>），后续一切 Bean 的创建都按它来。</p>
+<p>包含的信息：</p>
+<ul>
+<li>Bean 的类名 <code>beanClassName</code>、工厂方法（<code>@Bean</code> 方法对应 factoryBean + factoryMethod）。</li>
+<li>作用域、是否懒加载 <code>lazyInit</code>、是否 <code>primary</code>、<code>dependsOn</code>。</li>
+<li>构造器参数值、属性值。</li>
+<li>初始化方法、销毁方法名。</li>
+</ul>
+<p>意义：把&quot;定义&quot;和&quot;实例化&quot;分开，因此可以在实例化之前通过 <code>BeanFactoryPostProcessor</code> 修改定义（例如 <code>PropertySourcesPlaceholderConfigurer</code> 替换 <code>${}</code> 占位符）。</p></div></article><article class="q" id="q13"><h3><a class="q-link" href="#q13">BeanPostProcessor 是什么？和 BeanFactoryPostProcessor 有什么区别？</a></h3><div class="a"><p class="lead"><code>BeanPostProcessor</code> 是 Bean 的后置处理器，在每个 Bean 初始化前后提供扩展点，可以修改甚至替换 Bean 实例。</p>
+<pre><code class="language-java">public interface BeanPostProcessor {
+    default Object postProcessBeforeInitialization(Object bean, String beanName) { return bean; }
+    default Object postProcessAfterInitialization(Object bean, String beanName) { return bean; }
+}
+</code></pre>
+<p>典型实现：</p>
+<ul>
+<li><code>AutowiredAnnotationBeanPostProcessor</code>：处理 <code>@Autowired</code>、<code>@Value</code> 注入（属于其子接口 <code>InstantiationAwareBeanPostProcessor</code>，在属性填充阶段工作）。</li>
+<li><code>CommonAnnotationBeanPostProcessor</code>：处理 <code>@Resource</code>、<code>@PostConstruct</code>、<code>@PreDestroy</code>。</li>
+<li><code>AnnotationAwareAspectJAutoProxyCreator</code>：在 <code>postProcessAfterInitialization</code> 中为需要增强的 Bean 生成 AOP 代理，<code>@Transactional</code>、<code>@Async</code> 的代理也是这一类机制。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>BeanFactoryPostProcessor</th>
+<th>BeanPostProcessor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>作用对象</td>
+<td><code>BeanDefinition</code>（元数据）</td>
+<td>Bean 实例</td>
+</tr>
+<tr>
+<td>执行时机</td>
+<td>所有 Bean 实例化之前，执行一次</td>
+<td>每个 Bean 初始化前后都执行</td>
+</tr>
+<tr>
+<td>典型用途</td>
+<td>解析配置类、替换占位符、注册额外的 BeanDefinition</td>
+<td>依赖注入、生命周期注解、AOP 代理</td>
+</tr>
+</tbody>
+</table></div></article><article class="q" id="q14"><h3><a class="q-link" href="#q14">FactoryBean 和 BeanFactory 的区别？</a></h3><div class="a"><p class="lead">名字相似，完全是两回事：<code>BeanFactory</code> 是容器，<code>FactoryBean</code> 是容器里一种能&quot;生产对象&quot;的特殊 Bean。</p>
+<ul>
+<li><code>BeanFactory</code>：IoC 容器的顶层接口，负责管理所有 Bean。</li>
+<li><code>FactoryBean&lt;T&gt;</code>：一个接口，实现它的 Bean 通过 <code>getObject()</code> 自定义复杂对象的创建逻辑，还有 <code>getObjectType()</code>、<code>isSingleton()</code>。</li>
+<li>按名字 <code>getBean(&quot;xxx&quot;)</code> 时，拿到的是 <code>getObject()</code> 返回的产品对象；要拿 FactoryBean 本身，需要用 <code>getBean(&quot;&amp;xxx&quot;)</code>。</li>
+<li>典型场景：MyBatis 的 <code>MapperFactoryBean</code> 为每个 Mapper 接口生成代理对象，<code>SqlSessionFactoryBean</code> 创建 <code>SqlSessionFactory</code>；OpenFeign 的 <code>FeignClientFactoryBean</code> 生成远程调用代理。适合创建过程复杂、需要整合第三方框架的对象。</li>
+</ul></div></article></section><section class="grp has-core" id="g4"><h2 class="grp-title">循环依赖与三级缓存 <span class="cnt"><span class="n-all">4</span><span class="n-core">高频 1</span></span></h2><article class="q" id="q15"><h3><a class="q-link" href="#q15">什么是循环依赖？Spring 能解决哪些？</a></h3><div class="a"><p class="lead">循环依赖是指两个或多个 Bean 互相持有对方的引用，形成闭环：A 依赖 B、B 依赖 A，或 A → B → C → A，甚至 A 依赖自己。创建 A 时要先有 B，创建 B 时又要先有 A，不处理就会无限递归。</p>
+<p>Spring 用三级缓存&quot;提前暴露半成品对象&quot;来解决，但有条件：</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>能否解决</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>单例 + 字段 / Setter 注入</td>
+<td>能（前提是允许循环引用，见下文 Spring Boot 2.6 的变化）</td>
+</tr>
+<tr>
+<td>单例 + 双方都是构造器注入</td>
+<td>不能，启动报 <code>BeanCurrentlyInCreationException</code></td>
+</tr>
+<tr>
+<td>一方构造器、一方 Setter</td>
+<td>取决于创建顺序：先创建的那个是 Setter 注入才能成功</td>
+</tr>
+<tr>
+<td>prototype 作用域</td>
+<td>不能，prototype 不进缓存，直接报错</td>
+</tr>
+<tr>
+<td>含 <code>@Async</code> 的 Bean 参与循环</td>
+<td>通常失败，因为其代理在初始化后才生成，与提前暴露出去的原始对象不一致</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Spring Boot 2.6+ 的变化</strong>：从 Spring Boot 2.6 开始，<code>spring.main.allow-circular-references</code> 默认为 <code>false</code>，即默认禁止循环引用，存在循环依赖时启动直接失败，并打印 &quot;The dependencies of some of the beans in the application context form a cycle&quot;。Spring Framework 本身的三级缓存机制仍然存在（Spring 6 也是如此），只是 Boot 默认把它关掉了。</p>
+<p>处理方式：</p>
+<ul>
+<li>首选重构，消除循环（抽出公共逻辑到第三个 Bean、改用事件解耦）。</li>
+<li>在注入点加 <code>@Lazy</code>，注入的是一个延迟代理，真正使用时才去容器取，构造器循环也能用这种方式打破。</li>
+<li>实在需要兼容老代码，再配置 <code>spring.main.allow-circular-references=true</code>。</li>
+</ul></div></article><article class="q core" id="q16"><h3><a class="q-link" href="#q16">三级缓存是什么？怎么解决循环依赖？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">三级缓存是 <code>DefaultSingletonBeanRegistry</code> 中的三个 Map：</p>
+<table>
+<thead>
+<tr>
+<th>缓存</th>
+<th>字段</th>
+<th>存放内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>一级</td>
+<td><code>singletonObjects</code></td>
+<td>完全创建好的单例 Bean（成品），日常 <code>getBean</code> 从这里取</td>
+</tr>
+<tr>
+<td>二级</td>
+<td><code>earlySingletonObjects</code></td>
+<td>提前暴露的早期引用（半成品，可能已是代理），保证多次获取拿到同一个对象</td>
+</tr>
+<tr>
+<td>三级</td>
+<td><code>singletonFactories</code></td>
+<td><code>ObjectFactory</code> 工厂 lambda：<code>() -&gt; getEarlyBeanReference(beanName, mbd, bean)</code>，需要时才生成早期引用</td>
+</tr>
+</tbody>
+</table>
+<p><code>getSingleton</code> 查找顺序：一级 → 二级 → 三级；从三级拿到工厂后调用 <code>getObject()</code> 生成早期引用，放入二级缓存并删除三级缓存中的工厂。</p>
+<p><strong>以 A ↔ B（Setter / 字段注入）为例：</strong></p>
+<ol>
+<li>创建 A：实例化 A（构造器执行完，属性为空），把 A 的 <code>ObjectFactory</code> 放入三级缓存。</li>
+<li>填充 A 的属性，发现需要 B，<code>getBean(B)</code>。</li>
+<li>创建 B：实例化 B，B 的工厂放入三级缓存；填充 B 的属性，发现需要 A。</li>
+<li><code>getBean(A)</code>：一级、二级没有，三级有 A 的工厂，调用它得到 A 的早期引用（如果 A 需要 AOP，这里会提前生成 A 的代理），放入二级缓存，移除三级。</li>
+<li>B 拿到 A 的早期引用，完成属性填充和初始化，放入一级缓存。</li>
+<li>回到 A，拿到成品 B 完成注入和初始化。初始化后检查：A 的代理已经提前生成过（记录在 <code>earlyProxyReferences</code> 中），不会再生成第二个，最终把二级缓存里的那个对象放入一级缓存。</li>
+</ol>
+<p>关键点：Bean 的创建分成&quot;实例化&quot;和&quot;初始化&quot;两步，正是这个间隙让 Spring 可以把半成品提前暴露出去。</p></div></article><article class="q" id="q17"><h3><a class="q-link" href="#q17">为什么需要三级缓存，两级不行吗？</a></h3><div class="a"><p class="lead">如果只为了打破循环，两级缓存（成品 + 半成品）就够了。第三级缓存是为了 <strong>AOP 代理</strong> 和 <strong>不打乱代理创建时机</strong>。</p>
+<ul>
+<li>正常情况下，AOP 代理在 Bean 生命周期最后一步 <code>postProcessAfterInitialization</code> 才创建。</li>
+<li>发生循环依赖时，B 需要拿到 A 的&quot;最终形态&quot;。如果 A 最终要被代理，B 拿到的必须是代理对象，否则 B 持有的是原始对象，容器里的却是代理，两者不一致，增强（如事务）在 B 中会失效。</li>
+<li>如果只有两级缓存，想保证这一点，就必须在每个 Bean 实例化后立刻创建代理放入二级缓存，这样所有 Bean（哪怕根本没有循环依赖）都提前代理，违背了&quot;初始化完成后再代理&quot;的设计。</li>
+<li>三级缓存存的是工厂，<strong>只有真的发生循环依赖、有人来取早期引用时</strong>，才调用 <code>getEarlyBeanReference</code> 提前生成代理；没有循环依赖的 Bean 仍按正常时机代理。</li>
+<li>二级缓存则保证工厂只被调用一次，多个 Bean 同时依赖 A 时拿到的是同一个早期引用（同一个代理），而不是每次都新建。</li>
+</ul>
+<p>总结：一级存成品，二级存半成品保证唯一，三级存工厂实现&quot;按需、延迟&quot;地生成早期代理。</p></div></article><article class="q" id="q18"><h3><a class="q-link" href="#q18">为什么构造器注入的循环依赖无法解决？</a></h3><div class="a"><p class="lead">三级缓存的前提是&quot;先实例化、再提前暴露&quot;。构造器注入时依赖是构造参数，A 必须先拿到 B 才能执行构造器，而 B 的构造器又需要 A，两者谁都实例化不出来，连半成品对象都没有，自然没东西可以放进三级缓存。</p>
+<p>Spring 在创建前把 Bean 名放入&quot;正在创建&quot;集合 <code>singletonsCurrentlyInCreation</code>，再次进入时发现已在集合中，就抛出 <code>BeanCurrentlyInCreationException</code>。</p>
+<p>解决：在构造参数上加 <code>@Lazy</code>，注入一个延迟解析的代理对象，构造器能正常执行，第一次调用方法时才去容器里拿真正的 Bean；或者把其中一方改为 Setter 注入；根本上还是建议重构消除循环。</p></div></article></section><section class="grp has-core" id="g5"><h2 class="grp-title">AOP 与动态代理 <span class="cnt"><span class="n-all">4</span><span class="n-core">高频 2</span></span></h2><article class="q core" id="q19"><h3><a class="q-link" href="#q19">AOP 的核心概念、通知类型和应用场景</a><span class="tags"><i class="t-core">高频</i><i class="t-co bank">农业银行</i><i class="t-co bank">交通银行</i><i class="t-co">得物</i></span></h3><div class="a"><p class="lead">AOP 把横切逻辑从业务代码中抽离成切面，通过代理在指定方法前后织入。</p>
+<p><strong>核心概念</strong></p>
+<ul>
+<li>切面 Aspect：横切逻辑的模块化封装，<code>@Aspect</code> 类。</li>
+<li>连接点 JoinPoint：可以被增强的点，Spring AOP 中只有方法执行。</li>
+<li>切点 Pointcut：筛选连接点的表达式，如 <code>execution(* com.xx.service..*(..))</code>、<code>@annotation(com.xx.Log)</code>。</li>
+<li>通知 Advice：在切点上执行的增强逻辑。</li>
+<li>目标对象 Target、代理对象 Proxy、织入 Weaving（把切面应用到目标、生成代理的过程）。</li>
+</ul>
+<p><strong>五种通知</strong></p>
+<table>
+<thead>
+<tr>
+<th>注解</th>
+<th>执行时机</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>@Before</code></td>
+<td>目标方法执行前</td>
+</tr>
+<tr>
+<td><code>@AfterReturning</code></td>
+<td>正常返回后，可获取返回值</td>
+</tr>
+<tr>
+<td><code>@AfterThrowing</code></td>
+<td>抛出异常后，可获取异常</td>
+</tr>
+<tr>
+<td><code>@After</code></td>
+<td>方法结束后，无论成功失败（类似 finally）</td>
+</tr>
+<tr>
+<td><code>@Around</code></td>
+<td>包裹整个调用，通过 <code>ProceedingJoinPoint.proceed()</code> 决定是否、何时执行目标方法，可修改参数和返回值，功能最强</td>
+</tr>
+</tbody>
+</table>
+<p>同一切面内（Spring 5.2.7+）的顺序：<code>@Around</code> 前半段 → <code>@Before</code> → 目标方法 → <code>@AfterReturning</code> / <code>@AfterThrowing</code> → <code>@After</code> → <code>@Around</code> 后半段。</p>
+<p><strong>常见场景</strong>：日志与审计、权限校验、声明式事务 <code>@Transactional</code>、接口限流与幂等、性能监控耗时统计、缓存 <code>@Cacheable</code>、异步 <code>@Async</code>、统一异常转换、分布式锁注解。</p>
+<pre><code class="language-java">@Aspect
+@Component
+public class LogAspect {
+    @Around(&quot;@annotation(com.example.annotation.Log)&quot;)
+    public Object around(ProceedingJoinPoint pjp) throws Throwable {
+        long start = System.currentTimeMillis();
+        try {
+            return pjp.proceed();
+        } finally {
+            log.info(&quot;{} 耗时 {} ms&quot;, pjp.getSignature(), System.currentTimeMillis() - start);
+        }
+    }
+}
+</code></pre></div></article><article class="q" id="q20"><h3><a class="q-link" href="#q20">多个切面的执行顺序怎么控制？</a></h3><div class="a"><p class="lead">用 <code>@Order</code> 注解或实现 <code>Ordered</code> 接口，<strong>值越小优先级越高</strong>。</p>
+<ul>
+<li>优先级高的切面在外层：进入方法时先执行，退出时最后执行，像洋葱一样层层包裹。例如 <code>@Order(1)</code> 的日志切面和 <code>@Order(2)</code> 的权限切面：日志前置 → 权限前置 → 目标方法 → 权限后置 → 日志后置。</li>
+<li>不指定顺序时，两个切面都是最低优先级，执行顺序不确定，不能依赖类名或注册顺序。</li>
+<li><code>@Order</code> 要加在 <code>@Aspect</code> 切面类上，加在通知方法上无效。同一切面内多个同类型通知的顺序也不保证，需要严格顺序就拆成多个切面。</li>
+<li>实际例子：Spring 的事务切面默认是最低优先级，自定义的分布式锁切面如果要包在事务外面（先加锁、事务提交后再释放锁），就要给锁切面设置更小的 order。</li>
+</ul></div></article><article class="q core" id="q21"><h3><a class="q-link" href="#q21">AOP 的实现原理？JDK 动态代理和 CGLIB 的区别？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">Spring AOP 基于运行时动态代理：在 Bean 初始化完成后，由 <code>AbstractAutoProxyCreator</code>（BeanPostProcessor）判断该 Bean 是否匹配某个切点，匹配就用 <code>ProxyFactory</code> 生成代理替换原 Bean 放入容器。调用代理方法时，会把匹配的通知组成拦截器链（<code>MethodInterceptor</code>）依次执行，最后反射调用目标方法。</p>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>JDK 动态代理</th>
+<th>CGLIB</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>原理</td>
+<td>运行时生成实现相同接口的代理类，调用转发到 <code>InvocationHandler.invoke()</code></td>
+<td>基于 ASM 生成目标类的子类，重写方法，调用转发到 <code>MethodInterceptor.intercept()</code></td>
+</tr>
+<tr>
+<td>要求</td>
+<td>目标类必须实现接口，只能代理接口中的方法</td>
+<td>不需要接口；不能代理 <code>final</code> 类和 <code>final</code> 方法</td>
+</tr>
+<tr>
+<td>依赖</td>
+<td>JDK 自带</td>
+<td>Spring 3.2 起已内置到 spring-core</td>
+</tr>
+<tr>
+<td>注入时的类型</td>
+<td>只能按接口类型注入，按实现类注入会报错</td>
+<td>可以按实现类注入</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Spring 怎么选</strong></p>
+<ul>
+<li>Spring Framework 默认（<code>proxyTargetClass = false</code>）：目标实现了接口用 JDK 动态代理，否则用 CGLIB。</li>
+<li><strong>Spring Boot 2.x 起默认使用 CGLIB</strong>：<code>spring.aop.proxy-target-class</code> 默认为 <code>true</code>，即使目标实现了接口也用 CGLIB，避免按实现类注入时类型不匹配；配置为 <code>false</code> 才会对有接口的类用 JDK 代理。Spring Boot 3.x 保持这个默认。</li>
+</ul>
+<p>两种方式都拦截不到 <code>private</code>、<code>static</code> 方法，也拦截不到类内部的 <code>this.xxx()</code> 自调用，这是事务失效等问题的根源。性能上，JDK 8 之后两者差距已经很小，不是选择的主要依据。</p></div></article><article class="q" id="q22"><h3><a class="q-link" href="#q22">Spring AOP 和 AspectJ 有什么区别？</a></h3><div class="a"><table>
+<thead>
+<tr>
+<th>对比</th>
+<th>Spring AOP</th>
+<th>AspectJ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>织入时机</td>
+<td>运行时动态代理</td>
+<td>编译期（ajc）、编译后或类加载期（LTW）修改字节码</td>
+</tr>
+<tr>
+<td>连接点</td>
+<td>只支持方法执行，且只能是 Spring Bean 的方法</td>
+<td>方法调用与执行、构造器、字段读写、静态初始化等</td>
+</tr>
+<tr>
+<td>自调用</td>
+<td>拦截不到</td>
+<td>能拦截（直接改了字节码）</td>
+</tr>
+<tr>
+<td>性能与复杂度</td>
+<td>每次调用经过代理，开销略大；使用简单</td>
+<td>无代理开销；需要特殊编译器或 agent</td>
+</tr>
+</tbody>
+</table>
+<p>Spring AOP 复用了 AspectJ 的注解（<code>@Aspect</code>、<code>@Before</code> 等）和切点表达式解析器，但底层仍然是代理，并不是 AspectJ 织入。需要拦截自调用或非 Spring 对象时，可以用 <code>@EnableLoadTimeWeaving</code> 或 <code>@Transactional(mode = AdviceMode.ASPECTJ)</code> 切到 AspectJ。</p></div></article></section><section class="grp has-core" id="g6"><h2 class="grp-title">Spring 事务 <span class="cnt"><span class="n-all">6</span><span class="n-core">高频 4</span></span></h2><article class="q core" id="q23"><h3><a class="q-link" href="#q23">Spring 事务的实现方式和原理</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">Spring 事务分编程式和声明式两种，底层都由 <code>PlatformTransactionManager</code> 统一管理，声明式事务通过 AOP 代理实现。</p>
+<p><strong>编程式事务</strong>：用 <code>TransactionTemplate</code>（推荐）或 <code>PlatformTransactionManager</code> 手动控制，粒度细到代码块，但侵入业务。</p>
+<pre><code class="language-java">transactionTemplate.executeWithoutResult(status -&gt; {
+    orderMapper.insert(order);
+    stockMapper.deduct(skuId, 1);   // 抛出运行时异常或调用 status.setRollbackOnly() 即回滚
+});
+</code></pre>
+<p><strong>声明式事务</strong>：加 <code>@Transactional</code>，业务无感知。Spring Boot 通过 <code>TransactionAutoConfiguration</code> 自动开启，无需 <code>@EnableTransactionManagement</code>。</p>
+<p><strong>原理</strong></p>
+<ol>
+<li>启动时 <code>BeanFactoryTransactionAttributeSourceAdvisor</code> 匹配带 <code>@Transactional</code> 的 Bean，生成代理。</li>
+<li>调用时进入 <code>TransactionInterceptor.invokeWithinTransaction()</code>，解析传播行为、隔离级别、超时、只读、回滚规则。</li>
+<li><code>PlatformTransactionManager.getTransaction()</code> 按传播行为新建、加入或挂起事务。新建时拿连接、<code>setAutoCommit(false)</code>，并绑定到 <code>TransactionSynchronizationManager</code> 的 ThreadLocal。</li>
+<li>执行目标方法，MyBatis、JdbcTemplate 从当前线程取同一个连接，所以处于同一事务。</li>
+<li>正常返回 <code>commit</code>，异常按回滚规则 <code>rollback</code>；最后释放连接，恢复挂起的外层事务。</li>
+</ol>
+<p>事务管理器：JDBC / MyBatis 用 <code>DataSourceTransactionManager</code>（较新的 Spring Boot 默认注册子类 <code>JdbcTransactionManager</code>），JPA 用 <code>JpaTransactionManager</code>。</p></div></article><article class="q core" id="q24"><h3><a class="q-link" href="#q24">Spring 事务的隔离级别有哪些？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">通过 <code>@Transactional(isolation = Isolation.XXX)</code> 设置，本质是在拿到连接后调用 <code>Connection.setTransactionIsolation()</code>，最终由数据库实现，所以要和 MySQL 的隔离级别一起理解。</p>
+<table>
+<thead>
+<tr>
+<th>级别</th>
+<th>脏读</th>
+<th>不可重复读</th>
+<th>幻读</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DEFAULT</code>（默认）</td>
+<td>使用数据库自己的默认级别</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>READ_UNCOMMITTED</code> 读未提交</td>
+<td>可能</td>
+<td>可能</td>
+<td>可能</td>
+</tr>
+<tr>
+<td><code>READ_COMMITTED</code> 读已提交</td>
+<td>避免</td>
+<td>可能</td>
+<td>可能</td>
+</tr>
+<tr>
+<td><code>REPEATABLE_READ</code> 可重复读</td>
+<td>避免</td>
+<td>避免</td>
+<td>标准中可能</td>
+</tr>
+<tr>
+<td><code>SERIALIZABLE</code> 串行化</td>
+<td>避免</td>
+<td>避免</td>
+<td>避免，性能最差</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>MySQL InnoDB 默认是 <code>REPEATABLE_READ</code>，并通过 MVCC（快照读）和 Next-Key Lock（当前读）在很大程度上避免了幻读，但快照读与当前读混用时仍可能出现幻读；Oracle、PostgreSQL、SQL Server 默认是 <code>READ_COMMITTED</code>。</li>
+<li>非 <code>DEFAULT</code> 的隔离级别只在新开启事务时生效，加入已有事务时沿用外层事务的级别。</li>
+</ul></div></article><article class="q core" id="q25"><h3><a class="q-link" href="#q25">Spring 事务的传播行为有哪些？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">传播行为定义了&quot;一个事务方法被另一个方法调用时，事务该怎么处理&quot;，通过 <code>propagation</code> 设置，共 7 种：</p>
+<table>
+<thead>
+<tr>
+<th>传播行为</th>
+<th>当前有事务</th>
+<th>当前无事务</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>REQUIRED</code>（默认）</td>
+<td>加入当前事务</td>
+<td>新建事务</td>
+</tr>
+<tr>
+<td><code>REQUIRES_NEW</code></td>
+<td>挂起当前事务，新建一个独立事务</td>
+<td>新建事务</td>
+</tr>
+<tr>
+<td><code>NESTED</code></td>
+<td>在当前事务中创建嵌套事务（保存点）</td>
+<td>新建事务（同 REQUIRED）</td>
+</tr>
+<tr>
+<td><code>SUPPORTS</code></td>
+<td>加入当前事务</td>
+<td>以非事务方式执行</td>
+</tr>
+<tr>
+<td><code>NOT_SUPPORTED</code></td>
+<td>挂起当前事务，以非事务方式执行</td>
+<td>以非事务方式执行</td>
+</tr>
+<tr>
+<td><code>MANDATORY</code></td>
+<td>加入当前事务</td>
+<td>抛异常 <code>IllegalTransactionStateException</code></td>
+</tr>
+<tr>
+<td><code>NEVER</code></td>
+<td>抛异常</td>
+<td>以非事务方式执行</td>
+</tr>
+</tbody>
+</table>
+<p><strong>最容易混的三个</strong></p>
+<ul>
+<li><code>REQUIRED</code>：内外是同一个事务，任何一处回滚都整体回滚。内层抛异常被外层 catch 住时，事务已被标记为 rollback-only，外层提交会抛 <code>UnexpectedRollbackException</code>。</li>
+<li><code>REQUIRES_NEW</code>：内外是两个独立事务、两个连接。内层提交后不受外层回滚影响；内层回滚，外层只要捕获异常就能正常提交。适合记录操作日志、审计这种&quot;无论如何都要落库&quot;的场景。注意它会多占一个连接，大量使用可能耗尽连接池。</li>
+<li><code>NESTED</code>：同一个事务、同一个连接，进入内层时打一个 savepoint。内层回滚只回到保存点，外层可继续提交；外层回滚则内层一起回滚。依赖 JDBC 保存点，<code>DataSourceTransactionManager</code> 支持，<code>JpaTransactionManager</code> 默认不支持。</li>
+</ul></div></article><article class="q core" id="q26"><h3><a class="q-link" href="#q26">@Transactional 在什么情况下会失效？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">根本原因只有两类：<strong>调用没有经过代理对象</strong>，或者<strong>异常没有被事务拦截器感知 / 不在回滚规则内</strong>。</p>
+<p><strong>代理相关</strong></p>
+<ol>
+<li><strong>同类自调用</strong>：<code>this.b()</code> 调的是原始对象，绕过代理，最常见。</li>
+<li><strong>访问权限</strong>：<code>private</code> 一定不生效。Spring 6.0 之前只有 <code>public</code> 生效；Spring 6.0+（Boot 3.x）在 CGLIB 类代理下 <code>protected</code> 和包可见方法也能生效；JDK 接口代理只对接口的 <code>public</code> 方法生效。</li>
+<li><strong><code>final</code> / <code>static</code> 方法</strong>：CGLIB 无法重写增强。</li>
+<li><strong>类不归 Spring 管理</strong>：自己 <code>new</code> 的对象没有代理。</li>
+<li><strong>多线程</strong>：连接绑定在当前线程 ThreadLocal 上，新线程的操作不在原事务中。</li>
+</ol>
+<p><strong>异常与配置相关</strong>
+6. <strong>异常被 catch 吞掉</strong>：拦截器以为成功，照常提交。确需 catch 时可手动 <code>TransactionAspectSupport.currentTransactionStatus().setRollbackOnly()</code>。
+7. <strong>异常类型不匹配</strong>：默认只回滚 <code>RuntimeException</code> 和 <code>Error</code>，检查型异常需 <code>rollbackFor = Exception.class</code>。
+8. <strong>传播行为不当</strong>：<code>NOT_SUPPORTED</code>、<code>NEVER</code>、<code>SUPPORTS</code>（外层无事务时）以非事务执行。
+9. <strong>数据库不支持事务</strong>：如 MyISAM。
+10. <strong>事务管理器与数据源不对应</strong>：多数据源时常见。</p>
+<p><strong>自调用解决</strong>：拆到另一个 Bean（最推荐）；<code>@Lazy</code> 注入自身代理；<code>exposeProxy = true</code> 后用 <code>AopContext.currentProxy()</code>；或改用 <code>TransactionTemplate</code>。</p></div></article><article class="q" id="q27"><h3><a class="q-link" href="#q27">为什么 Spring 事务基于 ThreadLocal？</a></h3><div class="a"><p class="lead">数据库事务是绑定在<strong>同一个连接</strong>上的：只有同一个 Connection 上执行的多条 SQL 才属于同一个事务。Service 方法内会调用多个 DAO / Mapper，它们之间并没有显式传递连接。</p>
+<p>Spring 的做法是：事务开启时把连接（<code>ConnectionHolder</code>）放进 <code>TransactionSynchronizationManager</code> 中的 ThreadLocal（key 是 DataSource），之后同一线程里的 MyBatis、JdbcTemplate 通过 <code>DataSourceUtils.getConnection()</code> 都能拿到这个连接。好处是：</p>
+<ul>
+<li>不需要在方法参数里一路传递 Connection，业务代码无感知。</li>
+<li>不同线程（不同请求）的事务天然隔离，互不干扰。</li>
+<li>挂起和恢复（<code>REQUIRES_NEW</code>、<code>NOT_SUPPORTED</code>）也就是把当前线程绑定的资源暂存起来，再绑定新的。</li>
+</ul>
+<p>代价是：事务只在当前线程内有效，在事务方法里开新线程、用线程池或 <code>@Async</code> 执行的数据库操作都不在原事务中。</p></div></article><article class="q" id="q28"><h3><a class="q-link" href="#q28">声明式事务有什么局限？大事务有什么问题？</a></h3><div class="a"><p class="lead"><code>@Transactional</code> 用起来方便，但有几个局限：</p>
+<ul>
+<li><strong>粒度是整个方法</strong>：方法里只要有一部分需要事务，整个方法都会在事务中执行，容易形成大事务。</li>
+<li><strong>事务边界不直观</strong>：调用链上某处加了 <code>@Transactional</code>，下游方法可能不知不觉处于事务中。</li>
+<li><strong>受代理机制限制</strong>：自调用、非 public、final、异常被吞等都会失效。</li>
+<li><strong>不可回滚的操作</strong>：事务里的 RPC 调用、发 MQ、写缓存、写文件，数据库回滚了它们不会回滚，容易产生不一致；比如事务还没提交消息就被消费，消费方查不到数据。</li>
+</ul>
+<p>大事务的危害：长时间占用数据库连接导致连接池耗尽；行锁持有时间变长，并发下锁等待和死锁增多；undo log 堆积；主从延迟增加；回滚代价大。</p>
+<p>优化建议：</p>
+<ul>
+<li>查询、远程调用、计算等放到事务外，事务里只保留必要的写操作；可以用 <code>TransactionTemplate</code> 精确控制边界。</li>
+<li>需要在提交后执行的动作（发消息、删缓存）用 <code>@TransactionalEventListener(phase = AFTER_COMMIT)</code> 或 <code>TransactionSynchronization.afterCommit()</code>。</li>
+<li>设置 <code>timeout</code>，纯读方法可以设置 <code>readOnly = true</code>。</li>
+</ul></div></article></section><section class="grp has-core" id="g7"><h2 class="grp-title">常用注解 <span class="cnt"><span class="n-all">4</span><span class="n-core">高频 2</span></span></h2><article class="q core" id="q29"><h3><a class="q-link" href="#q29">Spring 常见注解有哪些？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">按用途分组记忆。</p>
+<table>
+<thead>
+<tr>
+<th>用途</th>
+<th>注解</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>声明 Bean</td>
+<td><code>@Component</code>、<code>@Controller</code>、<code>@Service</code>、<code>@Repository</code>；<code>@Configuration</code> + <code>@Bean</code>；<code>@ComponentScan</code>、<code>@Import</code></td>
+</tr>
+<tr>
+<td>依赖注入</td>
+<td><code>@Autowired</code>、<code>@Qualifier</code>、<code>@Primary</code>、<code>@Resource</code>、<code>@Value</code></td>
+</tr>
+<tr>
+<td>作用域与生命周期</td>
+<td><code>@Scope</code>、<code>@Lazy</code>、<code>@DependsOn</code>、<code>@Conditional</code>；<code>@PostConstruct</code>、<code>@PreDestroy</code>（Boot 3 在 <code>jakarta.annotation</code> 包）</td>
+</tr>
+<tr>
+<td>AOP 与事务</td>
+<td><code>@Aspect</code>、<code>@Pointcut</code>、<code>@Before</code>、<code>@Around</code>；<code>@Transactional</code>；<code>@Async</code>、<code>@Scheduled</code>（需 <code>@EnableAsync</code>、<code>@EnableScheduling</code>）</td>
+</tr>
+<tr>
+<td>Spring MVC</td>
+<td><code>@RestController</code>（= <code>@Controller</code> + <code>@ResponseBody</code>）、<code>@GetMapping</code> 等；取参 <code>@PathVariable</code>、<code>@RequestParam</code>、<code>@RequestBody</code>、<code>@RequestHeader</code>；<code>@RestControllerAdvice</code> + <code>@ExceptionHandler</code>；<code>@Validated</code> / <code>@Valid</code></td>
+</tr>
+<tr>
+<td>Spring Boot</td>
+<td><code>@SpringBootApplication</code>（= <code>@SpringBootConfiguration</code> + <code>@EnableAutoConfiguration</code> + <code>@ComponentScan</code>）、<code>@ConfigurationProperties</code>、<code>@ConditionalOnClass</code> / <code>@ConditionalOnMissingBean</code> / <code>@ConditionalOnProperty</code></td>
+</tr>
+</tbody>
+</table></div></article><article class="q" id="q30"><h3><a class="q-link" href="#q30">@Component、@Controller、@Service、@Repository 的区别</a></h3><div class="a"><p class="lead">四个注解都会把类注册为 Bean，后三个都是 <code>@Component</code> 的派生注解（源码上标注了 <code>@Component</code>），对容器而言功能几乎一样，区别主要是分层语义：</p>
+<ul>
+<li><code>@Controller</code>：表现层。配合 Spring MVC 时，被识别为处理器，其中的 <code>@RequestMapping</code> 方法会注册为请求映射。</li>
+<li><code>@Service</code>：业务层，纯语义标识，没有额外行为。</li>
+<li><code>@Repository</code>：持久层。配合 <code>PersistenceExceptionTranslationPostProcessor</code>，会把底层数据访问异常（如 JPA / Hibernate 异常）统一转换为 Spring 的 <code>DataAccessException</code> 体系。</li>
+<li><code>@Component</code>：不属于以上分层的通用组件，如工具类、拦截器。</li>
+</ul>
+<p>按分层使用，可读性更好，也便于用切点表达式按层做增强。MyBatis 的 Mapper 接口通常由 <code>@Mapper</code> / <code>@MapperScan</code> 注册，不依赖 <code>@Repository</code>。</p></div></article><article class="q" id="q31"><h3><a class="q-link" href="#q31">@Configuration 和 @Component 有什么区别？</a></h3><div class="a"><p class="lead">两者都能让类成为 Bean，也都能在里面写 <code>@Bean</code> 方法，区别在于 <code>@Bean</code> 方法之间互相调用时的语义。</p>
+<ul>
+<li><code>@Configuration</code>（默认 <code>proxyBeanMethods = true</code>，Full 模式）：配置类本身会被 CGLIB 增强。在配置类里调用另一个 <code>@Bean</code> 方法时，会被拦截并返回容器中已有的单例，保证单例语义。</li>
+<li><code>@Component</code> 或 <code>@Configuration(proxyBeanMethods = false)</code>（Lite 模式）：不做 CGLIB 增强，<code>@Bean</code> 方法互调就是普通 Java 方法调用，每调用一次就 <code>new</code> 一个新对象，不是容器里的那个 Bean。</li>
+</ul>
+<pre><code class="language-java">@Configuration
+public class AppConfig {
+    @Bean public DataSource dataSource() { return new HikariDataSource(); }
+    @Bean public JdbcTemplate jdbcTemplate() {
+        return new JdbcTemplate(dataSource());   // Full 模式下返回的是同一个 DataSource 单例
+    }
+}
+</code></pre>
+<p>Spring Boot 的自动配置类普遍使用 <code>proxyBeanMethods = false</code>，减少 CGLIB 开销、加快启动；这时 Bean 之间的依赖通过方法参数注入，而不是方法互调。</p></div></article><article class="q core" id="q32"><h3><a class="q-link" href="#q32">读取配置文件中的值用哪个注解？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">单个值用 <code>@Value</code>，成组的结构化配置用 <code>@ConfigurationProperties</code>。</p>
+<pre><code class="language-java">@Value(&quot;${server.port:8080}&quot;)        // 冒号后是默认值
+private Integer port;
+
+@Value(&quot;#{T(java.lang.Math).random() * 100}&quot;)   // #{} 是 SpEL 表达式
+private double random;
+
+@ConfigurationProperties(prefix = &quot;app.redis&quot;)
+public class RedisProps {            // 需要 @Component 或 @EnableConfigurationProperties 注册
+    private String host;
+    private int port;
+    // getter / setter
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>@Value</th>
+<th>@ConfigurationProperties</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>绑定方式</td>
+<td>逐个属性</td>
+<td>按前缀批量绑定</td>
+</tr>
+<tr>
+<td>松散绑定（<code>user-name</code> 对应 <code>userName</code>）</td>
+<td>不支持</td>
+<td>支持</td>
+</tr>
+<tr>
+<td>SpEL</td>
+<td>支持</td>
+<td>不支持</td>
+</tr>
+<tr>
+<td>复杂类型（List、Map、嵌套对象）</td>
+<td>麻烦</td>
+<td>天然支持</td>
+</tr>
+<tr>
+<td>校验</td>
+<td>不支持</td>
+<td>配合 <code>@Validated</code> 支持 JSR-303 校验</td>
+</tr>
+</tbody>
+</table>
+<p>注意：<code>@Value</code> 不能注入 <code>static</code> 字段；所在类必须是 Spring Bean 才生效。</p></div></article></section><section class="grp has-core" id="g8"><h2 class="grp-title">设计模式与版本演进 <span class="cnt"><span class="n-all">3</span><span class="n-core">高频 1</span></span></h2><article class="q core" id="q33"><h3><a class="q-link" href="#q33">Spring 中用到了哪些设计模式？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">核心是工厂、单例、代理、模板方法、观察者，回答时挑 4 到 5 个各配一个具体类即可。</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>体现</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>工厂模式</td>
+<td><code>BeanFactory</code> / <code>ApplicationContext</code> 按 BeanDefinition 创建对象；<code>FactoryBean</code></td>
+</tr>
+<tr>
+<td>单例模式</td>
+<td>Bean 默认 singleton，由 <code>DefaultSingletonBeanRegistry</code> 维护（容器级单例，非私有构造器写法）</td>
+</tr>
+<tr>
+<td>代理模式</td>
+<td>AOP、<code>@Transactional</code>、<code>@Async</code>、<code>@Cacheable</code>，JDK / CGLIB 动态代理</td>
+</tr>
+<tr>
+<td>模板方法</td>
+<td><code>JdbcTemplate</code>、<code>TransactionTemplate</code>；<code>refresh()</code> 定义固定流程，<code>onRefresh()</code> 留给子类</td>
+</tr>
+<tr>
+<td>观察者模式</td>
+<td><code>ApplicationEvent</code>、<code>@EventListener</code>，由 <code>ApplicationEventMulticaster</code> 广播</td>
+</tr>
+<tr>
+<td>适配器模式</td>
+<td>MVC 的 <code>HandlerAdapter</code>；AOP 的 <code>AdvisorAdapter</code> 把 Advice 适配成 <code>MethodInterceptor</code></td>
+</tr>
+<tr>
+<td>责任链模式</td>
+<td><code>HandlerExecutionChain</code> 拦截器链；AOP 拦截器链</td>
+</tr>
+<tr>
+<td>策略模式</td>
+<td><code>Resource</code> 多种实现、<code>InstantiationStrategy</code>、各种 <code>PlatformTransactionManager</code></td>
+</tr>
+<tr>
+<td>装饰器模式</td>
+<td><code>BeanWrapper</code>、<code>TransactionAwareDataSourceProxy</code></td>
+</tr>
+</tbody>
+</table></div></article><article class="q" id="q34"><h3><a class="q-link" href="#q34">Spring 6.0 / Spring Boot 3.0 有哪些新特性？</a></h3><div class="a"><p class="lead">Spring Framework 6.0 和 Spring Boot 3.0 于 2022 年 11 月发布，最大变化是基线升级和原生镜像支持。</p>
+<ul>
+<li><strong>基线升级</strong>：最低 JDK 17；Java EE 迁移到 Jakarta EE 9+，包名 <code>javax.*</code> 改为 <code>jakarta.*</code>，升级时改动最大。</li>
+<li><strong>AOT 与 GraalVM 原生镜像</strong>：构建期生成 Bean 定义代码和反射元数据，编译为 Native Image，启动毫秒级、内存更低；代价是构建慢，反射、动态代理受限，需要 hints。Spring Native 已合并进来。</li>
+<li><strong>可观测性</strong>：基于 Micrometer Observation 统一指标和链路，Sleuth 迁移到 Micrometer Tracing。</li>
+<li><strong>HTTP Interface</strong>：<code>@HttpExchange</code> 声明式 HTTP 客户端，类似 Feign。</li>
+<li><strong>ProblemDetail</strong>：支持 RFC 7807 错误响应格式。</li>
+<li><strong>虚拟线程</strong>：Spring 6.1 / Boot 3.2 起，JDK 21 上 <code>spring.threads.virtual.enabled=true</code> 启用；同版本新增 <code>RestClient</code>、<code>JdbcClient</code>。</li>
+<li>自动配置注册文件从 <code>spring.factories</code> 改为 <code>META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports</code>（Boot 2.7 引入，3.0 起旧方式不再支持自动配置）。</li>
+</ul></div></article><article class="q" id="q35"><h3><a class="q-link" href="#q35">Spring 中容易混淆的几组概念</a></h3><div class="a"><ul>
+<li><strong>IoC 与 DI</strong>：IoC 是思想（控制权交给容器），DI 是实现方式（容器把依赖注入进来）。</li>
+<li><strong>BeanFactory 与 ApplicationContext</strong>：前者是基础容器、懒加载；后者是子接口，启动时预实例化单例，并提供事件、国际化、资源加载等功能。</li>
+<li><strong>BeanFactory 与 FactoryBean</strong>：前者是容器，后者是一个能生产对象的 Bean，<code>&amp;name</code> 拿它本身。</li>
+<li><strong>BeanFactoryPostProcessor 与 BeanPostProcessor</strong>：前者在实例化前改 BeanDefinition，后者在初始化前后处理 Bean 实例（AOP 代理在这里生成）。</li>
+<li><strong>@Autowired 与 @Resource</strong>：前者 Spring 注解、先按类型；后者 Jakarta 标准注解、先按名称。</li>
+<li><strong>JDK 代理与 CGLIB</strong>：前者基于接口，后者基于继承、不能代理 final；Spring Boot 2.x 起默认 CGLIB。</li>
+<li><strong>循环依赖</strong>：只能解决单例 + 属性 / Setter 注入，构造器和 prototype 不行；三级缓存的第三级是为了按需生成早期 AOP 代理；Spring Boot 2.6+ 默认禁止循环引用。</li>
+<li><strong>事务失效</strong>：多数是没走代理（自调用、非 public、final、未被管理）或异常没抛到拦截器（被 catch、检查型异常未配置 <code>rollbackFor</code>）。</li>
+<li><strong>REQUIRES_NEW 与 NESTED</strong>：前者是独立的新事务和新连接；后者是同一事务内的保存点，外层回滚会连带内层。</li>
+<li><strong>自动装配</strong>：Spring Boot 自动配置不是无条件装配，而是通过 <code>@Conditional</code> 系列注解按 classpath、已有 Bean、配置项等条件按需生效，用户自定义的 Bean 优先（<code>@ConditionalOnMissingBean</code>）。</li>
+</ul></div></article></section><h2 class="block-title">SpringMVC &amp; SpringBoot</h2><section class="grp has-core" id="g9"><h2 class="grp-title">Spring MVC 核心 <span class="cnt"><span class="n-all">6</span><span class="n-core">高频 2</span></span></h2><article class="q" id="q36"><h3><a class="q-link" href="#q36">SpringMVC是什么？</a></h3><div class="a"><p class="lead">Spring MVC 是 Spring Framework 中基于 Servlet API 的 Web 框架（模块名 <code>spring-webmvc</code>），按 MVC 模式把 Web 层分为模型、视图、控制器，核心是前端控制器 <code>DispatcherServlet</code>。</p>
+<ul>
+<li><strong>Model</strong>：封装业务数据，比如 <code>Model</code>、<code>ModelAndView</code> 中的数据，或者直接返回的对象。</li>
+<li><strong>View</strong>：渲染页面，比如 Thymeleaf、JSP；前后端分离时通常不用视图，直接返回 JSON。</li>
+<li><strong>Controller</strong>：接收请求、调用业务逻辑、返回结果，用 <code>@Controller</code> / <code>@RestController</code> 标注。</li>
+</ul>
+<p><strong>核心特性</strong></p>
+<ul>
+<li>前端控制器统一接收请求、分发给处理器，各组件职责单一、可替换。</li>
+<li>基于注解的请求映射（<code>@RequestMapping</code> 系列），参数自动绑定、类型转换和校验（<code>@Valid</code>）。</li>
+<li>通过 <code>HttpMessageConverter</code> 支持 RESTful 接口和 JSON 序列化（默认 Jackson）。</li>
+<li>灵活的视图解析、拦截器、统一异常处理、文件上传、国际化等。</li>
+</ul>
+<p>Spring 还有一个响应式 Web 框架 Spring WebFlux，基于 Reactor 和非阻塞 IO，和 Spring MVC 是并列关系。</p></div></article><article class="q" id="q37"><h3><a class="q-link" href="#q37">SpringMVC有哪些重要组件</a></h3><div class="a"><p class="lead">核心组件都由 <code>DispatcherServlet</code> 调度：它通过 <code>HandlerMapping</code> 找处理器，通过 <code>HandlerAdapter</code> 执行处理器，再通过 <code>ViewResolver</code> 或 <code>HttpMessageConverter</code> 产出响应。</p>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DispatcherServlet</code></td>
+<td>前端控制器，请求入口，调度其他组件</td>
+</tr>
+<tr>
+<td><code>HandlerMapping</code></td>
+<td>按 URL、方法找到 Handler，返回 <code>HandlerExecutionChain</code>（Handler + 拦截器）；注解方式用 <code>RequestMappingHandlerMapping</code></td>
+</tr>
+<tr>
+<td><code>HandlerAdapter</code></td>
+<td>统一调用不同类型的 Handler；注解方式用 <code>RequestMappingHandlerAdapter</code></td>
+</tr>
+<tr>
+<td>Handler（Controller）</td>
+<td>真正处理业务的方法</td>
+</tr>
+<tr>
+<td><code>HandlerInterceptor</code></td>
+<td>在 Handler 执行前后、请求完成后插入逻辑</td>
+</tr>
+<tr>
+<td><code>HandlerMethodArgumentResolver</code> / <code>HandlerMethodReturnValueHandler</code></td>
+<td>解析方法参数 / 处理返回值</td>
+</tr>
+<tr>
+<td><code>HttpMessageConverter</code></td>
+<td>请求体、响应体与对象互转，JSON 用 <code>MappingJackson2HttpMessageConverter</code></td>
+</tr>
+<tr>
+<td><code>ViewResolver</code></td>
+<td>把逻辑视图名解析成 View</td>
+</tr>
+<tr>
+<td><code>HandlerExceptionResolver</code></td>
+<td>处理 Handler 抛出的异常，支持 <code>@ExceptionHandler</code></td>
+</tr>
+</tbody>
+</table></div></article><article class="q core" id="q38"><h3><a class="q-link" href="#q38">SpringMVC的执行流程是怎样的？</a><span class="tags"><i class="t-core">高频</i><i class="t-co bank">农业银行</i><i class="t-co">PDD</i><i class="t-co">阿里云</i></span></h3><div class="a"><p class="lead">一句话：请求 → <code>DispatcherServlet</code> → <code>HandlerMapping</code> 找到 Handler 和拦截器链 → <code>HandlerAdapter</code> 执行 Controller → 返回视图交给 <code>ViewResolver</code> 渲染，或者返回对象由 <code>HttpMessageConverter</code> 写成 JSON → 响应。</p>
+<ol>
+<li>请求先经过 Servlet 容器的 Filter 链，然后进入 <code>DispatcherServlet</code>，在 <code>doDispatch()</code> 中处理。</li>
+<li><code>DispatcherServlet</code> 遍历 <code>HandlerMapping</code>，根据 URL、请求方法等找到对应的 Handler，返回 <code>HandlerExecutionChain</code>（Handler + 拦截器列表）。找不到就返回 404。</li>
+<li>根据 Handler 类型找到支持它的 <code>HandlerAdapter</code>。</li>
+<li>依次执行拦截器的 <code>preHandle()</code>，任意一个返回 false 就终止请求。</li>
+<li><code>HandlerAdapter</code> 调用 Controller 方法：先用参数解析器把请求参数、路径变量、请求体（经 <code>HttpMessageConverter</code> 反序列化）绑定到方法参数，执行方法后再用返回值处理器处理返回值。</li>
+<li>倒序执行拦截器的 <code>postHandle()</code>。</li>
+<li>处理结果：
+<ul>
+<li>有 <code>@ResponseBody</code> / <code>@RestController</code> 时，返回值在第 5 步就由 <code>HttpMessageConverter</code> 序列化为 JSON 写入响应体，不再经过视图解析。</li>
+<li>返回视图时，<code>ViewResolver</code> 把逻辑视图名解析成 View，View 用模型数据渲染页面。</li>
+<li>出现异常时由 <code>HandlerExceptionResolver</code> 处理（如 <code>@ExceptionHandler</code>）。</li>
+</ul>
+</li>
+<li>倒序执行拦截器的 <code>afterCompletion()</code>，最后响应经 Filter 链返回客户端。</li>
+</ol></div></article><article class="q" id="q39"><h3><a class="q-link" href="#q39">Spring MVC为什么需要HandlerAdapter？</a></h3><div class="a"><p class="lead">因为 Handler 的类型不统一，<code>HandlerAdapter</code> 用适配器模式把各种 Handler 的调用方式统一成 <code>handle()</code> 方法，让 <code>DispatcherServlet</code> 不需要知道 Handler 具体怎么执行。</p>
+<p><strong>Handler 有多种形式</strong></p>
+<ul>
+<li><code>@RequestMapping</code> 注解的方法 → <code>RequestMappingHandlerAdapter</code>，要做参数解析、数据绑定、返回值处理。</li>
+<li>实现 <code>Controller</code> 接口的类 → <code>SimpleControllerHandlerAdapter</code>，调用 <code>handleRequest()</code>。</li>
+<li>实现 <code>HttpRequestHandler</code> 接口的类 → <code>HttpRequestHandlerAdapter</code>。</li>
+<li>函数式端点 <code>RouterFunction</code> → <code>HandlerFunctionAdapter</code>。</li>
+</ul>
+<p><strong>好处</strong></p>
+<ul>
+<li>如果没有适配器，<code>DispatcherServlet</code> 里要写一堆 <code>if (handler instanceof ...)</code>，每增加一种 Handler 都要修改它，违反开闭原则。</li>
+<li>有了适配器，<code>DispatcherServlet</code> 只需要遍历所有 <code>HandlerAdapter</code>，调用 <code>supports(handler)</code> 找到支持的那个，再调用 <code>handle()</code>。新增 Handler 类型只需要新增一个适配器。</li>
+</ul>
+<pre><code class="language-java">public interface HandlerAdapter {
+    boolean supports(Object handler);
+    ModelAndView handle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception;
+}
+</code></pre></div></article><article class="q core" id="q40"><h3><a class="q-link" href="#q40">SpringMvc有哪些常用注解？</a><span class="tags"><i class="t-core">高频</i><i class="t-co bank">农业银行</i><i class="t-co bank">交通银行</i><i class="t-co">阿里云</i><i class="t-co">携程</i></span></h3><div class="a"><p class="lead">按用途分为声明控制器、请求映射、参数绑定、响应与异常四类。</p>
+<table>
+<thead>
+<tr>
+<th>用途</th>
+<th>注解</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>声明控制器</td>
+<td><code>@Controller</code>（返回值默认是视图名）、<code>@RestController</code>（= <code>@Controller</code> + <code>@ResponseBody</code>）</td>
+</tr>
+<tr>
+<td>请求映射</td>
+<td><code>@RequestMapping</code>（可指定 <code>method</code>、<code>params</code>、<code>consumes</code>、<code>produces</code>，类和方法上都能用）；<code>@GetMapping</code>、<code>@PostMapping</code>、<code>@PutMapping</code>、<code>@DeleteMapping</code>、<code>@PatchMapping</code></td>
+</tr>
+<tr>
+<td>参数绑定</td>
+<td><code>@RequestParam</code>（查询 / 表单参数，<code>required</code>、<code>defaultValue</code>）、<code>@PathVariable</code>（如 <code>/users/{id}</code>）、<code>@RequestBody</code>（JSON 反序列化）、<code>@RequestHeader</code>、<code>@CookieValue</code>、<code>@ModelAttribute</code>、<code>@Valid</code> / <code>@Validated</code>、<code>@SessionAttributes</code></td>
+</tr>
+<tr>
+<td>响应与异常</td>
+<td><code>@ResponseBody</code>、<code>@ResponseStatus</code>、<code>@ExceptionHandler</code>、<code>@ControllerAdvice</code> / <code>@RestControllerAdvice</code>、<code>@CrossOrigin</code></td>
+</tr>
+</tbody>
+</table>
+<p>易混点：<code>@ModelAttribute</code> 用在参数上是把请求参数绑定到对象（不写注解的对象参数默认也这样）；用在方法上则该方法在本控制器每个请求前执行，向模型添加数据。</p></div></article><article class="q" id="q41"><h3><a class="q-link" href="#q41">什么是springmvc的父子容器</a></h3><div class="a"><p>传统 Spring + Spring MVC 项目中有两个 IoC 容器：<code>ContextLoaderListener</code> 创建的根容器（父容器）管理 Service、DAO、数据源、事务等；<code>DispatcherServlet</code> 创建的 Web 容器（子容器）管理 Controller、视图解析器、HandlerMapping 等 Web 组件。子容器可以访问父容器的 Bean，父容器不能访问子容器的 Bean。</p>
+<p><strong>为什么这样设计</strong></p>
+<ul>
+<li>职责分离：业务层与 Web 层解耦，替换 Web 框架时业务层不受影响。</li>
+<li>一个应用可以配置多个 <code>DispatcherServlet</code>，各自有子容器，共享同一个父容器中的业务 Bean。</li>
+</ul>
+<p><strong>常见问题</strong></p>
+<ul>
+<li>子容器查找 Bean 时先找自己，找不到再到父容器找，所以 Controller 可以注入 Service，Service 不能注入 Controller。</li>
+<li>如果两个容器都扫描了全部包，Service 会在两个容器中各创建一份。子容器中的那份没有被父容器的事务配置增强，Controller 注入到的是它，导致 <code>@Transactional</code> 失效。所以子容器只扫描 <code>@Controller</code>，父容器排除 <code>@Controller</code>。</li>
+<li>后置处理器只对所在容器的 Bean 生效，在父容器配置的 AOP 不会作用于子容器的 Controller。</li>
+</ul>
+<p><strong>Spring Boot 中</strong>：默认只有一个容器，<code>DispatcherServlet</code> 直接使用应用的 <code>ApplicationContext</code>，所以不存在父子容器问题。</p></div></article></section><section class="grp has-core" id="g10"><h2 class="grp-title">Web 开发实战 <span class="cnt"><span class="n-all">4</span><span class="n-core">高频 1</span></span></h2><article class="q core" id="q42"><h3><a class="q-link" href="#q42">Spring MVC中拦截器和过滤器的区别？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">Filter 是 Servlet 规范的组件，作用在 <code>DispatcherServlet</code> 之前，面向所有请求；Interceptor 是 Spring MVC 的组件，作用在 <code>DispatcherServlet</code> 内部、Handler 执行前后，面向映射到 Controller 的请求。</p>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>过滤器 Filter</th>
+<th>拦截器 Interceptor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>规范</td>
+<td>Servlet（<code>jakarta.servlet.Filter</code>，Boot 2.x 是 <code>javax.servlet</code>）</td>
+<td>Spring MVC（<code>HandlerInterceptor</code>）</td>
+</tr>
+<tr>
+<td>实现</td>
+<td>Servlet 容器的 <code>FilterChain</code> 回调</td>
+<td><code>DispatcherServlet.doDispatch()</code> 中调用</td>
+</tr>
+<tr>
+<td>时机</td>
+<td>进入 <code>DispatcherServlet</code> 前、响应返回后</td>
+<td><code>preHandle</code>、<code>postHandle</code>、<code>afterCompletion</code></td>
+</tr>
+<tr>
+<td>范围</td>
+<td>所有请求，包括静态资源</td>
+<td>只拦截找到了 Handler 的请求</td>
+</tr>
+<tr>
+<td>信息</td>
+<td>原始 request、response</td>
+<td>额外能拿到 <code>HandlerMethod</code>（可读方法注解）、<code>ModelAndView</code></td>
+</tr>
+<tr>
+<td>典型用途</td>
+<td>编码、CORS、XSS 过滤、Spring Security 认证</td>
+<td>登录校验、权限、注解限流 / 幂等、耗时统计</td>
+</tr>
+</tbody>
+</table>
+<p><strong>执行顺序</strong>：Filter → <code>DispatcherServlet</code> → <code>preHandle</code> → Controller → <code>postHandle</code> → 视图渲染 → <code>afterCompletion</code> → Filter 返回。</p>
+<p><strong>易错点</strong>：Controller 抛异常时 <code>postHandle</code> 不执行，但 <code>preHandle</code> 返回 true 后 <code>afterCompletion</code> 一定执行，所以清理 ThreadLocal 放在这里。<code>@ControllerAdvice</code> 捕获不到 Filter 中的异常。</p></div></article><article class="q" id="q43"><h3><a class="q-link" href="#q43">如何实现SpringMVC拦截器</a></h3><div class="a"><p class="lead">实现 <code>HandlerInterceptor</code> 接口重写需要的方法，再通过 <code>WebMvcConfigurer.addInterceptors()</code> 注册并指定拦截路径。</p>
+<p><strong>三个方法</strong>（JDK 8 起都是 default 方法，按需重写）</p>
+<ul>
+<li><code>preHandle</code>：Handler 执行前调用。返回 true 继续执行，返回 false 中断请求（需要自己写响应）。常用于登录校验、权限校验。</li>
+<li><code>postHandle</code>：Handler 正常执行后、视图渲染前调用，可以修改 <code>ModelAndView</code>。对 <code>@ResponseBody</code> 接口来说，响应体此时已经写出，不能再修改。</li>
+<li><code>afterCompletion</code>：整个请求完成后调用，无论是否异常都会执行（前提是 <code>preHandle</code> 返回了 true），适合清理资源、记录耗时。</li>
+</ul>
+<p>多个拦截器时，<code>preHandle</code> 按注册顺序执行，<code>postHandle</code> 和 <code>afterCompletion</code> 倒序执行。</p>
+<pre><code class="language-java">@Component
+public class LoginInterceptor implements HandlerInterceptor {
+    @Override
+    public boolean preHandle(HttpServletRequest req, HttpServletResponse resp, Object handler) {
+        String token = req.getHeader(&quot;Authorization&quot;);
+        if (token == null || !tokenService.verify(token)) {
+            resp.setStatus(HttpStatus.UNAUTHORIZED.value());
+            return false;
+        }
+        UserContext.set(tokenService.parse(token));     // 存入 ThreadLocal
+        return true;
+    }
+    @Override
+    public void afterCompletion(HttpServletRequest req, HttpServletResponse resp, Object handler, Exception ex) {
+        UserContext.remove();                            // 防止线程复用导致数据串用和内存泄漏
+    }
+}
+
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+    @Autowired
+    private LoginInterceptor loginInterceptor;
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(loginInterceptor)
+                .addPathPatterns(&quot;/**&quot;)
+                .excludePathPatterns(&quot;/login&quot;, &quot;/static/**&quot;)
+                .order(1);
+    }
+}
+</code></pre>
+<p><code>tokenService</code> 这里省略了注入。如果拦截器用 <code>new</code> 创建再注册，它就不是 Spring 管理的对象，内部无法 <code>@Autowired</code> 注入 Bean，所以上例把它声明为 Bean 再注入。</p></div></article><article class="q" id="q44"><h3><a class="q-link" href="#q44">SpringBoot如何进行全局异常处理？</a></h3><div class="a"><p class="lead">最常用的是 <code>@RestControllerAdvice</code> + <code>@ExceptionHandler</code>：在一个类中集中处理所有 Controller 抛出的异常，返回统一的响应格式。</p>
+<pre><code class="language-java">@RestControllerAdvice
+public class GlobalExceptionHandler {
+    @ExceptionHandler(BusinessException.class)
+    public Result&lt;Void&gt; handleBiz(BusinessException e) {
+        return Result.fail(e.getCode(), e.getMessage());
+    }
+    @ExceptionHandler(MethodArgumentNotValidException.class)   // @Valid 校验失败
+    public Result&lt;Void&gt; handleValid(MethodArgumentNotValidException e) {
+        String msg = e.getBindingResult().getFieldErrors().get(0).getDefaultMessage();
+        return Result.fail(400, msg);
+    }
+    @ExceptionHandler(Exception.class)                          // 兜底
+    public Result&lt;Void&gt; handleOther(Exception e) {
+        log.error(&quot;系统异常&quot;, e);
+        return Result.fail(500, &quot;系统繁忙&quot;);
+    }
+}
+</code></pre>
+<p><strong>要点</strong></p>
+<ul>
+<li><code>@RestControllerAdvice</code> = <code>@ControllerAdvice</code> + <code>@ResponseBody</code>。可以用 <code>basePackages</code> 或 <code>annotations</code> 限定作用范围。</li>
+<li>匹配规则：按异常类型找最接近的处理方法，子类异常优先于父类异常。Controller 内部定义的 <code>@ExceptionHandler</code> 优先于全局的。</li>
+<li>可以配合 <code>@ResponseStatus</code> 设置 HTTP 状态码，或者返回 <code>ResponseEntity</code>。</li>
+</ul>
+<p><strong>其他方式</strong></p>
+<ul>
+<li><code>ErrorController</code>：Spring Boot 默认由 <code>BasicErrorController</code> 处理 <code>/error</code> 路径，没有被处理的异常、404 等最终都会转到这里，返回默认的错误页或 JSON。可以自定义实现来改变默认的错误响应。</li>
+<li>实现 <code>HandlerExceptionResolver</code> 接口：更底层的方式，<code>@ExceptionHandler</code> 就是由其中的 <code>ExceptionHandlerExceptionResolver</code> 支持的。</li>
+<li>Spring Boot 3.x 支持 RFC 9457 的 <code>ProblemDetail</code> 标准错误格式，可以通过 <code>spring.mvc.problemdetails.enabled=true</code> 开启。</li>
+</ul>
+<p><strong>局限</strong>：全局异常处理只能捕获 <code>DispatcherServlet</code> 内部（Controller、拦截器）抛出的异常，Filter 中的异常要在 Filter 里自己处理。</p></div></article><article class="q" id="q45"><h3><a class="q-link" href="#q45">SpringBoot如何进行跨域请求的处理？</a></h3><div class="a"><p class="lead">浏览器的同源策略会拦截协议、域名、端口任一不同的跨域请求响应，服务端要通过 CORS 响应头声明允许跨域。Spring Boot 中有三种方式：<code>@CrossOrigin</code> 注解、<code>WebMvcConfigurer</code> 全局配置、注册 <code>CorsFilter</code>。</p>
+<p><strong>1. <code>@CrossOrigin</code> 注解</strong>：加在 Controller 类或方法上，作用范围小。</p>
+<pre><code class="language-java">@CrossOrigin(origins = &quot;http://localhost:8081&quot;)
+@RestController
+public class UserController { }
+</code></pre>
+<p><strong>2. 全局配置</strong></p>
+<pre><code class="language-java">@Configuration
+public class CorsConfig implements WebMvcConfigurer {
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping(&quot;/**&quot;)
+                .allowedOriginPatterns(&quot;https://*.example.com&quot;)
+                .allowedMethods(&quot;GET&quot;, &quot;POST&quot;, &quot;PUT&quot;, &quot;DELETE&quot;, &quot;OPTIONS&quot;)
+                .allowedHeaders(&quot;*&quot;)
+                .allowCredentials(true)
+                .maxAge(3600);       // 预检请求结果缓存 1 小时
+    }
+}
+</code></pre>
+<p><strong>3. CorsFilter</strong>：注册一个 <code>CorsFilter</code> Bean，在过滤器层面处理，优先级最高。项目中有登录拦截器时更可靠：浏览器发出的 OPTIONS 预检请求不带认证信息，可能先被拦截器拒绝，导致跨域失败；用过滤器可以在拦截器之前处理掉预检请求。使用 Spring Security 时要在安全配置中开启 <code>cors()</code>。</p>
+<p><strong>注意点</strong></p>
+<ul>
+<li><code>allowCredentials(true)</code> 时不能用 <code>allowedOrigins(&quot;*&quot;)</code>，Spring 会直接报错，要列出具体的域名，或者用 Spring 5.3 起提供的 <code>allowedOriginPatterns</code>。</li>
+<li>非简单请求（如 <code>Content-Type: application/json</code>、自定义请求头）会先发 OPTIONS 预检请求。</li>
+<li>也可以不在应用里处理，由 Nginx 或网关统一添加 CORS 响应头，或者用反向代理让前后端同源。</li>
+</ul></div></article></section><section class="grp has-core" id="g11"><h2 class="grp-title">Spring Boot 基础与配置 <span class="cnt"><span class="n-all">5</span><span class="n-core">高频 2</span></span></h2><article class="q core" id="q46"><h3><a class="q-link" href="#q46">SpringBoot和Spring有什么区别？</a><span class="tags"><i class="t-core">高频</i><i class="t-co bank">工商银行</i><i class="t-co">字节</i><i class="t-co bank">交通银行</i></span></h3><div class="a"><p class="lead">Spring 是提供 IoC、AOP、事务、MVC 等能力的基础框架；Spring Boot 是构建在 Spring 之上的脚手架，用&quot;约定优于配置&quot;、自动配置、Starter 和内嵌服务器，让 Spring 应用可以开箱即用、直接 <code>java -jar</code> 运行。Spring Boot 不是替代 Spring，底层仍然是 Spring。</p>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>Spring</th>
+<th>Spring Boot</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>配置</td>
+<td>需要手动配置大量 XML 或 Java Config（DispatcherServlet、数据源、事务管理器、视图解析器等）</td>
+<td>根据依赖自动配置，只需在 <code>application.yml</code> 中覆盖少量参数</td>
+</tr>
+<tr>
+<td>依赖管理</td>
+<td>自己挑选各依赖的版本，容易冲突</td>
+<td>Starter 一次引入一组依赖，<code>spring-boot-dependencies</code> 统一管理版本</td>
+</tr>
+<tr>
+<td>部署</td>
+<td>打成 war 包部署到外部 Tomcat</td>
+<td>内嵌 Tomcat / Jetty，打成可执行 jar 直接运行（也可以打 war）</td>
+</tr>
+<tr>
+<td>运维</td>
+<td>需要自己集成监控</td>
+<td>Actuator 提供健康检查、指标等生产级功能</td>
+</tr>
+</tbody>
+</table>
+<p><strong>版本对应</strong></p>
+<ul>
+<li>Spring Boot 2.x 基于 Spring Framework 5.x，最低 Java 8，使用 <code>javax.*</code> 包。</li>
+<li>Spring Boot 3.x 基于 Spring Framework 6.x，最低 Java 17，迁移到 Jakarta EE 9+，包名从 <code>javax.*</code> 改为 <code>jakarta.*</code>，支持 GraalVM 原生镜像。</li>
+<li>Spring Boot 4.0（2025 年 11 月发布）基于 Spring Framework 7，仍以 Java 17 为最低版本。</li>
+</ul></div></article><article class="q" id="q47"><h3><a class="q-link" href="#q47">可以通过哪些方式创建SpringBoot项目</a></h3><div class="a"><p class="lead">常用的是 Spring Initializr 和 IDE 向导，本质上都是调用 Initializr 生成项目骨架。</p>
+<ul>
+<li><strong>Spring Initializr 网站</strong>：在 <a href="http://start.spring.io">start.spring.io</a> 选择构建工具（Maven / Gradle）、语言（Java / Kotlin / Groovy）、Spring Boot 版本、打包方式和依赖，下载生成的项目。也可以用 <code>curl https://start.spring.io/starter.zip -d dependencies=web -o demo.zip</code> 在命令行生成。</li>
+<li><strong>IDE 集成</strong>：IntelliJ IDEA（Ultimate 内置，Community 版需要插件）、VS Code 的 Spring Boot 插件、Spring Tools（基于 Eclipse）都提供新建 Spring Boot 项目的向导。</li>
+<li><strong>Spring Boot CLI</strong>：<code>spring init --dependencies=web demo</code>。</li>
+<li><strong>手动搭建</strong>：新建普通 Maven 项目，继承 <code>spring-boot-starter-parent</code>（或在 <code>dependencyManagement</code> 中导入 <code>spring-boot-dependencies</code>），添加需要的 Starter 和 <code>spring-boot-maven-plugin</code>，再写一个带 <code>@SpringBootApplication</code> 的启动类。</li>
+</ul></div></article><article class="q core" id="q48"><h3><a class="q-link" href="#q48">SpringBoot有哪些核心注解？</a><span class="tags"><i class="t-core">高频</i><i class="t-co bank">交通银行</i><i class="t-co">PDD</i><i class="t-co">携程</i></span></h3><div class="a"><p class="lead">最核心的是启动类上的 <code>@SpringBootApplication</code>，它是 <code>@SpringBootConfiguration</code>、<code>@EnableAutoConfiguration</code>、<code>@ComponentScan</code> 三个注解的组合。</p>
+<p><strong>启动相关</strong></p>
+<ul>
+<li><code>@SpringBootConfiguration</code>：本质是 <code>@Configuration</code>。</li>
+<li><code>@EnableAutoConfiguration</code>：通过 <code>@Import(AutoConfigurationImportSelector.class)</code> 导入自动配置类，<code>@AutoConfigurationPackage</code> 记录启动类所在包。</li>
+<li><code>@ComponentScan</code>：默认扫描启动类所在包及子包，所以启动类放在根包下。</li>
+</ul>
+<p><strong>配置与条件</strong></p>
+<ul>
+<li><code>@Configuration</code>、<code>@Bean</code>、<code>@Import</code>：定义配置类和 Bean。</li>
+<li><code>@ConfigurationProperties</code>（配合 <code>@EnableConfigurationProperties</code> / <code>@ConfigurationPropertiesScan</code> 注册）、<code>@Value</code>：读取配置。</li>
+<li><code>@Conditional</code> 系列：<code>@ConditionalOnClass</code>、<code>@ConditionalOnMissingBean</code>、<code>@ConditionalOnProperty</code> 等，自动配置按需生效的基础。</li>
+<li><code>@Profile</code>：Bean 只在某环境生效。</li>
+<li><code>@AutoConfiguration</code>（2.7 起）：标注自动配置类，可用 <code>before</code> / <code>after</code> 控制顺序。</li>
+</ul>
+<p><strong>其他常用</strong>：<code>@RestController</code>、<code>@RestControllerAdvice</code>、<code>@EnableScheduling</code>、<code>@EnableAsync</code>、<code>@Transactional</code>、<code>@SpringBootTest</code>。</p></div></article><article class="q" id="q49"><h3><a class="q-link" href="#q49">properties，yml，yaml配置文件有什么区别，加载优先级是怎样的</a></h3><div class="a"><p class="lead"><code>.properties</code> 是扁平的 <code>key=value</code> 格式；<code>.yml</code> 和 <code>.yaml</code> 是同一种格式的两种扩展名，用缩进表示层级，适合嵌套结构和列表。三者在 Spring Boot 中功能等价，同一位置同时存在时 <code>.properties</code> 的优先级高于 <code>.yml</code>。</p>
+<pre><code class="language-properties">server.port=8080
+spring.datasource.url=jdbc:mysql://localhost:3306/db
+</code></pre>
+<pre><code class="language-yaml">server:
+  port: 8080
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/db
+</code></pre>
+<p><strong>格式差异</strong></p>
+<ul>
+<li>YAML 冒号后必须有空格，缩进只能用空格；支持列表和多文档（<code>---</code> 分隔，一个文件写多个 profile）。</li>
+<li><code>@PropertySource</code> 默认只支持 <code>.properties</code>，加载 YAML 需自定义 <code>PropertySourceFactory</code>；它加载 properties 默认按 ISO-8859-1，含中文要指定 <code>encoding = &quot;UTF-8&quot;</code>。</li>
+</ul>
+<p><strong>配置文件位置优先级</strong>（从低到高，高的覆盖低的）：classpath 根目录 → classpath <code>/config</code> → 当前工作目录 → 工作目录 <code>/config</code> → <code>/config</code> 的直接子目录。同一位置 <code>application-{profile}</code> 覆盖 <code>application</code>。</p>
+<p><strong>外部配置源整体优先级</strong>（常用部分，从高到低）</p>
+<ol>
+<li>命令行参数 <code>--server.port=9090</code></li>
+<li><code>SPRING_APPLICATION_JSON</code></li>
+<li>Java 系统属性 <code>-Dserver.port=9090</code></li>
+<li>环境变量 <code>SERVER_PORT</code></li>
+<li>jar 外 <code>application-{profile}</code> → jar 外 <code>application</code></li>
+<li>jar 内 <code>application-{profile}</code> → jar 内 <code>application</code></li>
+<li><code>@PropertySource</code> 引入的属性</li>
+<li><code>SpringApplication.setDefaultProperties</code> 默认属性</li>
+</ol>
+<p>易错点：<code>@Value</code> 是读取方式而非配置来源，没有优先级之说；<code>bootstrap.yml</code> 属于 Spring Cloud，不是 Spring Boot 本身的机制。</p></div></article><article class="q" id="q50"><h3><a class="q-link" href="#q50">SpringBoot有哪些读取配置文件的方式？</a></h3><div class="a"><p class="lead">常用的有 <code>@Value</code>、<code>@ConfigurationProperties</code>、<code>Environment</code> 三种；此外可以通过 <code>@PropertySource</code> 引入额外的配置文件，通过命令行参数、环境变量、<code>spring.config.location</code> / <code>spring.config.import</code> 指定外部配置。</p>
+<p><strong>1. <code>@Value</code></strong>：注入单个值，支持默认值和 SpEL。</p>
+<pre><code class="language-java">@Value(&quot;${server.port:8080}&quot;)
+private int port;
+</code></pre>
+<p><strong>2. <code>@ConfigurationProperties</code></strong>（推荐用于一组配置）</p>
+<pre><code class="language-java">@ConfigurationProperties(prefix = &quot;app.sms&quot;)
+public class SmsProperties {
+    private String accessKey;
+    private int timeout = 3000;
+    // getter / setter；也可以用 record 配合构造器绑定
+}
+</code></pre>
+<p>通过 <code>@EnableConfigurationProperties</code>、<code>@ConfigurationPropertiesScan</code> 或 <code>@Component</code> 注册。</p>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th><code>@Value</code></th>
+<th><code>@ConfigurationProperties</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>绑定方式</td>
+<td>逐个属性</td>
+<td>按前缀批量</td>
+</tr>
+<tr>
+<td>松散绑定（<code>access-key</code> ↔ <code>accessKey</code>）</td>
+<td>有限支持</td>
+<td>完全支持</td>
+</tr>
+<tr>
+<td>SpEL</td>
+<td>支持</td>
+<td>不支持</td>
+</tr>
+<tr>
+<td>JSR-303 校验</td>
+<td>不支持</td>
+<td>支持（<code>@Validated</code>）</td>
+</tr>
+<tr>
+<td>复杂类型</td>
+<td>不方便</td>
+<td>支持</td>
+</tr>
+</tbody>
+</table>
+<p><strong>3. <code>Environment</code></strong>：<code>environment.getProperty(&quot;server.port&quot;, Integer.class, 8080)</code>，代码中动态读取。</p>
+<p><strong>4. <code>@PropertySource</code></strong>：引入额外 <code>.properties</code> 文件。</p>
+<p><strong>5. 外部配置</strong>：命令行 <code>--server.port=9090</code>；<code>--spring.config.location</code> 指定位置；<code>spring.config.import</code>（2.4 起）导入其他文件或 Nacos 等配置中心；<code>spring.profiles.active=dev</code> 切换环境。</p>
+<p><strong>易错点</strong>：两种注解都不能直接注入静态字段；运行时动态刷新需要 Spring Cloud 的 <code>@RefreshScope</code> 或配置中心客户端。</p></div></article></section><section class="grp has-core" id="g12"><h2 class="grp-title">自动装配与启动原理 <span class="cnt"><span class="n-all">5</span><span class="n-core">高频 5</span></span></h2><article class="q core" id="q51"><h3><a class="q-link" href="#q51">SpringBoot自动装配原理？</a><span class="tags"><i class="t-core">高频</i><i class="t-co bank">邮政储蓄银行</i><i class="t-co bank">农业银行</i><i class="t-co">淘天</i><i class="t-co">字节</i></span></h3><div class="a"><p class="lead">一句话：<code>@EnableAutoConfiguration</code> 导入 <code>AutoConfigurationImportSelector</code>，读取各 jar 声明的自动配置类，过滤后按条件创建 Bean。</p>
+<p><strong>流程</strong></p>
+<ol>
+<li><code>@Import(AutoConfigurationImportSelector.class)</code> 是 <code>DeferredImportSelector</code>，在用户配置类处理完后才执行，所以用户的 Bean 优先，自动配置靠 <code>@ConditionalOnMissingBean</code> 让位。</li>
+<li>读取候选自动配置类：Spring Boot 2.7 起是 <code>META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports</code>（每行一个全限定名）；2.6 及以前是 <code>META-INF/spring.factories</code> 中 <code>EnableAutoConfiguration</code> 的值。2.7 两种都支持，3.0 起只能用 <code>.imports</code>。</li>
+<li>去重并去掉 <code>exclude</code> / <code>spring.autoconfigure.exclude</code> 排除的类；再基于编译期生成的 <code>spring-autoconfigure-metadata.properties</code> 提前做 <code>@ConditionalOnClass</code> 过滤，不用加载类。</li>
+<li>解析剩余配置类，类上和 <code>@Bean</code> 方法上的条件注解决定最终注册哪些 Bean。</li>
+</ol>
+<p><strong>常用条件注解</strong>：<code>@ConditionalOnClass</code>（引入依赖才生效）、<code>@ConditionalOnMissingBean</code>（用户自定义了就不创建）、<code>@ConditionalOnProperty</code>（配置项满足才生效）。</p>
+<p><strong>例子</strong>：引入 <code>spring-boot-starter-web</code> 后类路径有了 <code>DispatcherServlet</code> 和 Tomcat，自动注册二者，属性来自 <code>ServerProperties</code>（<code>server.*</code>）。</p>
+<p><strong>排查</strong>：<code>debug=true</code> 打印条件评估报告，或访问 <code>/actuator/conditions</code>。</p></div></article><article class="q core" id="q52"><h3><a class="q-link" href="#q52">Springboot自动装配用哪个注解？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">核心注解是 <code>@EnableAutoConfiguration</code>，平时不需要单独写，因为启动类上的 <code>@SpringBootApplication</code> 已经包含了它。</p>
+<p><code>@SpringBootApplication</code> 由三个注解组合而成：</p>
+<ul>
+<li><code>@SpringBootConfiguration</code>：本质是 <code>@Configuration</code>，标明启动类也是一个配置类。</li>
+<li><code>@EnableAutoConfiguration</code>：开启自动装配。它本身又包含 <code>@AutoConfigurationPackage</code>（把启动类所在的包注册为自动配置包，供 JPA 实体扫描等使用）和 <code>@Import(AutoConfigurationImportSelector.class)</code>（导入自动配置类）。</li>
+<li><code>@ComponentScan</code>：扫描启动类所在包及其子包下的组件，并通过 <code>AutoConfigurationExcludeFilter</code> 避免把自动配置类当成普通组件扫描进来。</li>
+</ul>
+<p>排除某个自动配置：<code>@SpringBootApplication(exclude = DataSourceAutoConfiguration.class)</code>，或者配置 <code>spring.autoconfigure.exclude</code>。</p>
+<p>自动配置类本身用 <code>@AutoConfiguration</code> 标注（Spring Boot 2.7 起），它是 <code>@Configuration(proxyBeanMethods = false)</code> 的组合，并支持 <code>before</code> / <code>after</code> 指定顺序。</p></div></article><article class="q core" id="q53"><h3><a class="q-link" href="#q53">SpringBootStarter的工作原理？</a><span class="tags"><i class="t-core">高频</i><i class="t-co bank">农业银行</i><i class="t-co">PDD</i><i class="t-co">携程</i></span></h3><div class="a"><p class="lead">Starter 是&quot;依赖描述 + 自动配置&quot;的组合：引入一个 Starter，就通过 Maven 依赖传递引入了某个功能所需的一组库，同时带来对应的自动配置类，Spring Boot 启动时按条件自动创建相关 Bean。</p>
+<p><strong>两部分</strong></p>
+<ul>
+<li><strong>依赖聚合</strong>：Starter 基本没有代码，主要是一个 pom。比如 <code>spring-boot-starter-web</code> 引入 Spring MVC、Jackson、内嵌 Tomcat、日志等。版本由 <code>spring-boot-dependencies</code> 统一管理，引入时不用写版本号。</li>
+<li><strong>自动配置</strong>：官方的集中在 <code>spring-boot-autoconfigure</code> 模块，第三方一般自带 <code>xxx-spring-boot-autoconfigure</code>，在 <code>AutoConfiguration.imports</code>（2.7 起）或 <code>spring.factories</code>（2.6 及以前）中注册。</li>
+</ul>
+<p><strong>生效过程</strong>：引入 Starter → 类出现在类路径 → <code>AutoConfigurationImportSelector</code> 加载自动配置类 → <code>@ConditionalOnClass</code> 等条件满足 → 用 <code>@ConfigurationProperties</code> 绑定的配置创建默认 Bean → 用户自定义同类 Bean 时通过 <code>@ConditionalOnMissingBean</code> 让位。</p>
+<p><strong>命名规范</strong>：官方 <code>spring-boot-starter-xxx</code>，第三方 <code>xxx-spring-boot-starter</code>（如 <code>mybatis-spring-boot-starter</code>）。</p></div></article><article class="q core" id="q54"><h3><a class="q-link" href="#q54">实现一个 Spring Boot Starter 该如何做</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">步骤：写属性类和自动配置类 → 用条件注解控制 Bean 的创建 → 在 <code>AutoConfiguration.imports</code> 中注册自动配置类 → 打包发布，使用方引入依赖即可。</p>
+<p><strong>1. 建模块</strong>：官方推荐拆成 <code>xxx-spring-boot-autoconfigure</code>（代码）和 <code>xxx-spring-boot-starter</code>（只有 pom），简单场景可合并。依赖 <code>spring-boot-autoconfigure</code>，可选 <code>spring-boot-configuration-processor</code> 生成配置元数据供 IDE 提示。</p>
+<p><strong>2. 属性类 + 自动配置类</strong></p>
+<pre><code class="language-java">@ConfigurationProperties(prefix = &quot;sms&quot;)
+public class SmsProperties {
+    private boolean enabled = true;
+    private String accessKey;
+    private String secretKey;
+    // getter / setter
+}
+
+@AutoConfiguration
+@ConditionalOnClass(SmsClient.class)
+@ConditionalOnProperty(prefix = &quot;sms&quot;, name = &quot;enabled&quot;, havingValue = &quot;true&quot;, matchIfMissing = true)
+@EnableConfigurationProperties(SmsProperties.class)
+public class SmsAutoConfiguration {
+    @Bean
+    @ConditionalOnMissingBean           // 使用方自定义了 SmsClient 就不再创建
+    public SmsClient smsClient(SmsProperties props) {
+        return new SmsClient(props.getAccessKey(), props.getSecretKey());
+    }
+}
+</code></pre>
+<p><strong>3. 注册自动配置类</strong></p>
+<ul>
+<li>Spring Boot 2.7 / 3.x：<code>META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports</code> 中写一行 <code>com.example.sms.SmsAutoConfiguration</code>。</li>
+<li>Spring Boot 2.6 及以前：<code>META-INF/spring.factories</code> 中写 <code>org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.example.sms.SmsAutoConfiguration</code>。</li>
+</ul>
+<p><strong>4. 打包发布</strong>：发布到私服，使用方引入 <code>sms-spring-boot-starter</code>，配置 <code>sms.access-key</code> 即可注入 <code>SmsClient</code>。</p>
+<p><strong>易错点</strong>：自动配置类不要放在使用方 <code>@ComponentScan</code> 能扫到的包下，否则会被当成普通配置类，条件注解的顺序保证失效；第三方 Starter 命名不要以 <code>spring-boot</code> 开头。</p></div></article><article class="q core" id="q55"><h3><a class="q-link" href="#q55">SpringBoot的启动流程？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">一句话：<code>SpringApplication.run()</code> 先创建 <code>SpringApplication</code>，再准备 Environment、创建上下文、执行 <code>refresh()</code>（自动配置、Bean 实例化、启动内嵌服务器），最后执行 Runner 并发布就绪事件。</p>
+<p><strong>1. 创建 SpringApplication</strong>：推断应用类型（SERVLET / REACTIVE / NONE）；从 <code>META-INF/spring.factories</code> 加载 <code>ApplicationContextInitializer</code> 和 <code>ApplicationListener</code>（这两类仍用 spring.factories，与自动配置类的注册文件不同）；推断主启动类。</p>
+<p><strong>2. 执行 run()</strong></p>
+<ol>
+<li>通过 <code>SpringApplicationRunListener</code> 发布 <code>ApplicationStartingEvent</code>。</li>
+<li>准备 <code>Environment</code>：命令行参数、系统属性、环境变量、<code>application.yml</code>，发布 <code>ApplicationEnvironmentPreparedEvent</code>。</li>
+<li>打印 Banner，按类型创建 <code>ApplicationContext</code>。</li>
+<li>准备上下文：执行 <code>ApplicationContextInitializer</code>，注册启动类，发布 <code>ApplicationPreparedEvent</code>。</li>
+<li><strong><code>refresh()</code></strong>：解析配置类并导入自动配置类 → 注册 <code>BeanPostProcessor</code> → <code>onRefresh()</code> 创建内嵌 Tomcat → 实例化非懒加载单例 → <code>finishRefresh()</code> 启动服务器监听端口并发布 <code>ContextRefreshedEvent</code>。</li>
+<li>发布 <code>ApplicationStartedEvent</code>，执行 <code>ApplicationRunner</code> 和 <code>CommandLineRunner</code>。</li>
+<li>发布 <code>ApplicationReadyEvent</code>，对外服务；出错则发布 <code>ApplicationFailedEvent</code>。</li>
+</ol></div></article></section><section class="grp has-core" id="g13"><h2 class="grp-title">生产实践 <span class="cnt"><span class="n-all">7</span><span class="n-core">高频 1</span></span></h2><article class="q core" id="q56"><h3><a class="q-link" href="#q56">Spring Boot 中的 Bean 是单例吗？会不会有线程安全问题？怎么解决</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">默认是单例（singleton 作用域），每个容器中一个 Bean 定义只有一个实例，所有线程共享。单例本身不会导致线程安全问题，问题出在 Bean 有可变的成员变量并被多个线程同时修改时。</p>
+<p><strong>为什么大多数 Bean 是安全的</strong>：Controller、Service、DAO 一般是无状态的，成员变量只有注入的其他 Bean（初始化后不再改变），业务数据都在方法的局部变量里，局部变量在各自线程的栈上，不会共享。</p>
+<p><strong>有问题的例子</strong></p>
+<pre><code class="language-java">@Service
+public class CounterService {
+    private int count;                 // 可变成员变量，多线程 count++ 会丢失更新
+    public void incr() { count++; }
+}
+</code></pre>
+<p><strong>解决办法</strong></p>
+<ul>
+<li><strong>设计成无状态</strong>：首选。不要用成员变量保存请求相关的数据，改用方法参数和局部变量。</li>
+<li><strong>ThreadLocal</strong>：每个线程一份数据，比如保存当前登录用户。线程池复用线程，用完必须 <code>remove()</code>。</li>
+<li><strong>并发工具</strong>：用 <code>AtomicInteger</code>、<code>LongAdder</code>、<code>ConcurrentHashMap</code> 替代普通类型和集合，或者用 <code>synchronized</code> / <code>ReentrantLock</code> 保护临界区。</li>
+<li><strong>不可变对象</strong>：成员变量声明为 <code>final</code> 且不对外提供修改。</li>
+<li><strong>改变作用域</strong>：<code>@Scope(&quot;prototype&quot;)</code> 每次获取都创建新实例；Web 应用中可以用 <code>request</code> / <code>session</code> 作用域。注意 prototype Bean 注入到单例 Bean 中时只会注入一次，要每次拿新实例需要用 <code>ObjectProvider</code> 或 <code>@Lookup</code>。</li>
+</ul>
+<p><strong>其他作用域</strong>：singleton（默认）、prototype、request、session、application、websocket。</p></div></article><article class="q" id="q57"><h3><a class="q-link" href="#q57">SpringBoot项目如何替换自带的tomcat服务器？</a></h3><div class="a"><p class="lead"><code>spring-boot-starter-web</code> 默认依赖 <code>spring-boot-starter-tomcat</code>。替换方法是在 pom 中把它排除，再引入 Jetty 或 Undertow 的 Starter，Spring Boot 会根据类路径自动配置对应的内嵌服务器。</p>
+<pre><code class="language-xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
+    &lt;exclusions&gt;
+        &lt;exclusion&gt;
+            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-boot-starter-tomcat&lt;/artifactId&gt;
+        &lt;/exclusion&gt;
+    &lt;/exclusions&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-jetty&lt;/artifactId&gt;
+&lt;/dependency&gt;
+</code></pre>
+<p><strong>原理</strong>：<code>ServletWebServerFactoryAutoConfiguration</code> 中按 <code>@ConditionalOnClass</code> 判断类路径中有 Tomcat、Jetty 还是 Undertow 的类，创建对应的 <code>TomcatServletWebServerFactory</code> / <code>JettyServletWebServerFactory</code> / <code>UndertowServletWebServerFactory</code>。</p>
+<p><strong>调整参数</strong></p>
+<ul>
+<li>通用配置用 <code>server.*</code>，比如 <code>server.port</code>、<code>server.servlet.context-path</code>；服务器专属配置用 <code>server.tomcat.*</code>、<code>server.jetty.*</code>、<code>server.undertow.*</code>，例如 <code>server.tomcat.threads.max</code>。</li>
+<li>代码定制：实现 <code>WebServerFactoryCustomizer&lt;TomcatServletWebServerFactory&gt;</code> 等。</li>
+</ul>
+<p><strong>版本注意</strong>：Spring Boot 4.0 移除了对 Undertow 的支持（Undertow 尚不兼容 Servlet 6.1），3.x 中 Tomcat、Jetty、Undertow 都可用。WebFlux 应用默认使用 Reactor Netty。</p></div></article><article class="q" id="q58"><h3><a class="q-link" href="#q58">SpringBoot怎么实现定时任务？</a></h3><div class="a"><p class="lead">最简单的是 Spring 自带的 <code>@EnableScheduling</code> + <code>@Scheduled</code>；需要集群调度、分片、可视化管理时，使用 XXL-Job、ElasticJob、Quartz 等框架。</p>
+<pre><code class="language-java">@SpringBootApplication
+@EnableScheduling
+public class App { }
+
+@Component
+public class ReportTask {
+    @Scheduled(cron = &quot;0 0 * * * ?&quot;)          // 每小时整点执行
+    public void hourly() { }
+
+    @Scheduled(fixedRate = 5000)              // 每次开始执行后 5 秒再次执行
+    public void rate() { }
+
+    @Scheduled(fixedDelay = 5000, initialDelay = 10000)   // 上次执行结束 5 秒后再执行，启动 10 秒后首次执行
+    public void delay() { }
+}
+</code></pre>
+<p><strong>三种触发方式</strong></p>
+<ul>
+<li><code>fixedRate</code>：按固定频率，从上一次开始执行的时间点计算间隔。</li>
+<li><code>fixedDelay</code>：从上一次执行结束的时间点计算间隔。</li>
+<li><code>cron</code>：Spring 的 cron 表达式有 6 位：秒 分 时 日 月 周（不支持年），比如 <code>0 0 2 * * ?</code> 是每天凌晨 2 点。可以用 <code>zone</code> 指定时区。</li>
+</ul>
+<p><strong>注意点</strong></p>
+<ul>
+<li>默认所有定时任务共用一个单线程的调度器，一个任务执行慢会阻塞其他任务。Spring Boot 2.1 起可以用 <code>spring.task.scheduling.pool.size</code> 调整线程数，或者自定义 <code>TaskScheduler</code> / 结合 <code>@Async</code>。</li>
+<li>集群部署时每个实例都会执行一次，需要用分布式锁（如 ShedLock、Redisson）保证只有一个实例执行，或者改用分布式调度框架。</li>
+<li>任务内部要捕获异常并记录日志，避免问题被吞掉。</li>
+<li>需要动态修改执行时间时，可以实现 <code>SchedulingConfigurer</code> 注册 <code>Trigger</code>。</li>
+</ul></div></article><article class="q" id="q59"><h3><a class="q-link" href="#q59">SpringBoot如何实现热部署？</a></h3><div class="a"><p class="lead">开发环境最常用的是 <code>spring-boot-devtools</code>：它在类路径文件变化时自动重启应用，速度比手动冷启动快。需要真正不重启地替换类时，可以用 JRebel 这类工具。</p>
+<p><strong>devtools 原理</strong></p>
+<ul>
+<li>使用两个类加载器：不变的第三方 jar 由 base 类加载器加载，项目自己的类由 restart 类加载器加载。</li>
+<li>检测到类路径变化时，丢弃 restart 类加载器并新建一个重新加载项目类，第三方库不用重新加载，所以比冷启动快。严格来说这是快速重启，不是热替换。</li>
+<li>静态资源和模板修改不需要重启，配合浏览器的 LiveReload 插件可以自动刷新页面。</li>
+<li>还会禁用模板缓存等开发期不需要的缓存。</li>
+</ul>
+<p><strong>使用</strong></p>
+<pre><code class="language-xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-devtools&lt;/artifactId&gt;
+    &lt;scope&gt;runtime&lt;/scope&gt;
+    &lt;optional&gt;true&lt;/optional&gt;
+&lt;/dependency&gt;
+</code></pre>
+<p>devtools 是根据类路径变化触发的，所以 IDE 中要让代码修改后重新编译：IntelliJ IDEA 中手动 Build，或者开启 &quot;Build project automatically&quot; 和运行时自动编译选项。以 <code>java -jar</code> 运行打包后的应用时 devtools 会自动禁用，不会影响生产环境。</p>
+<p><strong>其他方式</strong></p>
+<ul>
+<li>IDE 自带的 HotSwap（JVM 的类重定义能力）：调试模式下可以替换方法体，但不支持新增方法、字段或修改类结构。</li>
+<li>JRebel：商业插件，不重启 JVM 就能重新加载修改后的类，支持结构变化。</li>
+</ul></div></article><article class="q" id="q60"><h3><a class="q-link" href="#q60">SpringBoot怎么配置多数据源？</a></h3><div class="a"><p class="lead">有两种思路：按包或 Mapper 静态划分（每个数据源配一套 DataSource、SqlSessionFactory、事务管理器），或者用 <code>AbstractRoutingDataSource</code> 在运行时动态切换。实际项目中也常直接用 dynamic-datasource 这类开源组件。</p>
+<p><strong>方式一：静态多数据源</strong>（不同业务库分别访问）</p>
+<pre><code class="language-yaml">spring:
+  datasource:
+    primary:
+      jdbc-url: jdbc:mysql://localhost:3306/primary_db   # HikariCP 绑定时用 jdbc-url 而不是 url
+      username: root
+      password: ${PRIMARY_DB_PASSWORD}
+    secondary:
+      jdbc-url: jdbc:mysql://localhost:3306/secondary_db
+      username: admin
+      password: ${SECONDARY_DB_PASSWORD}
+</code></pre>
+<pre><code class="language-java">@Configuration
+@MapperScan(basePackages = &quot;com.example.mapper.primary&quot;, sqlSessionFactoryRef = &quot;primarySqlSessionFactory&quot;)
+public class PrimaryDataSourceConfig {
+    @Primary @Bean
+    @ConfigurationProperties(prefix = &quot;spring.datasource.primary&quot;)
+    public DataSource primaryDataSource() { return DataSourceBuilder.create().build(); }
+
+    @Primary @Bean
+    public SqlSessionFactory primarySqlSessionFactory(@Qualifier(&quot;primaryDataSource&quot;) DataSource ds) throws Exception {
+        SqlSessionFactoryBean factory = new SqlSessionFactoryBean();
+        factory.setDataSource(ds);
+        return factory.getObject();
+    }
+
+    @Primary @Bean
+    public PlatformTransactionManager primaryTransactionManager(@Qualifier(&quot;primaryDataSource&quot;) DataSource ds) {
+        return new DataSourceTransactionManager(ds);
+    }
+}
+// SecondaryDataSourceConfig 同理，扫描 com.example.mapper.secondary，不加 @Primary
+</code></pre>
+<p>要点：</p>
+<ul>
+<li>自定义 DataSource 后 <code>DataSourceAutoConfiguration</code> 因 <code>@ConditionalOnMissingBean</code> 不再生效，每个数据源要自己配。</li>
+<li><code>@Primary</code> 标记默认数据源，其余用 <code>@Qualifier</code> 注入；事务指定管理器：<code>@Transactional(transactionManager = &quot;secondaryTransactionManager&quot;)</code>。</li>
+<li>直接绑定 <code>HikariDataSource</code> 时属性名是 <code>jdbc-url</code>；写 <code>url</code> 需先绑定 <code>DataSourceProperties</code> 再 <code>initializeDataSourceBuilder()</code>。</li>
+</ul>
+<p><strong>方式二：动态数据源</strong>（读写分离、多租户）：继承 <code>AbstractRoutingDataSource</code> 重写 <code>determineCurrentLookupKey()</code> 从 ThreadLocal 取 key；真实数据源放进 <code>targetDataSources</code>；自定义注解（如 <code>@DS(&quot;slave&quot;)</code>）+ AOP 在方法前写入 key、结束后清除。</p>
+<p><strong>易错点</strong></p>
+<ul>
+<li>事务开始后切换数据源不生效，切换切面必须在事务切面之前执行。</li>
+<li>跨数据源写不能靠本地事务保证一致，需要 Seata 等分布式事务或业务补偿。</li>
+<li>开源方案：dynamic-datasource-spring-boot-starter（<code>@DS</code> 切换）；分库分表用 ShardingSphere。</li>
+</ul></div></article><article class="q" id="q61"><h3><a class="q-link" href="#q61">什么是SpringBoot Actuator（监视器）？</a></h3><div class="a"><p class="lead">Actuator 是 Spring Boot 的生产级监控管理功能，引入 <code>spring-boot-starter-actuator</code> 后通过 HTTP 或 JMX 暴露端点（前缀 <code>/actuator</code>），查看健康、指标、配置、日志级别等。</p>
+<table>
+<thead>
+<tr>
+<th>端点</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>health</code></td>
+<td>健康检查，汇总数据库、Redis、磁盘状态；提供 Kubernetes liveness / readiness 探针</td>
+</tr>
+<tr>
+<td><code>info</code></td>
+<td>版本、构建、Git 信息</td>
+</tr>
+<tr>
+<td><code>metrics</code> / <code>prometheus</code></td>
+<td>基于 Micrometer 的 JVM、GC、HTTP 耗时等指标；后者需 <code>micrometer-registry-prometheus</code></td>
+</tr>
+<tr>
+<td><code>loggers</code></td>
+<td>运行时查看和修改日志级别</td>
+</tr>
+<tr>
+<td><code>env</code>、<code>configprops</code></td>
+<td>配置属性</td>
+</tr>
+<tr>
+<td><code>beans</code>、<code>mappings</code>、<code>conditions</code></td>
+<td>Bean、请求映射、自动配置条件评估</td>
+</tr>
+<tr>
+<td><code>threaddump</code>、<code>heapdump</code></td>
+<td>线程转储、堆转储</td>
+</tr>
+<tr>
+<td><code>shutdown</code></td>
+<td>优雅关闭，默认禁用</td>
+</tr>
+</tbody>
+</table>
+<p><strong>暴露配置</strong>：Spring Boot 2.x 起 HTTP 默认只暴露 <code>health</code>（2.x 早期版本还包括 <code>info</code>，2.5 起默认只有 <code>health</code>），其他端点需配置：</p>
+<pre><code class="language-yaml">management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+</code></pre>
+<p><strong>安全</strong>：<code>env</code>、<code>heapdump</code>、<code>configprops</code> 会泄露配置、密钥和内存数据。生产只暴露必要端点，用 Spring Security 保护，或用 <code>management.server.port</code> 分离管理端口只在内网开放。常见搭配 Prometheus + Grafana 或 Spring Boot Admin。</p></div></article><article class="q" id="q62"><h3><a class="q-link" href="#q62">SpringBoot如何优雅停机？</a></h3><div class="a"><p class="lead">优雅停机是指应用关闭时先停止接收新请求，等正在处理的请求完成后再释放资源退出，避免请求中断和数据不一致。Spring Boot 2.3 起内置支持，3.4 起默认开启。</p>
+<pre><code class="language-yaml">server:
+  shutdown: graceful                    # 2.3 ~ 3.3 默认是 immediate，3.4 起默认 graceful
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 30s     # 每个生命周期阶段的最长等待时间，默认 30s
+</code></pre>
+<p><strong>过程</strong></p>
+<ol>
+<li>进程收到 SIGTERM（<code>kill PID</code>、<code>docker stop</code>、Kubernetes 删除 Pod）后，JVM 执行 Spring 注册的 shutdown hook，开始关闭 ApplicationContext。</li>
+<li>Web 服务器停止接收新请求：Tomcat、Jetty、Reactor Netty 在网络层停止接收连接，Undertow 对新请求返回 503。</li>
+<li>等待正在处理的请求完成，超过 <code>timeout-per-shutdown-phase</code> 就强制结束。</li>
+<li>依次停止其他 <code>SmartLifecycle</code> 组件，销毁 Bean（执行 <code>@PreDestroy</code>、<code>DisposableBean</code>），关闭连接池等资源。</li>
+</ol>
+<p><strong>注意点</strong></p>
+<ul>
+<li>必须用 <code>kill PID</code>（SIGTERM）停止进程，<code>kill -9</code> 不会触发 shutdown hook，优雅停机不会生效。</li>
+<li>自己的线程池要在销毁时 <code>shutdown()</code> 并 <code>awaitTermination()</code>；Spring 管理的 <code>ThreadPoolTaskExecutor</code> 可以设置 <code>setWaitForTasksToCompleteOnShutdown(true)</code> 和等待时间。</li>
+<li>微服务场景下还要先从注册中心下线实例，等调用方刷新地址列表后再停机，否则调用方仍会把请求发过来。</li>
+<li>Kubernetes 中，Pod 的 <code>terminationGracePeriodSeconds</code>（默认 30s）要大于应用的停机等待时间，常配合 <code>preStop</code> hook 先 sleep 几秒，等流量摘除。</li>
+</ul></div></article></section><h2 class="block-title">MyBatis</h2><section class="grp" id="g14"><h2 class="grp-title">框架定位与对比 <span class="cnt"><span class="n-all">3</span><span class="n-core">高频 0</span></span></h2><article class="q" id="q63"><h3><a class="q-link" href="#q63">mybatis有哪些优缺点？</a><span class="tags"><i class="t-co bank">工商银行</i></span></h3><div class="a"><p class="lead">MyBatis 是一个半自动的持久层框架：SQL 由开发者自己写，框架负责参数绑定、执行 SQL 和把结果集映射成对象，省掉了 JDBC 的样板代码。</p>
+<p><strong>优点</strong></p>
+<ul>
+<li>SQL 完全可控：可以针对复杂查询、多表关联、索引做精细优化，适合业务复杂、对性能敏感的系统。</li>
+<li>SQL 和代码解耦：SQL 集中写在 XML（或注解）里，便于统一管理和审查。</li>
+<li>消除 JDBC 样板代码：不用手动获取连接、设置参数、遍历 ResultSet、关闭资源。</li>
+<li>映射灵活：通过 <code>resultMap</code> 支持字段名和属性名不一致、一对一、一对多等复杂映射；也可以直接返回 Map。</li>
+<li>动态 SQL：<code>&lt;if&gt;</code>、<code>&lt;where&gt;</code>、<code>&lt;foreach&gt;</code> 等标签按条件拼接 SQL。</li>
+<li>学习成本低，和 Spring 集成方便（mybatis-spring、mybatis-spring-boot-starter）。</li>
+</ul>
+<p><strong>缺点</strong></p>
+<ul>
+<li>单表 CRUD 也要手写 SQL，工作量大（MyBatis-Plus 解决了这一点）。</li>
+<li>SQL 依赖具体数据库方言，换数据库时 SQL 可能要改，移植性不如 Hibernate。</li>
+<li>项目大时 XML 文件多，SQL 写错要到运行时才发现。</li>
+<li>用 <code>${}</code> 不当会有 SQL 注入风险。</li>
+</ul></div></article><article class="q" id="q64"><h3><a class="q-link" href="#q64">mybatis-plus和mybatis有什么区别？</a></h3><div class="a"><p class="lead">MyBatis-Plus（MP）是在 MyBatis 基础上的增强工具，只做增强不做改变：原有 MyBatis 的 XML、注解写法全部照常可用，额外提供通用 CRUD 和一批常用插件。</p>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>MyBatis</th>
+<th>MyBatis-Plus</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>单表 CRUD</td>
+<td>要自己写 SQL</td>
+<td>Mapper 继承 <code>BaseMapper&lt;T&gt;</code> 即可获得 <code>insert</code>、<code>selectById</code>、<code>updateById</code> 等方法；Service 层有 <code>IService</code> / <code>ServiceImpl</code></td>
+</tr>
+<tr>
+<td>条件查询</td>
+<td>XML 动态 SQL</td>
+<td><code>QueryWrapper</code> / <code>LambdaQueryWrapper</code> 条件构造器，Lambda 写法避免硬编码列名</td>
+</tr>
+<tr>
+<td>分页</td>
+<td>自己写 limit 或用 PageHelper</td>
+<td>内置分页插件（<code>PaginationInnerInterceptor</code>）</td>
+</tr>
+<tr>
+<td>其他</td>
+<td>无</td>
+<td>代码生成器、逻辑删除（<code>@TableLogic</code>）、乐观锁（<code>@Version</code>）、字段自动填充、主键策略（默认 <code>ASSIGN_ID</code>，雪花算法）</td>
+</tr>
+</tbody>
+</table>
+<p>选择：简单 CRUD 多的业务用 MP 效率高；复杂 SQL 仍然写在 XML 里，两者可以混用。</p>
+<pre><code class="language-java">List&lt;User&gt; users = userMapper.selectList(
+    new LambdaQueryWrapper&lt;User&gt;()
+        .eq(User::getStatus, 1)
+        .like(StringUtils.hasText(name), User::getName, name)
+        .orderByDesc(User::getCreateTime));
+</code></pre></div></article><article class="q" id="q65"><h3><a class="q-link" href="#q65">Mybatis和Hibernate有哪些区别？</a></h3><div class="a"><p class="lead">MyBatis 是半自动 ORM，SQL 自己写；Hibernate 是全自动 ORM（JPA 规范的主流实现），根据对象映射自动生成 SQL。</p>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>MyBatis</th>
+<th>Hibernate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ORM 程度</td>
+<td>半自动，映射 SQL 结果和对象</td>
+<td>全自动，映射对象和表，操作对象即可</td>
+</tr>
+<tr>
+<td>SQL</td>
+<td>手写，可精细优化</td>
+<td>自动生成，也可以写 HQL/JPQL 或原生 SQL</td>
+</tr>
+<tr>
+<td>数据库移植性</td>
+<td>差，SQL 和方言绑定</td>
+<td>好，通过 Dialect 适配不同数据库</td>
+</tr>
+<tr>
+<td>对象管理</td>
+<td>无实体状态管理</td>
+<td>有持久化上下文：实体状态、脏检查（修改对象自动生成 update）、级联、延迟加载</td>
+</tr>
+<tr>
+<td>学习和调优</td>
+<td>简单，SQL 直观</td>
+<td>门槛较高，生成的 SQL 不直观，容易出现 N+1 查询</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>业务复杂、需求变化快、对 SQL 性能要求高（国内互联网主流）</td>
+<td>业务模型稳定、以单表 CRUD 为主、需要跨数据库</td>
+</tr>
+</tbody>
+</table>
+<p>两者都有一级、二级缓存。不能简单说 Hibernate 性能差，性能问题多来自生成的 SQL 不可控，复杂查询时调优比 MyBatis 难。</p></div></article></section><section class="grp has-core" id="g15"><h2 class="grp-title">SQL 映射与动态 SQL <span class="cnt"><span class="n-all">5</span><span class="n-core">高频 2</span></span></h2><article class="q core" id="q66"><h3><a class="q-link" href="#q66">#{} 和 ${} 的区别是什么？MyBatis 是如何防止 SQL 注入的</a><span class="tags"><i class="t-core">高频</i><i class="t-co bank">工商银行</i><i class="t-co bank">农业银行</i><i class="t-co">腾讯</i></span></h3><div class="a"><p class="lead"><code>#{}</code> 是预编译占位符，<code>${}</code> 是字符串替换。传参数一律用 <code>#{}</code>；<code>${}</code> 只用于表名、列名、排序字段这类不能用占位符的地方，并且必须做白名单校验。</p>
+<p><strong><code>#{}</code></strong></p>
+<ul>
+<li>MyBatis 把它解析成 <code>?</code>，通过 JDBC 的 <code>PreparedStatement</code> 的 <code>setXxx()</code> 设置参数。</li>
+<li>SQL 结构先编译好，参数只作为值传给数据库，不参与 SQL 语法解析，所以注入的 <code>' OR '1'='1</code> 只会被当成普通字符串，这就是防注入的原理。</li>
+<li>自动处理类型转换（通过 <code>TypeHandler</code>），字符串不用自己加引号。</li>
+</ul>
+<p><strong><code>${}</code></strong></p>
+<ul>
+<li>在生成 SQL 时把参数值原样拼进 SQL 文本，不做转义。</li>
+<li>有 SQL 注入风险，比如 <code>ORDER BY ${col}</code> 传入 <code>id; DROP TABLE user</code>。</li>
+<li>必须用的场景：动态表名（分表）、动态列名、<code>ORDER BY</code> 字段和方向，因为占位符只能代表值，不能代表标识符。</li>
+</ul>
+<pre><code class="language-xml">&lt;!-- 安全：参数走占位符 --&gt;
+&lt;select id=&quot;findByName&quot; resultType=&quot;User&quot;&gt;
+  SELECT * FROM user WHERE name = #{name}
+&lt;/select&gt;
+&lt;!-- 排序字段只能用 ${}，调用前要在代码里校验 sortCol 属于允许的列名 --&gt;
+&lt;select id=&quot;listSorted&quot; resultType=&quot;User&quot;&gt;
+  SELECT * FROM user ORDER BY ${sortCol}
+&lt;/select&gt;
+</code></pre>
+<p><strong>补充</strong></p>
+<ul>
+<li>模糊查询不要写 <code>'%${name}%'</code>，用 <code>CONCAT('%', #{name}, '%')</code>，或者在 Java 里拼好 <code>%</code> 再传给 <code>#{}</code>。</li>
+<li><code>IN</code> 查询用 <code>&lt;foreach&gt;</code> 生成多个 <code>#{}</code>，不要把逗号拼接的字符串塞进 <code>${}</code>。</li>
+</ul></div></article><article class="q core" id="q67"><h3><a class="q-link" href="#q67">MyBatis查询有哪几种方式</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">最常用的是 Mapper 接口代理 + XML，其次是注解方式；另外还有直接通过 <code>SqlSession</code> 按 statement ID 调用、Provider 动态生成 SQL，以及 MyBatis-Plus 的条件构造器。</p>
+<p><strong>1. Mapper 接口 + XML</strong>（最常用，适合复杂 SQL）</p>
+<pre><code class="language-java">UserMapper mapper = sqlSession.getMapper(UserMapper.class);  // Spring 中直接注入 Mapper
+User user = mapper.selectById(1);
+</code></pre>
+<pre><code class="language-xml">&lt;mapper namespace=&quot;com.example.mapper.UserMapper&quot;&gt;
+  &lt;select id=&quot;selectById&quot; resultType=&quot;com.example.entity.User&quot;&gt;
+    SELECT * FROM user WHERE id = #{id}
+  &lt;/select&gt;
+&lt;/mapper&gt;
+</code></pre>
+<p><strong>2. 注解方式</strong>（适合简单 SQL）</p>
+<pre><code class="language-java">@Select(&quot;SELECT * FROM user WHERE id = #{id}&quot;)
+User selectById(Integer id);
+</code></pre>
+<p><strong>3. SqlSession 直接调用</strong>：<code>sqlSession.selectOne(&quot;com.example.mapper.UserMapper.selectById&quot;, 1)</code>，是早期写法，字符串 ID 容易写错。</p>
+<p><strong>4. Provider 注解</strong>：<code>@SelectProvider(type = UserSqlProvider.class, method = &quot;build&quot;)</code>，用 Java 代码（如 <code>SQL</code> 构建类）动态生成 SQL。</p>
+<p><strong>5. MyBatis-Plus</strong>：<code>BaseMapper</code> 的通用方法加 <code>LambdaQueryWrapper</code>。</p>
+<p><strong>按返回形式</strong>还可以分为：返回单个对象、<code>List</code>、<code>Map</code>（用 <code>@MapKey</code> 指定 key 列）；大结果集用 <code>ResultHandler</code> 逐行处理，或者返回 <code>Cursor&lt;T&gt;</code> 流式读取，避免一次性把数据全部载入内存。</p></div></article><article class="q" id="q68"><h3><a class="q-link" href="#q68">xml映射文件中有哪些常见的标签？</a></h3><div class="a"><p class="lead">映射文件的标签分三类：CRUD 语句标签、结果映射与复用标签、动态 SQL 标签。</p>
+<p><strong>语句标签</strong></p>
+<ul>
+<li><code>&lt;select&gt;</code>、<code>&lt;insert&gt;</code>、<code>&lt;update&gt;</code>、<code>&lt;delete&gt;</code>：<code>id</code> 对应 Mapper 方法名，常用属性有 <code>parameterType</code>、<code>resultType</code> / <code>resultMap</code>。</li>
+<li><code>&lt;insert&gt;</code> 的 <code>useGeneratedKeys=&quot;true&quot; keyProperty=&quot;id&quot;</code> 可以回填自增主键；<code>&lt;selectKey&gt;</code> 用于不支持自增的数据库（如 Oracle 序列）获取主键。</li>
+</ul>
+<p><strong>映射与复用</strong></p>
+<ul>
+<li><code>&lt;resultMap&gt;</code>：定义列和属性的映射，子标签有 <code>&lt;id&gt;</code>、<code>&lt;result&gt;</code>、<code>&lt;association&gt;</code>（一对一）、<code>&lt;collection&gt;</code>（一对多）、<code>&lt;discriminator&gt;</code>（按列值选择映射）。</li>
+<li><code>&lt;sql&gt;</code> + <code>&lt;include&gt;</code>：抽取可复用的 SQL 片段，比如公共列列表。</li>
+<li><code>&lt;cache&gt;</code> / <code>&lt;cache-ref&gt;</code>：开启当前 namespace 的二级缓存 / 引用其他 namespace 的缓存。</li>
+<li><code>&lt;parameterMap&gt;</code>：旧的参数映射方式，已经废弃，现在用 <code>parameterType</code> 和 <code>#{}</code> 内联参数代替。</li>
+</ul>
+<p><strong>动态 SQL</strong></p>
+<ul>
+<li><code>&lt;if&gt;</code>：条件成立才拼接。</li>
+<li><code>&lt;choose&gt;</code> / <code>&lt;when&gt;</code> / <code>&lt;otherwise&gt;</code>：多选一，相当于 switch。</li>
+<li><code>&lt;where&gt;</code>：有条件时才加 WHERE，并去掉开头多余的 AND / OR。</li>
+<li><code>&lt;set&gt;</code>：用于 UPDATE，去掉末尾多余的逗号。</li>
+<li><code>&lt;trim&gt;</code>：自定义前缀、后缀和要去掉的内容，<code>&lt;where&gt;</code>、<code>&lt;set&gt;</code> 都可以用它实现。</li>
+<li><code>&lt;foreach&gt;</code>：遍历集合，常用于 <code>IN (...)</code> 和批量插入。</li>
+<li><code>&lt;bind&gt;</code>：创建一个变量，比如拼接模糊查询的 <code>%</code>。</li>
+</ul></div></article><article class="q" id="q69"><h3><a class="q-link" href="#q69">mybatis的动态sql有什么好处？举例说明？动态sql的执行原理是什么？</a><span class="tags"><i class="t-co bank">邮政储蓄银行</i><i class="t-co">网易</i><i class="t-co">蚂蚁</i></span></h3><div class="a"><p class="lead">动态 SQL 让一条映射语句根据参数在运行时生成不同的 SQL，避免在 Java 里手工拼字符串，也避免为每种条件组合写一条 SQL。原理是把标签解析成 SqlNode 树，执行时用 OGNL 对参数求值，拼出最终 SQL。</p>
+<p><strong>好处</strong></p>
+<ul>
+<li>多条件查询、选择性更新、批量操作只需写一条语句。</li>
+<li>不用处理多余的 AND、逗号等拼接细节。</li>
+<li>参数仍然走 <code>#{}</code> 预编译，比手工拼接安全。</li>
+</ul>
+<p><strong>例子</strong>：多条件查询和批量查询</p>
+<pre><code class="language-xml">&lt;select id=&quot;search&quot; resultType=&quot;User&quot;&gt;
+  SELECT * FROM user
+  &lt;where&gt;
+    &lt;if test=&quot;name != null and name != ''&quot;&gt;AND name LIKE CONCAT('%', #{name}, '%')&lt;/if&gt;
+    &lt;if test=&quot;status != null&quot;&gt;AND status = #{status}&lt;/if&gt;
+    &lt;if test=&quot;ids != null and ids.size() &gt; 0&quot;&gt;
+      AND id IN
+      &lt;foreach collection=&quot;ids&quot; item=&quot;id&quot; open=&quot;(&quot; separator=&quot;,&quot; close=&quot;)&quot;&gt;#{id}&lt;/foreach&gt;
+    &lt;/if&gt;
+  &lt;/where&gt;
+&lt;/select&gt;
+</code></pre>
+<p><strong>执行原理</strong></p>
+<ol>
+<li>启动解析阶段：<code>XMLScriptBuilder</code> 把含动态标签（或含 <code>${}</code>）的语句解析成一棵 <code>SqlNode</code> 树（<code>IfSqlNode</code>、<code>WhereSqlNode</code>、<code>ForEachSqlNode</code> 等，根节点是 <code>MixedSqlNode</code>），封装为 <code>DynamicSqlSource</code>。不含动态内容的语句解析成 <code>RawSqlSource</code>，启动时就确定了 SQL。</li>
+<li>执行阶段：调用 <code>getBoundSql(参数)</code>，各 <code>SqlNode</code> 依次 <code>apply</code>，<code>&lt;if test&gt;</code> 等表达式用 OGNL 对参数求值，满足条件的片段追加到 <code>DynamicContext</code> 中，同时完成 <code>${}</code> 的文本替换。</li>
+<li>拼好的 SQL 再交给 <code>SqlSourceBuilder</code>，把 <code>#{}</code> 替换成 <code>?</code> 并记录参数映射，得到 <code>BoundSql</code>，最后交给 <code>PreparedStatement</code> 执行。</li>
+</ol></div></article><article class="q" id="q70"><h3><a class="q-link" href="#q70">Mybatis中Dao接口和xml文件有什么作用？Dao接口支持重载吗？</a></h3><div class="a"><p class="lead">Dao（Mapper）接口声明方法，XML 提供方法对应的 SQL；二者通过&quot;namespace = 接口全限定名、语句 id = 方法名&quot;绑定。接口方法可以重载，但所有同名重载方法只能对应同一条 SQL 语句。</p>
+<p><strong>绑定原理</strong></p>
+<ul>
+<li>XML 的 <code>namespace</code> 写接口全限定名，每条语句的 <code>id</code> 写方法名，MyBatis 启动时把每条语句解析成 <code>MappedStatement</code>，以 <code>namespace.id</code> 为 key 存入 <code>Configuration</code>。</li>
+<li>接口没有实现类。<code>getMapper()</code> 通过 <code>MapperProxyFactory</code> 用 JDK 动态代理生成代理对象；调用方法时 <code>MapperProxy</code> 用&quot;接口全限定名.方法名&quot;找到 <code>MappedStatement</code>，再交给 <code>SqlSession</code> 执行。</li>
+</ul>
+<p><strong>重载</strong></p>
+<ul>
+<li>语句的 key 只有&quot;接口名.方法名&quot;，不包含参数类型，所以 XML 里同一个 namespace 下不能有两个相同的 id，启动时会报 <code>Mapped Statements collection already contains value</code>。</li>
+<li>可以在接口中声明重载方法，但它们都会映射到同一条 SQL。要让它们表现不同，只能在这条 SQL 里用动态 SQL 判断参数（如 <code>_parameter</code>、<code>@Param</code> 指定的名字）。</li>
+<li>实际开发中不推荐重载 Mapper 方法，用不同的方法名更清晰。</li>
+</ul>
+<p><strong>其他注意点</strong>：Mapper 接口方法有多个参数时，用 <code>@Param(&quot;name&quot;)</code> 命名，XML 里才能用 <code>#{name}</code> 引用。</p></div></article></section><section class="grp has-core" id="g16"><h2 class="grp-title">执行原理与高级特性 <span class="cnt"><span class="n-all">5</span><span class="n-core">高频 2</span></span></h2><article class="q core" id="q71"><h3><a class="q-link" href="#q71">mybatis的执行机制是怎样的？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">一句话：启动时把配置和映射文件解析成 <code>Configuration</code>，运行时 Mapper 代理把方法调用转给 <code>SqlSession</code>，再由 <code>Executor</code> → <code>StatementHandler</code> → JDBC 执行 SQL，最后 <code>ResultSetHandler</code> 把结果映射成对象。</p>
+<p><strong>启动阶段</strong>：<code>SqlSessionFactoryBuilder</code> 解析 <code>mybatis-config.xml</code> 和 Mapper XML / 注解，生成全局唯一的 <code>Configuration</code>，每条 SQL 对应一个 <code>MappedStatement</code>；再创建线程安全的 <code>SqlSessionFactory</code>，应用中只需一个。</p>
+<p><strong>执行阶段</strong></p>
+<ol>
+<li><code>openSession()</code> 获取 <code>SqlSession</code> 并创建 <code>Executor</code>。<code>SqlSession</code> 非线程安全，用完关闭；Spring 中注入的是线程安全的 <code>SqlSessionTemplate</code>，为当前事务绑定 SqlSession。</li>
+<li><code>getMapper()</code> 返回 JDK 动态代理，<code>MapperProxy</code> 按&quot;接口全限定名.方法名&quot;找到 <code>MappedStatement</code>，转成 <code>sqlSession.selectList/update</code> 等调用。</li>
+<li><code>Executor</code> 调度和缓存：开二级缓存时外层是 <code>CachingExecutor</code>，再查一级缓存，未命中查库。基础执行器有 <code>SimpleExecutor</code>（默认）、<code>ReuseExecutor</code>（复用 Statement）、<code>BatchExecutor</code>（批量）。</li>
+<li><code>StatementHandler</code> 创建 <code>PreparedStatement</code>，<code>ParameterHandler</code> 用 <code>TypeHandler</code> 设参后执行。</li>
+<li><code>ResultSetHandler</code> 按 <code>resultType</code> / <code>resultMap</code> 映射结果。</li>
+<li>非自动提交模式下增删改需 <code>commit()</code>，最后 <code>close()</code>。</li>
+</ol></div></article><article class="q core" id="q72"><h3><a class="q-link" href="#q72">mybatis缓存机制是怎么样的，两级缓存分别在什么时候用</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">MyBatis 有两级缓存：一级缓存是 SqlSession 级别，默认开启；二级缓存是 namespace（Mapper）级别，需要在映射文件里显式开启。查询顺序是：二级缓存 → 一级缓存 → 数据库。</p>
+<p><strong>一级缓存（本地缓存）</strong></p>
+<ul>
+<li>范围是同一个 <code>SqlSession</code>，底层是 <code>BaseExecutor</code> 里的 <code>PerpetualCache</code>（HashMap）；key 由 statement ID、分页参数、SQL、参数值、环境 ID 组成。</li>
+<li>增删改、<code>commit()</code>、<code>rollback()</code>、<code>clearCache()</code>、关闭 SqlSession 时清空；<code>localCacheScope</code> 改为 <code>STATEMENT</code> 等于关闭。</li>
+<li>易错点：Spring 中没有事务时每次 Mapper 调用都新开 SqlSession，一级缓存基本不起作用；同一个 <code>@Transactional</code> 内才生效。</li>
+</ul>
+<p><strong>二级缓存</strong></p>
+<ul>
+<li>范围是同一个 namespace，跨 SqlSession 共享。</li>
+<li><code>cacheEnabled</code> 默认 true，但还需映射文件加 <code>&lt;cache/&gt;</code>（或 <code>@CacheNamespace</code>）；单条语句可 <code>useCache=&quot;false&quot;</code>。</li>
+<li>默认 LRU、最多 1024 个对象；<code>readOnly=false</code> 时序列化返回副本，实体需实现 <code>Serializable</code>。</li>
+<li>SqlSession <code>commit()</code> 或 <code>close()</code> 后才写入；同 namespace 增删改会清空；可实现 <code>Cache</code> 接口接入 Redis。</li>
+</ul>
+<p><strong>什么时候用</strong>：一级缓存自动生效，适合同一事务内重复查询。二级缓存只适合读多写少、实时性要求低、只在单表 namespace 内修改的数据；生产一般不开，因为别的 namespace 改数据不会清空这里的缓存，多实例间也不一致，通常改在业务层用 Redis。</p></div></article><article class="q" id="q73"><h3><a class="q-link" href="#q73">mybatis支持延迟加载吗？原理是什么？</a></h3><div class="a"><p class="lead">支持。延迟加载只对 <code>&lt;association&gt;</code> 和 <code>&lt;collection&gt;</code> 里的嵌套查询（<code>select</code> 属性指定的另一条语句）生效：查主对象时先不查关联对象，等真正访问关联属性时才执行那条查询。原理是返回主对象的动态代理，拦截 getter 触发加载。</p>
+<p><strong>配置</strong></p>
+<ul>
+<li>全局：<code>lazyLoadingEnabled=true</code>（默认 false）；<code>aggressiveLazyLoading=false</code>（3.4.1 起默认 false，为 true 时访问任意属性都会加载全部延迟属性）。</li>
+<li>单个关联：<code>fetchType=&quot;lazy&quot;</code> 或 <code>&quot;eager&quot;</code>，优先级高于全局配置。</li>
+</ul>
+<pre><code class="language-xml">&lt;resultMap id=&quot;userMap&quot; type=&quot;User&quot;&gt;
+  &lt;id column=&quot;id&quot; property=&quot;id&quot;/&gt;
+  &lt;collection property=&quot;orders&quot; column=&quot;id&quot; fetchType=&quot;lazy&quot;
+              select=&quot;com.example.mapper.OrderMapper.selectByUserId&quot;/&gt;
+&lt;/resultMap&gt;
+</code></pre>
+<p><strong>原理</strong></p>
+<ol>
+<li>映射结果时，如果有延迟加载的属性，MyBatis 用代理工厂（默认 Javassist，3.5.10 起 CGLIB 已被标记为废弃）为结果对象创建子类代理，并把待执行的嵌套查询保存在 <code>ResultLoaderMap</code> 中。</li>
+<li>调用代理对象的 getter（如 <code>getOrders()</code>）时，拦截器发现该属性还没加载，就执行对应的嵌套查询，把结果 set 进去，再返回。</li>
+<li>调用 <code>equals</code>、<code>clone</code>、<code>hashCode</code>、<code>toString</code> 默认会触发加载全部延迟属性（由 <code>lazyLoadTriggerMethods</code> 配置）。</li>
+</ol>
+<p><strong>注意</strong>：嵌套查询有 N+1 问题（1 条主查询 + N 条关联查询），延迟加载只是把它推迟了。一次就要拿全部数据时，用连接查询 + 嵌套结果映射更高效。</p></div></article><article class="q" id="q74"><h3><a class="q-link" href="#q74">Mybatis中的插件是如何运行的？怎样自己编写一个插件？</a></h3><div class="a"><p class="lead">MyBatis 插件就是拦截器：它只能拦截四大核心对象 <code>Executor</code>、<code>StatementHandler</code>、<code>ParameterHandler</code>、<code>ResultSetHandler</code> 的方法。这四个对象创建时，<code>InterceptorChain.pluginAll()</code> 用 JDK 动态代理把它们层层包装，调用被拦截的方法时先进入插件逻辑。</p>
+<table>
+<thead>
+<tr>
+<th>对象</th>
+<th>可拦截方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Executor</code></td>
+<td><code>update</code>、<code>query</code>、<code>commit</code>、<code>rollback</code> 等</td>
+</tr>
+<tr>
+<td><code>StatementHandler</code></td>
+<td><code>prepare</code>、<code>parameterize</code>、<code>batch</code>、<code>update</code>、<code>query</code></td>
+</tr>
+<tr>
+<td><code>ParameterHandler</code></td>
+<td><code>getParameterObject</code>、<code>setParameters</code></td>
+</tr>
+<tr>
+<td><code>ResultSetHandler</code></td>
+<td><code>handleResultSets</code>、<code>handleOutputParameters</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>运行原理</strong></p>
+<ol>
+<li>插件按配置顺序存入 <code>InterceptorChain</code>。</li>
+<li>创建四大对象时依次调用 <code>plugin()</code>，默认 <code>Plugin.wrap(target, this)</code>：目标实现了 <code>@Signature</code> 声明的接口就生成 JDK 代理，否则返回原对象。</li>
+<li>多个插件形成多层代理，后配置的在最外层、最先执行。</li>
+<li><code>Plugin.invoke()</code> 判断方法在签名中就调用 <code>intercept(invocation)</code>，插件内 <code>invocation.proceed()</code> 继续原方法。</li>
+</ol>
+<p><strong>编写步骤</strong>：实现 <code>Interceptor</code> 重写 <code>intercept()</code>（3.5.2 起 <code>plugin()</code>、<code>setProperties()</code> 有默认实现）；用 <code>@Intercepts</code> + <code>@Signature</code> 声明类型、方法名、参数类型；XML 用 <code>&lt;plugins&gt;</code> 注册，Spring Boot 中声明为 Bean 即可自动注册。</p>
+<pre><code class="language-java">@Intercepts({@Signature(type = StatementHandler.class, method = &quot;prepare&quot;,
+        args = {Connection.class, Integer.class})})
+public class SlowSqlInterceptor implements Interceptor {
+    @Override
+    public Object intercept(Invocation invocation) throws Throwable {
+        long start = System.currentTimeMillis();
+        try {
+            return invocation.proceed();
+        } finally {
+            StatementHandler handler = (StatementHandler) invocation.getTarget();
+            long cost = System.currentTimeMillis() - start;
+            // 记录 handler.getBoundSql().getSql() 和耗时
+        }
+    }
+}
+</code></pre>
+<p>注意这里只统计了 <code>prepare</code> 的耗时，真正的执行耗时应拦截 <code>query</code> / <code>update</code>。常见应用：PageHelper / MyBatis-Plus 分页、慢 SQL 监控、数据权限、字段加解密、多租户。</p></div></article><article class="q" id="q75"><h3><a class="q-link" href="#q75">mybatis连接池是什么？</a></h3><div class="a"><p class="lead">连接池负责预先创建并复用数据库连接，避免每次执行 SQL 都要做 TCP 连接和数据库认证。MyBatis 自带简单的连接池实现，但实际项目里一般由 Spring Boot 管理数据源，默认是 HikariCP。</p>
+<p><strong>MyBatis 内置的数据源类型</strong>（<code>&lt;dataSource type=&quot;...&quot;&gt;</code>）</p>
+<ul>
+<li><code>UNPOOLED</code>：<code>UnpooledDataSource</code>，每次请求都新建连接，用完关闭。</li>
+<li><code>POOLED</code>：<code>PooledDataSource</code>，维护空闲连接和活跃连接两个列表，可以配置最大活跃连接数（<code>poolMaximumActiveConnections</code>，默认 10）、最大空闲连接数、获取连接的最长等待时间等。调用 <code>close()</code> 时连接归还到池中而不是真正关闭，这是通过代理 Connection 实现的。</li>
+<li><code>JNDI</code>：从应用服务器的 JNDI 上下文获取数据源。</li>
+</ul>
+<p><strong>和 Spring Boot 集成时</strong>：MyBatis 直接使用容器里的 <code>DataSource</code> Bean。Spring Boot 2.0 起默认连接池是 HikariCP，也可以换成 Druid（自带监控和 SQL 防火墙）等。连接池的关键参数有最大连接数、最小空闲连接数、连接超时、空闲超时和连接最大存活时间。</p></div></article></section><nav class="pager"><a href="mq.html" class="prev"><small>上一章</small>消息队列</a><a href="distributed.html" class="next"><small>下一章</small>分布式</a></nav>
+  </div>
+</main>
+<div class="backdrop" id="backdrop"></div>
+<button class="to-top" id="to-top" aria-label="回到顶部">↑</button>
+<script id="outline" type="application/json">[{"block":"Spring"},{"id":"g1","title":"IoC 与依赖注入","n":5,"core":4},{"id":"g2","title":"Bean 的定义、作用域与生命周期","n":4,"core":2},{"id":"g3","title":"IoC 容器原理","n":5,"core":0},{"id":"g4","title":"循环依赖与三级缓存","n":4,"core":1},{"id":"g5","title":"AOP 与动态代理","n":4,"core":2},{"id":"g6","title":"Spring 事务","n":6,"core":4},{"id":"g7","title":"常用注解","n":4,"core":2},{"id":"g8","title":"设计模式与版本演进","n":3,"core":1},{"block":"SpringMVC & SpringBoot"},{"id":"g9","title":"Spring MVC 核心","n":6,"core":2},{"id":"g10","title":"Web 开发实战","n":4,"core":1},{"id":"g11","title":"Spring Boot 基础与配置","n":5,"core":2},{"id":"g12","title":"自动装配与启动原理","n":5,"core":5},{"id":"g13","title":"生产实践","n":7,"core":1},{"block":"MyBatis"},{"id":"g14","title":"框架定位与对比","n":3,"core":0},{"id":"g15","title":"SQL 映射与动态 SQL","n":5,"core":2},{"id":"g16","title":"执行原理与高级特性","n":5,"core":2}]</script>
+<script src="assets/app.js?v=ab30056e"></script>
+</body>
+</html>

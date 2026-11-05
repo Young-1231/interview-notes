@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="darkreader-lock">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>智力题 · 八股笔记</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' font-weight='bold' fill='white' text-anchor='middle'%3E八%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css?v=ab30056e">
+<script>
+  (function () {
+    var t = localStorage.getItem('iv.theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+</head>
+<body data-part="more" data-sec="brain">
+<header class="site-header">
+  <button class="icon-btn menu-btn" id="menu-btn" aria-label="目录">☰</button>
+  <a href="index.html" class="brand"><span class="dot">●</span> 八股笔记</a>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="search">
+    <input id="search" type="search" placeholder="搜索题目  /" autocomplete="off" aria-label="搜索题目">
+    <span id="search-info"></span>
+    <div class="search-pop" id="search-pop" hidden></div>
+  </div>
+  <button class="icon-btn" id="theme-toggle" aria-label="切换主题">◐</button>
+</header>
+<aside class="side" id="side"><nav id="toc"></nav></aside>
+<main class="main">
+  <div id="article">
+<header class="page-head"><div class="crumb">场景 &amp; 真题</div><h1>智力题 <span class="cnt">19 题</span></h1><div class="tools"><button type="button" class="tool" id="t-quiz" aria-pressed="false">自测模式</button><a class="tool resume" id="t-resume" hidden></a><span class="kbd-hint"><kbd>j</kbd>/<kbd>k</kbd> 上下题 · 自测时 <kbd>空格</kbd> 看答案 · <kbd>/</kbd> 搜索</span></div><nav class="overview"><div class="ov-groups"><a href="#g1" class="no-core">量水与计时<span><span class="n-all">6</span><span class="n-core">0</span></span></a><a href="#g2" class="no-core">二进制与编码<span><span class="n-all">4</span><span class="n-core">0</span></span></a><a href="#g3" class="no-core">赛马与称重<span><span class="n-all">3</span><span class="n-core">0</span></span></a><a href="#g4" class="no-core">博弈与数学<span><span class="n-all">6</span><span class="n-core">0</span></span></a></div></nav></header><section class="grp" id="g1"><h2 class="grp-title">量水与计时 <span class="cnt"><span class="n-all">6</span><span class="n-core">高频 0</span></span></h2><article class="q" id="q1"><h3><a class="q-link" href="#q1">5L和6L的水桶如何量出3L水？</a></h3><div class="a"><p class="lead"><strong>结论</strong>:用 6L 桶反复往 5L 桶里倒,每轮 6L 桶里会多剩 1L,三轮后剩 3L。</p>
+<p>用 (5L 桶, 6L 桶) 表示两桶水量:</p>
+<ol>
+<li>装满 6L,倒满 5L:(5, 1)。</li>
+<li>倒空 5L,把 1L 倒进去:(1, 0)。</li>
+<li>再装满 6L,倒满 5L(只需 4L):(5, 2)。</li>
+<li>倒空 5L,把 2L 倒进去:(2, 0)。</li>
+<li>再装满 6L,倒满 5L(只需 3L):(5, 3),6L 桶里正好 3L。</li>
+</ol>
+<p><strong>思路</strong>:两个桶容量互质(gcd(5,6)=1),通过「装满、倒空、互倒」可以量出 1~6 之间的任意整数升。每次 6L 桶倒满 5L 桶后,剩余量都比上一轮多 1L。</p></div></article><article class="q" id="q2"><h3><a class="q-link" href="#q2">10L、7L、3L三个桶,10L满的,如何分成两个5L？</a></h3><div class="a"><p class="lead"><strong>结论</strong>:9 步可以完成,核心是先在 7L 桶里凑出 1L,再利用 3L 桶的空余凑出 5L。</p>
+<p>用 (10L, 7L, 3L) 表示水量,初始 (10, 0, 0):</p>
+<ol>
+<li>10L → 7L:(3, 7, 0)</li>
+<li>7L → 3L:(3, 4, 3)</li>
+<li>3L → 10L:(6, 4, 0)</li>
+<li>7L → 3L:(6, 1, 3)</li>
+<li>3L → 10L:(9, 1, 0)</li>
+<li>7L → 3L:(9, 0, 1)</li>
+<li>10L → 7L:(2, 7, 1)</li>
+<li>7L → 3L(3L 桶只能再装 2L):(2, 5, 3)</li>
+<li>3L → 10L:(5, 5, 0)</li>
+</ol>
+<p>最终 10L 桶和 7L 桶各 5L。每一步都可以用「三桶总量始终为 10」来自检。</p></div></article><article class="q" id="q3"><h3><a class="q-link" href="#q3">只有7两和11两的勺子,如何量出2两酒？</a></h3><div class="a"><p class="lead"><strong>结论</strong>:不断用 7 两勺往 11 两勺里倒,利用 11 两勺满后 7 两勺的余量,依次得到 3、6、2 两。</p>
+<p>用 (7两勺, 11两勺) 表示,酒可以无限取:</p>
+<ol>
+<li>装满 7,倒进 11:(0, 7)。</li>
+<li>装满 7,倒满 11(只需 4):(3, 11)。</li>
+<li>倒空 11,把 3 倒进去:(0, 3)。</li>
+<li>装满 7,倒进 11:(0, 10)。</li>
+<li>装满 7,倒满 11(只需 1):(6, 11)。</li>
+<li>倒空 11,把 6 倒进去:(0, 6)。</li>
+<li>装满 7,倒满 11(只需 5):(2, 11),7 两勺里正好 2 两。</li>
+</ol>
+<p><strong>原理</strong>:7 和 11 互质,一定能凑出 2 = 5×7 − 3×11。上面的步骤里 7 两勺一共装满 5 次(35 两),倒进 11 两勺里的酒正好装满它 3 次(33 两,其中两次倒掉、最后一次留在勺里),剩下 2 两留在 7 两勺中。</p></div></article><article class="q" id="q4"><h3><a class="q-link" href="#q4">你有两个沙漏,一个4分钟,一个7分钟,如何测出9分钟？</a></h3><div class="a"><p class="lead"><strong>结论</strong>:同时开始,在第 8 分钟把 7 分钟沙漏再翻一次,它漏完时正好 9 分钟。</p>
+<ol>
+<li>第 0 分钟:两个沙漏同时开始。</li>
+<li>第 4 分钟:4 分钟沙漏漏完,立即翻转。</li>
+<li>第 7 分钟:7 分钟沙漏漏完,立即翻转(此时 4 分钟沙漏还剩 1 分钟)。</li>
+<li>第 8 分钟:4 分钟沙漏漏完。此时 7 分钟沙漏刚漏了 1 分钟,立即翻转,它只需 1 分钟就会漏完。</li>
+<li>第 9 分钟:7 分钟沙漏漏完,计时结束。</li>
+</ol>
+<p><strong>关键</strong>:4+4 = 8 分钟时,7 分钟沙漏底部正好积了 1 分钟的沙,翻过来就是 1 分钟,8 + 1 = 9。</p></div></article><article class="q" id="q5"><h3><a class="q-link" href="#q5">烧一根不均匀的绳子需要1小时,如何计时45分钟？</a></h3><div class="a"><p class="lead"><strong>结论</strong>:两根绳子,A 两头点、B 一头点;A 烧完(30 分钟)时点燃 B 的另一头,B 烧完时正好 45 分钟。</p>
+<ol>
+<li>同时点燃绳子 A 的两端和绳子 B 的一端。</li>
+<li>A 两端同时烧,30 分钟烧完。此时 B 恰好烧了 30 分钟,剩下的部分单头烧还需要 30 分钟。</li>
+<li>A 烧完时立刻点燃 B 的另一端,剩余部分两头烧,15 分钟烧完。</li>
+<li>总计 30 + 15 = 45 分钟。</li>
+</ol>
+<p><strong>为什么不均匀也没关系</strong>:两端同时点燃时,两个火头燃烧的「时间量」之和是固定的,两个火头相遇时一定用掉一半时间,与绳子粗细分布无关。但不能按长度对折或量一半长度来计时。</p></div></article><article class="q" id="q6"><h3><a class="q-link" href="#q6">烧一根不均匀的绳子需要1小时,如何计时1小时15分钟？</a></h3><div class="a"><p class="lead"><strong>结论</strong>:需要三根绳子,先用两根测出 45 分钟,再把第三根两头点燃得到 30 分钟,合计 75 分钟。</p>
+<ol>
+<li>同时点燃绳子 A 的两端和绳子 B 的一端。</li>
+<li>30 分钟后 A 烧完,立刻点燃 B 的另一端;再过 15 分钟 B 烧完,累计 45 分钟。</li>
+<li>B 烧完时点燃绳子 C 的两端,30 分钟烧完。</li>
+<li>总计 45 + 30 = 75 分钟。</li>
+</ol>
+<p>另一种等价做法:先用 A、B 测出 15 分钟(A 两头点、B 一头点,A 烧完时点 B 的另一头,从此刻到 B 烧完是 15 分钟),再接一根完整的单头燃烧(60 分钟)。</p></div></article></section><section class="grp" id="g2"><h2 class="grp-title">二进制与编码 <span class="cnt"><span class="n-all">4</span><span class="n-core">高频 0</span></span></h2><article class="q" id="q7"><h3><a class="q-link" href="#q7">1000个瓶子里有1瓶毒药,喝下1周后死亡,只有10只小白鼠和1周时间,如何找出毒药？</a></h3><div class="a"><p class="lead"><strong>结论</strong>:把瓶子按二进制编号,每只老鼠负责一位,喝下该位为 1 的所有瓶子;一周后死亡老鼠的组合就是毒药瓶编号的二进制。</p>
+<ol>
+<li>给瓶子编号 0~999。2^10 = 1024 ≥ 1000,所以 10 位二进制足够。</li>
+<li>10 只老鼠分别对应第 0~9 位。对每个瓶子,把编号写成二进制,哪一位是 1,就让对应的老鼠喝一点。</li>
+<li>所有老鼠同时喝完,等一周。</li>
+<li>死亡的老鼠记为 1、存活记为 0,拼成的 10 位二进制数就是毒药瓶编号。全部存活说明是 0 号瓶。</li>
+</ol>
+<p><strong>为什么 10 只是下限</strong>:每只老鼠只有「死 / 活」两种结果,k 只老鼠最多区分 2^k 种情况。2^9 = 512 &lt; 1000,9 只不够。</p>
+<p><strong>延伸</strong>:如果时间够做两轮实验,每只老鼠有「第一轮死 / 第二轮死 / 活」三种状态,可以用三进制,k 只老鼠区分 3^k 种情况。</p></div></article><article class="q" id="q8"><h3><a class="q-link" href="#q8">16瓶药里有1瓶毒药,老鼠喝下1小时后死亡,只有1小时,最少用几只老鼠？</a></h3><div class="a"><p class="lead"><strong>结论</strong>:最少 4 只,方法同二进制编码。</p>
+<ol>
+<li>把 16 瓶编号为 0~15,每个编号恰好是 4 位二进制(0000~1111)。注意不要编成 1~16,16 = 10000 需要 5 位。</li>
+<li>4 只老鼠 A、B、C、D 分别负责最高位到最低位,某瓶编号哪一位是 1,对应老鼠就喝这瓶。例如 9 = 1001,由 A 和 D 喝。</li>
+<li>1 小时后,死亡记 1、存活记 0。比如 A、D 死亡,读数为 1001,毒药是 9 号;全部存活则是 0 号。</li>
+</ol>
+<p><strong>下限证明</strong>:只有 1 小时,每只老鼠只能做一轮实验,结果只有死/活两种。3 只老鼠只能区分 2^3 = 8 种情况,不足 16,所以至少 4 只。</p></div></article><article class="q" id="q9"><h3><a class="q-link" href="#q9">工人工作7天,报酬是一根分成7段的金条,每天结束时付一段,只允许切两刀,如何付费？</a></h3><div class="a"><p class="lead"><strong>结论</strong>:切成 1、2、4 三段,通过「给出再找回」凑出每天的累计报酬 1~7。</p>
+<table>
+<thead>
+<tr>
+<th>天数</th>
+<th>操作</th>
+<th>工人手中累计</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>第 1 天</td>
+<td>给 1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>第 2 天</td>
+<td>给 2,收回 1</td>
+<td>2</td>
+</tr>
+<tr>
+<td>第 3 天</td>
+<td>给 1</td>
+<td>1+2 = 3</td>
+</tr>
+<tr>
+<td>第 4 天</td>
+<td>给 4,收回 1 和 2</td>
+<td>4</td>
+</tr>
+<tr>
+<td>第 5 天</td>
+<td>给 1</td>
+<td>4+1 = 5</td>
+</tr>
+<tr>
+<td>第 6 天</td>
+<td>给 2,收回 1</td>
+<td>4+2 = 6</td>
+</tr>
+<tr>
+<td>第 7 天</td>
+<td>给 1</td>
+<td>4+2+1 = 7</td>
+</tr>
+</tbody>
+</table>
+<p><strong>原理</strong>:1、2、4 是二进制的三个位权,任意 1~7 都能唯一表示为它们的组合。切两刀得到三段,在第 1 段后和第 3 段后各切一刀即可。</p></div></article><article class="q" id="q10"><h3><a class="q-link" href="#q10">如何用硬币等概率地产生1~3的随机整数？抛三次能做到吗？</a></h3><div class="a"><p class="lead"><strong>结论</strong>:用「拒绝采样」:抛两次,HH→1、HT→2、TH→3、TT 重来。固定抛三次(或任意固定次数)都不可能做到严格等概率。</p>
+<p><strong>两次抛掷 + 重抛</strong></p>
+<ul>
+<li>四种结果各 1/4。只接受 HH、HT、TH,遇到 TT 就丢弃重抛。</li>
+<li>每轮被接受的概率是 3/4,接受时三个结果的条件概率都是 (1/4)/(3/4) = 1/3,所以最终每个数字的概率都是 1/3。</li>
+<li>期望轮数 1/(3/4) = 4/3,期望抛掷次数 2 × 4/3 = 8/3 ≈ 2.67 次。</li>
+</ul>
+<p><strong>固定抛三次为什么不行</strong></p>
+<ul>
+<li>三次共有 2^3 = 8 种等可能结果,要分给 3 个数字,每个数字分到 n 种结果,概率是 n/8。</li>
+<li>要求 n/8 = 1/3,得 n = 8/3,不是整数,所以无法均分。比如二进制取模 3,得到的概率是 3/8、3/8、2/8。</li>
+<li>推广:固定抛 k 次,结果数 2^k 永远不能被 3 整除,所以任何固定次数都做不到。必须允许重抛,抛掷次数是不固定的(但以概率 1 会结束)。</li>
+</ul>
+<p><strong>三次一组也可以做拒绝采样</strong>:8 种结果中拿 6 种两两分给 1、2、3,剩下 2 种重抛,接受概率同样是 3/4,但每轮多花一次抛掷,不如两次一组划算。</p></div></article></section><section class="grp" id="g3"><h2 class="grp-title">赛马与称重 <span class="cnt"><span class="n-all">3</span><span class="n-core">高频 0</span></span></h2><article class="q" id="q11"><h3><a class="q-link" href="#q11">25匹马,5条跑道,没有计时器,最少几场比赛能选出最快的前3名？</a></h3><div class="a"><p class="lead"><strong>结论</strong>:最少 7 场:5 场分组赛 + 1 场冠军赛 + 1 场附加赛。</p>
+<ol>
+<li><strong>分组赛(第 1~5 场)</strong>:分成 A~E 五组,每组跑一场,得到组内排名 A1&gt;A2&gt;A3&gt;…。</li>
+<li><strong>冠军赛(第 6 场)</strong>:五个组的第一名一起跑,假设结果 A1&gt;B1&gt;C1&gt;D1&gt;E1。A1 就是总冠军。</li>
+<li><strong>排除</strong>:
+<ul>
+<li>D 组、E 组全部淘汰:D1 前面已经有 A1、B1、C1 三匹。</li>
+<li>C 组只剩 C1:C2 前面至少有 A1、B1、C1。</li>
+<li>B 组只剩 B1、B2:B3 前面至少有 A1、B1、B2。</li>
+<li>A 组剩 A2、A3:A4 前面至少有 A1、A2、A3。</li>
+</ul>
+</li>
+<li><strong>附加赛(第 7 场)</strong>:剩下的候选恰好 5 匹:A2、A3、B1、B2、C1,跑一场,前两名就是总第 2、3 名。</li>
+</ol>
+<p><strong>为什么少于 7 场不行</strong>:每匹马都必须至少跑一次才可能被排除,25 匹马至少要 5 场;5 场分组后各组之间没有可比信息,必须用第 6 场比较组冠军;第 6 场后候选还有 5 匹无法确定先后,所以还需要第 7 场。</p></div></article><article class="q" id="q12"><h3><a class="q-link" href="#q12">64匹马,8条跑道,最少几场比赛能选出最快的前4名？</a></h3><div class="a"><p class="lead"><strong>结论</strong>:最坏情况下 11 场(8 场分组 + 1 场冠军赛 + 最多 2 场附加赛),运气好时 10 场就能确定。</p>
+<ol>
+<li><strong>分组赛(第 1~8 场)</strong>:分成 A~H 八组,得到组内排名。</li>
+<li><strong>冠军赛(第 9 场)</strong>:八个组冠军一起跑,假设 A1&gt;B1&gt;C1&gt;D1&gt;…&gt;H1,A1 是总冠军。</li>
+<li><strong>排除</strong>:按「前面已经有 4 匹比它快就淘汰」的规则,剩下的候选(争夺第 2~4 名)是 9 匹:
+<ul>
+<li>A 组:A2、A3、A4</li>
+<li>B 组:B1、B2、B3</li>
+<li>C 组:C1、C2</li>
+<li>D 组:D1</li>
+</ul>
+</li>
+<li><strong>第 10 场</strong>:跑道只有 8 条,从 9 匹里挑 8 匹跑,例如先不让 D1 上场。
+<ul>
+<li>D1 要进前 4,前提是 B1、C1 恰好是第 2、3 名(此时 D1 只能争第 4)。</li>
+<li>所以如果第 10 场前两名不是 B1、C1,D1 已被淘汰,第 10 场的前 3 名就是总第 2~4 名,共 10 场。</li>
+<li>如果第 10 场前两名正好是 B1、C1,那么第 4 名在「第 10 场第 3 名」和 D1 之间产生。</li>
+</ul>
+</li>
+<li><strong>第 11 场</strong>:让第 10 场的第 3 名和 D1 比一场,胜者是总第 4 名。</li>
+</ol>
+<p>所以通常回答「最少 11 场」(保证一定能选出),并说明最好情况 10 场。</p></div></article><article class="q" id="q13"><h3><a class="q-link" href="#q13">8个铁球,其中一个比其他的重,用天平称两次如何找出？</a></h3><div class="a"><p class="lead"><strong>结论</strong>:按 3、3、2 分组,第一次确定重球在哪一组,第二次在组内找出。</p>
+<ol>
+<li><strong>第一次</strong>:称 {1,2,3} 对 {4,5,6}。
+<ul>
+<li>平衡:重球在 7、8 中。第二次称 7 对 8,下沉的是重球。</li>
+<li>左边重:重球在 1、2、3 中。第二次称 1 对 2,哪边沉哪个是重球;平衡则是 3。</li>
+<li>右边重:同理在 4、5、6 中找。</li>
+</ul>
+</li>
+</ol>
+<p><strong>原理</strong>:天平每次有「左沉 / 右沉 / 平衡」三种结果,称 k 次最多区分 3^k 种情况。2 次能区分 9 种,所以「已知偏重」的情况下,两次最多可以从 9 个球里找出重球;8 个球自然可以。分组时要让三种结果对应的候选数尽量相等(3/3/2 或 3/3/3)。</p>
+<p><strong>常见变体</strong>:如果只知道有一个球「不一样」但不知道轻重,情况数翻倍,12 个球需要称 3 次。</p></div></article></section><section class="grp" id="g4"><h2 class="grp-title">博弈与数学 <span class="cnt"><span class="n-all">6</span><span class="n-core">高频 0</span></span></h2><article class="q" id="q14"><h3><a class="q-link" href="#q14">一堆n个石子,两人轮流取,每次取1~m个,拿走最后一个的人获胜,怎么必胜？</a></h3><div class="a"><p class="lead"><strong>结论</strong>:这是巴什博弈。n 能被 m+1 整除时后手必胜;否则先手必胜,策略是每次给对手留下 m+1 的倍数。</p>
+<ol>
+<li><strong>最小情形</strong>:n = m+1 时,先手无论取 k 个(1 ≤ k ≤ m),剩下 m+1−k 个都在 1~m 之间,后手一次取完,先手必败。</li>
+<li><strong>一般情形</strong>:设 n = (m+1)·r + s,0 ≤ s ≤ m。
+<ul>
+<li>s ≠ 0:先手第一次取 s 个,剩下 (m+1)·r。之后对手取 k 个,先手就取 m+1−k 个,每轮两人合计取 m+1,剩余始终是 m+1 的倍数,最后一个石子必然由先手拿走。</li>
+<li>s = 0:先手无论怎么取,后手都可以用同样的「凑 m+1」策略,后手必胜。</li>
+</ul>
+</li>
+</ol>
+<p><strong>一句话</strong>:n % (m+1) == 0 时后手胜,否则先手胜。</p></div></article><article class="q" id="q15"><h3><a class="q-link" href="#q15">5个海盗分100枚金币,如何提方案让第一个海盗利益最大化？</a></h3><div class="a"><p class="lead"><strong>结论</strong>:关键是从最后剩下的海盗往前倒推。规则不同答案不同,常见两种:「超过半数才通过」时方案是 (97, 0, 1, 2, 0) 或 (97, 0, 1, 0, 2);「半数及以上就通过」时方案是 (98, 0, 1, 0, 1)。</p>
+<p><strong>前提假设</strong>:海盗按顺序编号 1~5,1 号先提方案;每个人都绝对理性,优先保命,其次金币越多越好;如果投赞成和反对得到的一样多,就投反对(乐于看别人下海)。</p>
+<p><strong>规则一:严格超过半数才通过(提议者自己也投票)</strong></p>
+<ul>
+<li>只剩 5 号:独得 100。</li>
+<li>剩 4、5 号:4 号需要 2 票,5 号一定反对,4 号必死。所以 4 号会无条件支持 3 号的任何方案。</li>
+<li>剩 3、4、5 号:3 号拿到自己和 4 号的票即可,方案 (100, 0, 0)。</li>
+<li>剩 2~5 号:需要 3 票。在 3 号方案里 4、5 号都拿 0,各给 1 枚就能收买,方案 (98, 0, 1, 1)。</li>
+<li>5 人时:需要 3 票。3 号在 2 号方案里拿 0,给 1 枚即可收买;4、5 号在 2 号方案里各拿 1,需要给 2 枚收买其中一个。方案为 1 号 97、2 号 0、3 号 1、4 号或 5 号中一人 2、另一人 0。</li>
+</ul>
+<p><strong>规则二:半数及以上就通过</strong></p>
+<ul>
+<li>剩 4、5 号:4 号自己一票就是半数,方案 (100, 0)。</li>
+<li>剩 3、4、5 号:需要 2 票,收买在上一轮拿 0 的 5 号,方案 (99, 0, 1)。</li>
+<li>剩 2~5 号:需要 2 票,收买在上一轮拿 0 的 4 号,方案 (99, 0, 1, 0)。</li>
+<li>5 人时:需要 3 票,收买在上一轮拿 0 的 3 号和 5 号各 1 枚,方案 (98, 0, 1, 0, 1)。</li>
+</ul>
+<p>回答时先和面试官确认投票规则,再倒推。</p></div></article><article class="q" id="q16"><h3><a class="q-link" href="#q16">5个囚犯依次从100颗绿豆里抓,每人至少1颗,最多和最少的处死,谁的存活概率最大？</a></h3><div class="a"><p class="lead"><strong>结论</strong>:这道题在「所有人绝对理性、只求保命」的设定下没有让某人稳定存活的方案,常见结论是理性推演会让大家趋向抓相同数量,最终可能全部被处死。面试重点是展示推理过程,而不是一个固定数字。</p>
+<p><strong>推理要点</strong></p>
+<ul>
+<li>规则需要先确认:数量相同的人是否「并列最多 / 最少」一起处死。通常按「并列也处死」理解。</li>
+<li>抓得太多或太少都危险,每个人都想让自己处在中间。由于后面的人能摸出剩余数量,可以推算前面人的平均数,倾向于跟随。</li>
+<li>1 号没有信息,最稳妥的选择是均分值 20 颗;后面的人看到剩余 80、60…,推断前面人都抓了 20,于是也跟着抓 20。</li>
+<li>如果所有人都抓 20,5 人同时是最多和最少,全部处死。而任何人偏离 20,都会成为唯一的最多或最少,自己先死。</li>
+<li>最后一个人处境最差:他的选择余地最小,而且前面的人都已经「卡位」。</li>
+</ul>
+<p><strong>回答方式</strong>:说明规则的歧义,推导出「理性跟随导致全部相同」这一结论,再指出越靠后信息越多,但最后一个人选择空间最小,风险最大。</p></div></article><article class="q" id="q17"><h3><a class="q-link" href="#q17">52张牌,10张正面朝上,不能看牌,如何分成两堆使正面朝上的数量相同？</a></h3><div class="a"><p class="lead"><strong>结论</strong>:随便数出 10 张作为一堆,把这 10 张全部翻面,两堆正面朝上的数量就相同。</p>
+<p><strong>证明</strong>:设拿出的 10 张里有 x 张正面朝上,则剩下 42 张里有 10−x 张正面朝上。这 10 张里背面朝上的有 10−x 张,全部翻面后,正面朝上变成 10−x 张,与另一堆相等。</p>
+<p>关键在于拿出的张数必须等于正面朝上的总数(这里是 10)。</p></div></article><article class="q" id="q18"><h3><a class="q-link" href="#q18">1元一瓶汽水,两个空瓶换一瓶,20元最多能喝多少瓶？</a></h3><div class="a"><p class="lead"><strong>结论</strong>:不允许借瓶时 39 瓶,允许向老板借一个空瓶时 40 瓶。</p>
+<p><strong>逐步换算</strong></p>
+<ol>
+<li>买 20 瓶,喝完得 20 个空瓶。</li>
+<li>20 空瓶换 10 瓶,喝完 10 个空瓶。</li>
+<li>10 空瓶换 5 瓶,喝完 5 个空瓶。</li>
+<li>用 4 个换 2 瓶,剩 1 个,喝完共 3 个空瓶。</li>
+<li>用 2 个换 1 瓶,剩 1 个,喝完共 2 个空瓶。</li>
+<li>2 个换 1 瓶,喝完剩 1 个空瓶。</li>
+</ol>
+<p>合计 20 + 10 + 5 + 2 + 1 + 1 = 39 瓶,手里剩 1 个空瓶。此时借 1 个空瓶凑成 2 个换 1 瓶,喝完把空瓶还回,共 40 瓶。</p>
+<p><strong>规律</strong>:两个空瓶换一瓶,等价于「一个空瓶值 0.5 瓶汽水」,也就是每瓶汽水实际只花 0.5 元。20 元最多 40 瓶;不借瓶时最后总会剩 1 个空瓶用不掉,所以是 2n−1 = 39 瓶。</p></div></article><article class="q" id="q19"><h3><a class="q-link" href="#q19">n条直线最多可以把平面分成多少份？</a></h3><div class="a"><p class="lead"><strong>结论</strong>:R(n) = n(n+1)/2 + 1,条件是任意两条不平行、任意三条不共点。</p>
+<p><strong>推导</strong></p>
+<ul>
+<li>R(0) = 1。</li>
+<li>加入第 k 条直线时,它最多与前面 k−1 条直线各交于一个不同的点,这 k−1 个交点把第 k 条直线分成 k 段。每一段都会把它经过的一个区域一分为二,所以新增 k 个区域。</li>
+<li>因此 R(n) = 1 + (1 + 2 + … + n) = 1 + n(n+1)/2。</li>
+</ul>
+<p><strong>验证</strong>:R(1) = 2,R(2) = 4,R(3) = 7,R(4) = 11。</p>
+<p><strong>常见变体</strong>:n 个圆最多把平面分成 n² − n + 2 份(n ≥ 1)。</p></div></article></section><nav class="pager"><a href="hmdp.html" class="prev"><small>上一章</small>黑马点评项目</a><a href="interviews.html" class="next"><small>下一章</small>大厂面经</a></nav>
+  </div>
+</main>
+<div class="backdrop" id="backdrop"></div>
+<button class="to-top" id="to-top" aria-label="回到顶部">↑</button>
+<script id="outline" type="application/json">[{"id":"g1","title":"量水与计时","n":6,"core":0},{"id":"g2","title":"二进制与编码","n":4,"core":0},{"id":"g3","title":"赛马与称重","n":3,"core":0},{"id":"g4","title":"博弈与数学","n":6,"core":0}]</script>
+<script src="assets/app.js?v=ab30056e"></script>
+</body>
+</html>

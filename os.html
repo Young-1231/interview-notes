@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="darkreader-lock">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>操作系统 &amp; Linux · 八股笔记</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' font-weight='bold' fill='white' text-anchor='middle'%3E八%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css?v=ab30056e">
+<script>
+  (function () {
+    var t = localStorage.getItem('iv.theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+</head>
+<body data-part="java" data-sec="os">
+<header class="site-header">
+  <button class="icon-btn menu-btn" id="menu-btn" aria-label="目录">☰</button>
+  <a href="index.html" class="brand"><span class="dot">●</span> 八股笔记</a>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="search">
+    <input id="search" type="search" placeholder="搜索题目  /" autocomplete="off" aria-label="搜索题目">
+    <span id="search-info"></span>
+    <div class="search-pop" id="search-pop" hidden></div>
+  </div>
+  <button class="icon-btn" id="theme-toggle" aria-label="切换主题">◐</button>
+</header>
+<aside class="side" id="side"><nav id="toc"></nav></aside>
+<main class="main">
+  <div id="article">
+<header class="page-head"><div class="crumb">Java 后端</div><h1>操作系统 &amp; Linux <span class="cnt">28 题</span></h1><div class="tools"><button type="button" class="tool" id="t-core" aria-pressed="false">只看高频 <b>11</b></button><button type="button" class="tool" id="t-quiz" aria-pressed="false">自测模式</button><a class="tool resume" id="t-resume" hidden></a><span class="kbd-hint"><kbd>j</kbd>/<kbd>k</kbd> 上下题 · 自测时 <kbd>空格</kbd> 看答案 · <kbd>/</kbd> 搜索</span></div><nav class="overview"><div class="ov-block">操作系统 &amp; Linux</div><div class="ov-groups"><a href="#g1">进程、调度与死锁<span><span class="n-all">5</span><span class="n-core">2</span></span></a><a href="#g2">内存管理<span><span class="n-all">5</span><span class="n-core">2</span></span></a><a href="#g3">内核、文件与 I/O<span><span class="n-all">4</span><span class="n-core">2</span></span></a></div><div class="ov-block">Linux</div><div class="ov-groups"><a href="#g4">常用命令<span><span class="n-all">5</span><span class="n-core">1</span></span></a><a href="#g5">进程与资源监控<span><span class="n-all">5</span><span class="n-core">2</span></span></a><a href="#g6">文件系统与命令执行<span><span class="n-all">4</span><span class="n-core">2</span></span></a></div></nav></header><h2 class="block-title">操作系统 &amp; Linux</h2><section class="grp has-core" id="g1"><h2 class="grp-title">进程、调度与死锁 <span class="cnt"><span class="n-all">5</span><span class="n-core">高频 2</span></span></h2><article class="q core" id="q1"><h3><a class="q-link" href="#q1">什么是进程、线程？它们之间有什么区别</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">进程是资源分配的基本单位，线程是 CPU 调度的基本单位；一个进程内可以有多个线程，它们共享进程的资源。</p>
+<p><strong>进程</strong>：程序的一次执行过程，拥有独立的虚拟地址空间、页表、打开的文件等资源。</p>
+<p><strong>线程</strong>：进程内的一个执行流。同一进程的线程共享地址空间、堆、全局变量和打开的文件，但每个线程有自己独立的栈、寄存器和程序计数器。</p>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>进程</th>
+<th>线程</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>资源</td>
+<td>独立地址空间</td>
+<td>共享所属进程的资源</td>
+</tr>
+<tr>
+<td>创建/切换开销</td>
+<td>大，切换要换页表，TLB 失效</td>
+<td>小，同进程内切换不用换页表</td>
+</tr>
+<tr>
+<td>通信</td>
+<td>需要 IPC（管道、消息队列、共享内存、Socket 等）</td>
+<td>直接读写共享内存，但要自己做同步</td>
+</tr>
+<tr>
+<td>健壮性</td>
+<td>一个进程崩溃一般不影响其他进程</td>
+<td>一个线程崩溃（如段错误）会导致整个进程退出</td>
+</tr>
+</tbody>
+</table>
+<p><strong>常见追问</strong></p>
+<ul>
+<li>Linux 内核不严格区分进程和线程，两者都是 <code>task_struct</code>，创建时通过 <code>clone()</code> 的共享标志（如 <code>CLONE_VM</code>、<code>CLONE_FILES</code>）决定共享哪些资源。</li>
+<li>协程是用户态调度的轻量执行单元，切换不进入内核，开销比线程更小。</li>
+</ul></div></article><article class="q" id="q2"><h3><a class="q-link" href="#q2">进程有哪些状态？它们之间是如何转换的</a></h3><div class="a"><p class="lead">进程有三种基本状态：就绪、运行、阻塞；完整的五状态模型再加上创建和终止。</p>
+<ul>
+<li><strong>就绪</strong>：已具备运行条件，只差 CPU。</li>
+<li><strong>运行</strong>：正在 CPU 上执行。</li>
+<li><strong>阻塞</strong>（等待）：在等某个事件，比如 I/O 完成，即使给它 CPU 也没法运行。</li>
+</ul>
+<p><strong>转换关系</strong></p>
+<ul>
+<li>就绪 → 运行：被调度程序选中，分配到 CPU。</li>
+<li>运行 → 就绪：时间片用完，或被更高优先级的进程抢占。</li>
+<li>运行 → 阻塞：主动等待事件，比如发起 I/O 请求、等待锁。</li>
+<li>阻塞 → 就绪：等待的事件发生，比如 I/O 完成。</li>
+</ul>
+<p>注意：阻塞不能直接变成运行，必须先回到就绪队列再被调度；就绪也不能直接变成阻塞，因为只有正在运行的进程才会发起等待。</p></div></article><article class="q" id="q3"><h3><a class="q-link" href="#q3">常见的进程调度算法有哪些？</a></h3><div class="a"><p class="lead">常见的有先来先服务、短作业优先、优先级调度、时间片轮转和多级反馈队列。</p>
+<table>
+<thead>
+<tr>
+<th>算法</th>
+<th>思路</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>先来先服务（FCFS）</td>
+<td>按到达顺序调度，非抢占</td>
+<td>简单；短作业排在长作业后面时平均等待时间长</td>
+</tr>
+<tr>
+<td>短作业优先（SJF）</td>
+<td>优先调度预计运行时间最短的</td>
+<td>平均周转时间最短；长作业可能饥饿，且运行时间难以准确预估</td>
+</tr>
+<tr>
+<td>优先级调度</td>
+<td>优先调度优先级高的，可抢占或非抢占</td>
+<td>低优先级可能饥饿，常用&quot;老化&quot;（等待越久优先级越高）缓解</td>
+</tr>
+<tr>
+<td>时间片轮转（RR）</td>
+<td>就绪队列轮流执行一个固定时间片</td>
+<td>公平、响应快，适合分时系统；时间片太小切换开销大，太大退化成 FCFS</td>
+</tr>
+<tr>
+<td>多级反馈队列</td>
+<td>多个优先级队列，高优先级队列时间片短；用完时间片就降级</td>
+<td>兼顾响应时间和吞吐，不需要预知运行时间</td>
+</tr>
+</tbody>
+</table>
+<p>Linux 的普通进程在 2.6.23 到 6.5 使用 CFS（完全公平调度，按虚拟运行时间选进程），6.6 起换成 EEVDF；实时进程使用 <code>SCHED_FIFO</code> / <code>SCHED_RR</code>。</p></div></article><article class="q core" id="q4"><h3><a class="q-link" href="#q4">什么是死锁？产生死锁的四个必要条件是什么</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">死锁是指多个进程（或线程）因争夺资源而互相等待对方释放资源，导致都无法继续推进。</p>
+<p><strong>四个必要条件</strong>（必须同时满足才会死锁）</p>
+<ol>
+<li><strong>互斥</strong>：资源同一时刻只能被一个进程占用。</li>
+<li><strong>占有并等待</strong>：进程已经持有至少一个资源，又在等待别的进程持有的资源。</li>
+<li><strong>不可剥夺</strong>：已分配的资源只能由持有者主动释放，不能被强行拿走。</li>
+<li><strong>循环等待</strong>：存在一个进程-资源的环形等待链，P1 等 P2、P2 等 P3……Pn 等 P1。</li>
+</ol>
+<p>例子：线程 A 持有锁 1 再去申请锁 2，线程 B 持有锁 2 再去申请锁 1。Java 中可以用 <code>jstack</code> 直接检测出这种死锁。</p></div></article><article class="q" id="q5"><h3><a class="q-link" href="#q5">如何避免死锁？请介绍几种常见的死锁预防策略</a></h3><div class="a"><p class="lead">处理死锁有四类思路：预防、避免、检测与恢复、忽略。最容易混的是预防和避免：预防是静态地破坏必要条件，避免是分配资源时动态判断。</p>
+<p><strong>死锁预防</strong>：破坏四个必要条件之一。</p>
+<ul>
+<li>破坏&quot;占有并等待&quot;：一次性申请全部资源，申请不全就一个都不拿。缺点是资源利用率低。</li>
+<li>破坏&quot;不可剥夺&quot;：申请新资源失败时，主动释放已持有的资源；或者允许高优先级进程抢占。Java 里对应 <code>tryLock(timeout)</code>，拿不到就释放已有的锁再重试。</li>
+<li>破坏&quot;循环等待&quot;：给资源统一编号，所有进程都按编号顺序申请。这是工程中最常用的方法，比如多把锁总是按固定顺序加锁。</li>
+<li>破坏&quot;互斥&quot;：一般做不到，很多资源天然互斥（如打印机、写锁）。</li>
+</ul>
+<p><strong>死锁避免</strong>：分配资源前先判断，如果分配后系统仍处于安全状态（存在一个能让所有进程都执行完的序列）才分配，代表算法是银行家算法。</p>
+<p><strong>检测与恢复</strong>：允许死锁发生，通过资源分配图检测环路，然后终止某些进程或剥夺资源来解除。</p>
+<p><strong>忽略</strong>（鸵鸟策略）：通用操作系统大多这样处理，交给应用层自己解决。</p></div></article></section><section class="grp has-core" id="g2"><h2 class="grp-title">内存管理 <span class="cnt"><span class="n-all">5</span><span class="n-core">高频 2</span></span></h2><article class="q core" id="q6"><h3><a class="q-link" href="#q6">什么是虚拟内存？它解决了什么问题</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">虚拟内存是给每个进程一个独立、连续的虚拟地址空间，由 MMU 通过页表把虚拟地址映射到物理内存，暂时不用的页可以放到磁盘（swap）上。</p>
+<p><strong>解决的问题</strong></p>
+<ul>
+<li><strong>进程隔离</strong>：每个进程只能访问自己的地址空间，互不干扰，也不能直接访问内核内存。</li>
+<li><strong>突破物理内存大小</strong>：只把正在用的页装入内存，程序可以使用比物理内存更大的地址空间。</li>
+<li><strong>简化内存管理</strong>：进程看到的是连续地址，物理页可以离散分配；链接、加载时也不用关心真实物理地址。</li>
+<li><strong>便于共享</strong>：多个进程的虚拟页可以映射到同一个物理页，比如共享库、共享内存、<code>fork</code> 后的写时复制。</li>
+</ul>
+<p><strong>地址翻译过程</strong></p>
+<ol>
+<li>CPU 发出虚拟地址，MMU 先查 TLB（页表项的硬件缓存），命中就直接得到物理地址。</li>
+<li>TLB 未命中时查内存中的多级页表（x86-64 常见 4 级，支持的 CPU 可启用 5 级），并把结果填入 TLB。</li>
+<li>页表项无效时触发缺页异常，内核分配物理页或从磁盘 / swap 调入，更新页表后重新执行这条指令。</li>
+</ol>
+<p>多级页表的作用是节省页表本身占用的内存：没有用到的地址区间不需要分配下级页表。</p></div></article><article class="q" id="q7"><h3><a class="q-link" href="#q7">什么是分页和分段？它们有什么区别</a></h3><div class="a"><p class="lead">分页把内存切成固定大小的页，分段按程序逻辑切成大小不一的段；现代操作系统（如 x86-64 上的 Linux）以分页为主，分段基本只保留形式。</p>
+<ul>
+<li><strong>分页</strong>：虚拟地址空间和物理内存都划分为固定大小的页（常见 4KB），通过页表映射。对程序员透明。</li>
+<li><strong>分段</strong>：按逻辑模块划分为代码段、数据段、栈段等，每段长度可变，通过段表（段基址 + 段长）映射。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>分页</th>
+<th>分段</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>大小</td>
+<td>固定</td>
+<td>可变，由程序逻辑决定</td>
+</tr>
+<tr>
+<td>划分依据</td>
+<td>物理管理需要，无逻辑意义</td>
+<td>程序的逻辑结构</td>
+</tr>
+<tr>
+<td>对用户</td>
+<td>透明</td>
+<td>可见，程序员或编译器参与划分</td>
+</tr>
+<tr>
+<td>碎片</td>
+<td>没有外部碎片，最后一页可能有内部碎片</td>
+<td>没有内部碎片，会产生外部碎片</td>
+</tr>
+<tr>
+<td>共享与保护</td>
+<td>以页为单位，不够直观</td>
+<td>以段为单位，便于共享和设置权限</td>
+</tr>
+</tbody>
+</table>
+<p>段页式结合了两者：先分段，段内再分页，地址由段号、页号、页内偏移组成。</p></div></article><article class="q core" id="q8"><h3><a class="q-link" href="#q8">LRU 算法怎么实现的？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">LRU（Least Recently Used）在缓存满时淘汰最久没被访问的数据。用&quot;哈希表 + 双向链表&quot;可以让 <code>get</code> 和 <code>put</code> 都做到 O(1)。</p>
+<ul>
+<li>哈希表：key → 链表节点，O(1) 定位节点。</li>
+<li>双向链表：维护访问顺序，靠近头部的是最近访问的，尾部是最久未访问的。双向链表才能 O(1) 删除任意节点。</li>
+<li><code>get</code>：查哈希表，不存在返回 -1；存在就把节点移到头部。</li>
+<li><code>put</code>：key 已存在就更新值并移到头部；不存在就新建节点插到头部，超过容量时删除尾部节点，并从哈希表中移除它的 key。</li>
+<li>用哨兵头尾节点（dummy head / tail）可以省掉大量判空。</li>
+</ul>
+<pre><code class="language-java">class LRUCache {
+    class Node { int key, val; Node prev, next; Node(int k, int v) { key = k; val = v; } }
+    private final Map&lt;Integer, Node&gt; map = new HashMap&lt;&gt;();
+    private final Node head = new Node(0, 0), tail = new Node(0, 0);
+    private final int capacity;
+
+    public LRUCache(int capacity) { this.capacity = capacity; head.next = tail; tail.prev = head; }
+    public int get(int key) {
+        Node node = map.get(key);
+        if (node == null) return -1;
+        remove(node); addFirst(node);
+        return node.val;
+    }
+    public void put(int key, int value) {
+        Node node = map.get(key);
+        if (node != null) { node.val = value; remove(node); addFirst(node); return; }
+        if (map.size() == capacity) {
+            Node last = tail.prev;
+            remove(last); map.remove(last.key);   // 节点里存 key 就是为了这里能删哈希表
+        }
+        node = new Node(key, value); addFirst(node); map.put(key, node);
+    }
+    private void remove(Node n) { n.prev.next = n.next; n.next.prev = n.prev; }
+    private void addFirst(Node n) { n.next = head.next; n.prev = head; head.next.prev = n; head.next = n; }
+}
+</code></pre>
+<p>手撕时一般要求自己写节点和链表。实际项目中可以直接用 <code>LinkedHashMap</code>：构造时 <code>accessOrder = true</code>，并重写 <code>removeEldestEntry</code> 在 <code>size() &gt; capacity</code> 时返回 true。它不是线程安全的，并发场景要加锁或用 Caffeine 这类缓存库。</p>
+<p>LRU 也是操作系统页面置换算法之一，其他还有 FIFO、OPT（理论最优，无法实现）、Clock（LRU 的近似实现）、LFU。</p></div></article><article class="q" id="q9"><h3><a class="q-link" href="#q9">什么是内存对齐？为什么需要内存对齐</a></h3><div class="a"><p class="lead">内存对齐是指数据的起始地址是某个数（通常是它自身大小）的整数倍，比如 4 字节的 int 放在 4 的倍数地址上。编译器会在结构体成员之间插入填充字节来满足对齐。</p>
+<p><strong>为什么需要</strong></p>
+<ul>
+<li><strong>访问效率</strong>：CPU 按字长或缓存行读取内存，对齐的数据一次就能读完；未对齐的数据可能跨两个字或两个缓存行，要读两次再拼接。</li>
+<li><strong>硬件限制</strong>：有些架构（如部分 ARM、SPARC）访问未对齐地址会直接触发异常。</li>
+<li><strong>原子性</strong>：跨缓存行的数据无法保证单条指令的原子读写。</li>
+</ul>
+<p>代价是占用更多空间，所以定义结构体时把大成员放前面、小成员放后面，可以减少填充。Java 对象也按 8 字节对齐，这是对象头之外有时会有 padding 的原因。</p></div></article><article class="q" id="q10"><h3><a class="q-link" href="#q10">什么是大端字节序和小端字节序？</a></h3><div class="a"><p class="lead">多字节数据在内存中的存放顺序不同：大端是高位字节存在低地址，小端是低位字节存在低地址。</p>
+<p>以 <code>0x12345678</code> 从低地址到高地址存放为例：</p>
+<ul>
+<li>大端：<code>12 34 56 78</code>，和人的书写顺序一致。</li>
+<li>小端：<code>78 56 34 12</code>。</li>
+</ul>
+<p>x86 和绝大多数 ARM 运行环境是小端；网络字节序规定为大端，所以 socket 编程要用 <code>htonl</code> / <code>ntohl</code> 等函数转换。Java 虚拟机内部和 <code>DataOutputStream</code>、<code>ByteBuffer</code>（默认）都按大端处理，<code>ByteBuffer.order()</code> 可以改成小端。</p>
+<p>判断本机字节序：把 int 1 的首字节取出来，是 1 就是小端。</p></div></article></section><section class="grp has-core" id="g3"><h2 class="grp-title">内核、文件与 I/O <span class="cnt"><span class="n-all">4</span><span class="n-core">高频 2</span></span></h2><article class="q" id="q11"><h3><a class="q-link" href="#q11">什么是用户态和内核态？为什么要有这两种状态</a></h3><div class="a"><p class="lead">用户态和内核态是 CPU 的两种特权级别：用户程序运行在用户态，只能执行非特权指令、访问自己的地址空间；内核运行在内核态，可以执行特权指令、访问全部内存和硬件。x86 上分别对应 Ring 3 和 Ring 0。</p>
+<p><strong>为什么要区分</strong></p>
+<ul>
+<li><strong>安全与稳定</strong>：I/O、修改页表、关中断这类特权操作只能由内核完成，防止用户程序有意或无意破坏系统、访问其他进程的数据。</li>
+<li><strong>统一管理资源</strong>：用户程序必须通过系统调用向内核申请资源，内核可以做权限检查和调度。</li>
+</ul>
+<p><strong>代价</strong>：用户态和内核态切换要保存和恢复寄存器、切换栈，还可能影响缓存和 TLB，所以频繁的系统调用有开销。这也是零拷贝、批量 I/O、epoll 等优化的出发点。</p></div></article><article class="q" id="q12"><h3><a class="q-link" href="#q12">用户态切换到内核态的触发方式有哪些</a></h3><div class="a"><p class="lead">有三种：系统调用、异常、外设中断。</p>
+<ol>
+<li><strong>系统调用</strong>：用户程序主动请求内核服务，比如 <code>read</code>、<code>write</code>、<code>fork</code>、<code>mmap</code>。x86-64 上通过 <code>syscall</code> 指令进入内核。</li>
+<li><strong>异常</strong>：当前指令执行出错或需要内核处理，比如缺页异常、除零、非法指令。属于同步事件。</li>
+<li><strong>外设中断</strong>：硬件设备发出中断信号，比如网卡收到数据包、磁盘 I/O 完成、时钟中断。属于异步事件，与当前执行的指令无关。</li>
+</ol>
+<p>系统调用本质上也是一种由指令主动触发的陷入（trap）。处理完后内核恢复上下文，返回用户态继续执行。</p></div></article><article class="q core" id="q13"><h3><a class="q-link" href="#q13">软链接和硬链接的区别是什么</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">硬链接是同一个 inode 的另一个文件名；软链接是一个独立的文件，内容是目标路径。</p>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>硬链接</th>
+<th>软链接（符号链接）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>本质</td>
+<td>目录项指向同一个 inode</td>
+<td>独立的文件，有自己的 inode，存的是路径</td>
+</tr>
+<tr>
+<td>跨文件系统</td>
+<td>不能</td>
+<td>可以</td>
+</tr>
+<tr>
+<td>链接目录</td>
+<td>不能（防止目录树出现环）</td>
+<td>可以</td>
+</tr>
+<tr>
+<td>删除源文件</td>
+<td>不影响，数据仍可通过其他链接访问</td>
+<td>链接失效，变成悬空链接</td>
+</tr>
+<tr>
+<td>创建命令</td>
+<td><code>ln src dst</code></td>
+<td><code>ln -s src dst</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>文件数据什么时候真正被删除</strong>：inode 的硬链接计数降为 0，并且没有进程还打开着这个文件。所以删掉一个正在被进程写入的日志文件，磁盘空间不会立刻释放。</p></div></article><article class="q core" id="q14"><h3><a class="q-link" href="#q14">什么是零拷贝（Zero-Copy）技术</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">零拷贝是减少数据在内核缓冲区和用户缓冲区之间的 CPU 拷贝、以及用户态/内核态切换次数的 I/O 优化，典型场景是把文件发送到网络。</p>
+<p><strong>传统 read + write</strong>：4 次拷贝（2 次 DMA + 2 次 CPU），4 次上下文切换。</p>
+<ol>
+<li>磁盘 → 内核 page cache（DMA）</li>
+<li>page cache → 用户缓冲区（CPU）</li>
+<li>用户缓冲区 → socket 缓冲区（CPU）</li>
+<li>socket 缓冲区 → 网卡（DMA）</li>
+</ol>
+<p><strong>mmap + write</strong>：把内核缓冲区映射到用户空间，省掉第 2 步的 CPU 拷贝。剩 3 次拷贝（2 DMA + 1 CPU），仍是 4 次上下文切换。</p>
+<p><strong>sendfile</strong>（Linux 2.1 引入）：一次系统调用完成，数据不经过用户态，只有 2 次上下文切换。从 Linux 2.4 起，如果网卡支持 SG-DMA，内核只把文件描述信息（地址和长度）追加到 socket 缓冲区，网卡直接从 page cache 读取，CPU 拷贝次数降为 0，只剩 2 次 DMA 拷贝。</p>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>CPU 拷贝</th>
+<th>DMA 拷贝</th>
+<th>上下文切换</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>read + write</td>
+<td>2</td>
+<td>2</td>
+<td>4</td>
+</tr>
+<tr>
+<td>mmap + write</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+</tr>
+<tr>
+<td>sendfile</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>sendfile + SG-DMA</td>
+<td>0</td>
+<td>2</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Java 与中间件</strong></p>
+<ul>
+<li><code>FileChannel.transferTo()</code> 在 Linux 上底层使用 <code>sendfile</code>；<code>FileChannel.map()</code> 得到的 <code>MappedByteBuffer</code> 对应 mmap。</li>
+<li>Kafka 把日志发送给消费者时用 <code>transferTo</code>（sendfile），RocketMQ 读写 CommitLog 用 mmap。</li>
+<li>零拷贝的前提是应用不需要修改数据内容；需要加工数据时还是要读到用户态。</li>
+</ul></div></article></section><h2 class="block-title">Linux</h2><section class="grp has-core" id="g4"><h2 class="grp-title">常用命令 <span class="cnt"><span class="n-all">5</span><span class="n-core">高频 1</span></span></h2><article class="q core" id="q15"><h3><a class="q-link" href="#q15">linux常用命令有哪些？讲一讲你用过的 Linux 命令</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">按类别列举，再结合排障场景举一两个例子（如 <code>tail -f</code> 追日志、<code>lsof -i :8080</code> 查端口占用）。</p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>常用命令</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>文件与目录</td>
+<td><code>ls -al</code>、<code>cd</code>、<code>mkdir -p</code>、<code>rm -rf</code>、<code>cp -r</code>、<code>mv</code>、<code>find / -name &quot;*.log&quot; -mtime +7</code>、<code>ln -s</code></td>
+</tr>
+<tr>
+<td>查看文件</td>
+<td><code>cat</code>、<code>less</code>、<code>head -n 20</code>、<code>tail -f</code>、<code>vim</code></td>
+</tr>
+<tr>
+<td>文本处理</td>
+<td><code>grep</code>、<code>awk</code>、<code>sed</code>、<code>sort</code>、<code>uniq -c</code>、<code>wc -l</code>、<code>xargs</code></td>
+</tr>
+<tr>
+<td>权限与用户</td>
+<td><code>chmod 755</code>、<code>chown user:group</code>、<code>sudo</code>、<code>useradd</code></td>
+</tr>
+<tr>
+<td>进程与资源</td>
+<td><code>ps -ef</code>、<code>top</code>、<code>kill</code>、<code>free -h</code>、<code>df -h</code>、<code>du -sh</code>、<code>vmstat</code>、<code>iostat</code></td>
+</tr>
+<tr>
+<td>后台运行</td>
+<td><code>nohup cmd &gt; out.log 2&gt;&amp;1 &amp;</code>、<code>jobs</code>、<code>fg</code>、<code>bg</code>、<code>systemctl</code></td>
+</tr>
+<tr>
+<td>网络</td>
+<td><code>ss -lntp</code> / <code>netstat -tunlp</code>、<code>lsof -i :8080</code>、<code>curl</code>、<code>ping</code>、<code>nc</code>、<code>ip addr</code>、<code>tcpdump</code></td>
+</tr>
+<tr>
+<td>压缩与传输</td>
+<td><code>tar -czvf</code> / <code>tar -xzvf</code>、<code>zip</code> / <code>unzip</code>、<code>scp</code>、<code>rsync</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>权限数字含义</strong>：<code>chmod 755</code> 表示所有者 rwx（7），所属组 r-x（5），其他用户 r-x（5），其中 r=4、w=2、x=1。</p></div></article><article class="q" id="q16"><h3><a class="q-link" href="#q16">如何创建、删除、重命名文件和目录？请写出对应命令</a></h3><div class="a"><p class="lead">创建用 <code>touch</code> / <code>mkdir</code>，删除用 <code>rm</code> / <code>rmdir</code>，重命名和移动都用 <code>mv</code>。</p>
+<p><strong>创建</strong></p>
+<ul>
+<li><code>touch file</code>：文件不存在则创建空文件，存在则只更新时间戳。</li>
+<li><code>&gt; file</code>：创建空文件，已存在则清空内容。</li>
+<li><code>mkdir dir</code>：创建目录；<code>mkdir -p a/b/c</code>：递归创建多级目录，已存在也不报错。</li>
+</ul>
+<p><strong>删除</strong></p>
+<ul>
+<li><code>rm file</code>：删除文件。GNU rm 默认不提示，直接删除；只有带 <code>-i</code>，或者文件写保护且标准输入是终端时才会询问。CentOS / RHEL 的 root 用户默认在 <code>~/.bashrc</code> 中设置了 <code>alias rm='rm -i'</code>，所以会看到提示，那是别名的效果。</li>
+<li><code>rm -f file</code>：强制删除，忽略不存在的文件，从不提示。</li>
+<li><code>rmdir dir</code>：只能删除空目录。</li>
+<li><code>rm -r dir</code>：递归删除目录及其内容；<code>rm -rf dir</code> 强制递归删除，执行前务必确认路径，尤其注意变量为空时 <code>rm -rf $DIR/</code> 会变成删除根目录下内容。</li>
+</ul>
+<p><strong>重命名与移动</strong></p>
+<ul>
+<li><code>mv old new</code>：同一目录下就是重命名。</li>
+<li><code>mv file1 file2 dir/</code>：把多个文件移到目录。</li>
+<li><code>mv -i</code>：目标已存在时询问，避免覆盖。</li>
+</ul>
+<p><strong>复制</strong>：<code>cp src dst</code>，复制目录要加 <code>-r</code>，<code>-p</code> 保留权限和时间戳。</p></div></article><article class="q" id="q17"><h3><a class="q-link" href="#q17">怎么搜索出某个目录下所有包含某个字符串的所有文件</a></h3><div class="a"><p class="lead">用 <code>grep -r</code> 递归搜索；需要先按文件名、类型过滤时，用 <code>find</code> + <code>xargs grep</code>。</p>
+<pre><code class="language-bash">grep -rn &quot;Hello&quot; ./            # -r 递归，-n 显示行号
+grep -rl &quot;Hello&quot; ./            # 只列出包含该字符串的文件名
+grep -rni &quot;hello&quot; ./           # -i 忽略大小写
+grep -rn &quot;Hello&quot; --include=&quot;*.java&quot; ./   # 只搜 .java 文件
+
+find /path -type f -name &quot;*.txt&quot; | xargs grep -l &quot;Hello&quot;
+find /path -type f -name &quot;*.txt&quot; -print0 | xargs -0 grep -l &quot;Hello&quot;   # 文件名含空格时更安全
+</code></pre>
+<p>其他常用参数：<code>-w</code> 匹配整个单词，<code>-v</code> 反向匹配，<code>-E</code> 使用扩展正则，<code>-A 3</code> / <code>-B 3</code> / <code>-C 3</code> 显示匹配行之后 / 之前 / 前后 3 行。代码仓库里搜索可以用更快的 <code>ripgrep</code>（<code>rg</code>）。</p></div></article><article class="q" id="q18"><h3><a class="q-link" href="#q18">怎么对比两个文件的差异</a></h3><div class="a"><p class="lead">用 <code>diff</code> 命令，它逐行比较并输出需要怎样修改才能让第一个文件变成第二个文件。</p>
+<pre><code class="language-bash">diff file1.txt file2.txt       # 默认格式，a/d/c 分别表示增加、删除、修改
+diff -u file1.txt file2.txt    # 统一格式，和 git diff 的输出一样，最常用
+diff -q file1.txt file2.txt    # 只报告是否不同（等同于 --brief）
+diff -w file1.txt file2.txt    # 忽略所有空白字符
+diff -b file1.txt file2.txt    # 忽略空白数量的变化
+diff -i file1.txt file2.txt    # 忽略大小写
+diff -r dir1 dir2              # 递归比较两个目录
+</code></pre>
+<p>其他工具：<code>vimdiff</code>（并排高亮对比）、<code>cmp</code>（按字节比较，适合二进制文件）、<code>comm</code>（比较两个已排序的文件，输出共有行和各自独有的行）。只想判断内容是否一致，也可以比较 <code>md5sum</code> 的结果。</p></div></article><article class="q" id="q19"><h3><a class="q-link" href="#q19">如何统计一个日志文件中 error 的数量</a></h3><div class="a"><p class="lead">最常用的是 <code>grep -c</code> 或 <code>grep | wc -l</code>。要注意两者统计的都是匹配的行数，一行出现多次只算一次；统计出现次数要用 <code>grep -o</code>。</p>
+<pre><code class="language-bash">grep -ci &quot;error&quot; app.log               # 统计包含 error 的行数，-i 忽略大小写
+grep -i &quot;error&quot; app.log | wc -l        # 同上
+grep -oi &quot;error&quot; app.log | wc -l       # 统计 error 出现的总次数
+grep -wci &quot;error&quot; app.log              # 只匹配完整单词，避免 errors、ErrorCode 也被算进去
+</code></pre>
+<p><strong>常见延伸</strong></p>
+<ul>
+<li>实时查看新增的错误：<code>tail -f app.log | grep --line-buffered -i error</code>。日志会按大小或日期轮转时用 <code>tail -F</code>，它会在文件被替换后按文件名重新打开。</li>
+<li>统计各类错误出现次数并排序：<code>grep -i error app.log | awk '{print $5}' | sort | uniq -c | sort -rn | head</code>（<code>$5</code> 换成实际的字段位置）。</li>
+<li>统计压缩日志：<code>zgrep -ci error app.log.gz</code>。</li>
+</ul></div></article></section><section class="grp has-core" id="g5"><h2 class="grp-title">进程与资源监控 <span class="cnt"><span class="n-all">5</span><span class="n-core">高频 2</span></span></h2><article class="q core" id="q20"><h3><a class="q-link" href="#q20">如何查找并杀死一个进程</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">查找用 <code>ps</code>、<code>pgrep</code>、<code>pidof</code>、<code>top</code>，按端口找用 <code>ss</code> / <code>lsof</code>；杀进程优先用 <code>kill PID</code>（SIGTERM）让进程优雅退出，杀不掉再用 <code>kill -9</code>（SIGKILL）。</p>
+<p><strong>查找进程</strong></p>
+<pre><code class="language-bash">ps -ef | grep java | grep -v grep     # 列出所有进程并过滤，grep -v 去掉 grep 自身
+ps aux | grep nginx                   # aux 格式额外显示 %CPU、%MEM
+pgrep -fl java                        # 直接输出匹配的 PID，-f 匹配完整命令行
+pidof nginx                           # 按程序名精确查 PID
+lsof -i :8080                         # 查占用 8080 端口的进程
+jps -l                                # Java 进程专用
+</code></pre>
+<p><strong>杀死进程</strong></p>
+<pre><code class="language-bash">kill 1234          # 默认发送 SIGTERM（15）
+kill -9 1234       # 发送 SIGKILL（9），强制终止
+pkill -f app.jar   # 按名称或命令行匹配，默认发送 SIGTERM
+killall nginx      # 杀死所有同名进程，默认发送 SIGTERM
+</code></pre>
+<p><strong>SIGTERM 和 SIGKILL 的区别</strong></p>
+<ul>
+<li>SIGTERM 可以被进程捕获处理：程序可以完成清理（关闭连接、刷盘、执行 JVM 的 shutdown hook）后再退出，所以优先使用。</li>
+<li>SIGKILL 不能被捕获或忽略，由内核直接终止进程，进程没有机会做清理，可能导致数据丢失。</li>
+<li><code>kill -9</code> 也有杀不掉的情况：处于 D 状态（不可中断睡眠，通常在等待磁盘或 NFS 的 I/O）的进程要等 I/O 返回；僵尸进程（Z 状态）已经退出，只剩进程表项，需要父进程调用 <code>wait</code> 回收，或者杀掉父进程让 init/systemd 接管回收。</li>
+</ul></div></article><article class="q core" id="q21"><h3><a class="q-link" href="#q21">如何查看系统的CPU、内存和磁盘使用情况</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">CPU 和内存看 <code>top</code> / <code>vmstat</code> / <code>free</code>，磁盘空间看 <code>df</code> / <code>du</code>，磁盘 I/O 看 <code>iostat</code>。</p>
+<p><strong>CPU 和内存</strong></p>
+<ul>
+<li><code>top</code> / <code>htop</code>：动态显示整体 CPU、内存、负载以及每个进程的占用。</li>
+<li><code>free -h</code>：内存总量、已用、可用，<code>-h</code> 以人类可读的单位显示。</li>
+<li><code>vmstat 1</code>：每秒输出一次，关注 <code>r</code>（运行队列长度）、<code>b</code>（阻塞进程数）、<code>si/so</code>（swap 换入换出）、<code>cs</code>（上下文切换次数）、<code>us/sy/id/wa</code>。</li>
+<li><code>mpstat -P ALL 1</code>：查看每个 CPU 核的使用率（属于 sysstat 包）。</li>
+<li><code>uptime</code>：1、5、15 分钟平均负载。</li>
+<li><code>pidstat -u -p PID 1</code>：查看单个进程的 CPU 使用（sysstat 包）。</li>
+</ul>
+<p><strong>磁盘</strong></p>
+<ul>
+<li><code>df -h</code>：每个文件系统的总大小、已用、可用和挂载点；<code>df -i</code> 查看 inode 使用情况，inode 耗尽时即使有空间也无法创建文件。</li>
+<li><code>du -sh dir</code>：统计目录总大小；<code>du -sh * | sort -rh | head</code> 或 <code>du -h --max-depth=1 /path</code> 找出最大的目录。</li>
+<li><code>lsblk</code>：列出块设备和分区。</li>
+<li><code>iostat -x 1</code>（sysstat 包）：看磁盘 I/O，关注 <code>%util</code>（设备繁忙程度）、<code>await</code>（平均 I/O 耗时）。</li>
+</ul>
+<p><strong>df 和 du 结果不一致</strong>：df 统计文件系统层面的占用，du 遍历目录统计文件大小。文件被删除但仍被进程打开时，空间不会释放，df 显示已用而 du 统计不到。可以用 <code>lsof | grep deleted</code> 找到进程，重启进程或清空文件来释放空间。</p></div></article><article class="q" id="q22"><h3><a class="q-link" href="#q22">怎么查看 CPU 使用率</a></h3><div class="a"><p class="lead">最常用的是 <code>top</code>：第三行 <code>%Cpu(s)</code> 显示整体 CPU 时间分布，进程列表的 <code>%CPU</code> 列显示每个进程的占用。</p>
+<pre><code class="language-text">top - 16:54:38 up 7 days,  5:13,  3 users,  load average: 0.00, 0.01, 0.05
+%Cpu(s):  0.7 us,  0.3 sy,  0.0 ni, 99.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+</code></pre>
+<p><strong>各字段含义</strong></p>
+<ul>
+<li><code>us</code>：用户态进程（未调整 nice 值）占用的 CPU 时间百分比。</li>
+<li><code>sy</code>：内核态占用的 CPU 时间百分比。</li>
+<li><code>ni</code>：调整过 nice 值的用户态进程占用的 CPU 时间百分比。</li>
+<li><code>id</code>：空闲。CPU 使用率 ≈ 100% − id，上例为 1%。</li>
+<li><code>wa</code>：CPU 空闲且在等待 I/O 完成的时间百分比，偏高说明磁盘 I/O 是瓶颈。</li>
+<li><code>hi</code> / <code>si</code>：处理硬中断 / 软中断占用的 CPU 时间百分比。</li>
+<li><code>st</code>：虚拟机中被宿主机上其他虚拟机占用（steal）的时间。</li>
+</ul>
+<p><strong>top 的常用操作</strong>：按 <code>1</code> 显示每个核，<code>P</code> 按 CPU 排序，<code>M</code> 按内存排序，<code>H</code> 切换到线程视图；<code>top -Hp PID</code> 直接查看某个进程的线程。</p>
+<p><strong>load average</strong>：1、5、15 分钟内处于可运行状态（R）和不可中断睡眠状态（D）的平均进程数。要和 CPU 核数比较，长期超过核数说明系统过载。因为包含 D 状态，I/O 阻塞也会推高负载。</p>
+<p><strong>Java 进程 CPU 飙高的排查</strong></p>
+<ol>
+<li><code>top</code> 找到 CPU 占用高的进程 PID。</li>
+<li><code>top -Hp PID</code> 找到占用高的线程 TID。</li>
+<li><code>printf '%x\n' TID</code> 把线程 ID 转成十六进制。</li>
+<li><code>jstack PID | grep -A 20 0x&lt;十六进制TID&gt;</code> 查看该线程的堆栈，定位代码。</li>
+</ol>
+<p>其他工具：<code>vmstat 1</code>、<code>mpstat -P ALL 1</code>、<code>sar -u 1</code>（sysstat 包，还能查历史数据）。</p></div></article><article class="q" id="q23"><h3><a class="q-link" href="#q23">怎么查看内存使用率</a></h3><div class="a"><p class="lead">用 <code>free -h</code> 看整体内存，用 <code>top</code> 或 <code>ps</code> 看每个进程的内存占用。判断还剩多少内存要看 <code>available</code> 列，而不是 <code>free</code> 列。</p>
+<pre><code class="language-text">$ free -h
+               total        used        free      shared  buff/cache   available
+Mem:           1.8Gi       322Mi       793Mi       1.0Mi       721Mi       1.3Gi
+Swap:             0B          0B          0B
+</code></pre>
+<p><strong>字段含义</strong></p>
+<ul>
+<li><code>used</code>：已被进程使用的内存。</li>
+<li><code>free</code>：完全没被使用的内存。</li>
+<li><code>buff/cache</code>：内核用作缓冲区和页缓存（page cache）的内存。Linux 会把空闲内存拿来缓存文件数据，需要时可以回收。</li>
+<li><code>available</code>：内核估算的、新启动的程序实际能用的内存，约等于 free 加上可回收的缓存。</li>
+</ul>
+<p>所以 <code>free</code> 很小不代表内存不够，<code>available</code> 很小才说明内存紧张。</p>
+<p><strong>看进程内存</strong></p>
+<ul>
+<li><code>top</code> 中 <code>%MEM</code> 列，以及 <code>VIRT</code>（虚拟内存）、<code>RES</code>（实际占用的物理内存）、<code>SHR</code>（共享内存）。按 <code>M</code> 按内存排序。</li>
+<li><code>ps aux --sort=-%mem | head</code> 列出内存占用最高的进程。</li>
+<li><code>cat /proc/meminfo</code> 查看详细的内存统计；<code>vmstat</code> 的 <code>si/so</code> 不为 0 说明发生了 swap。</li>
+</ul>
+<p>内存耗尽时，内核的 OOM Killer 会杀掉进程，可以用 <code>dmesg | grep -i oom</code> 确认。</p></div></article><article class="q" id="q24"><h3><a class="q-link" href="#q24">怎么查看某个进程使用的端口</a></h3><div class="a"><p class="lead">用 <code>ss</code>、<code>netstat</code> 或 <code>lsof</code>，既可以按进程查端口，也可以按端口反查进程。查看其他用户的进程信息需要 root 权限，否则不会显示 PID 和进程名。</p>
+<p><strong>ss</strong>（iproute2 自带，比 netstat 快，推荐）</p>
+<pre><code class="language-bash">ss -tulnp | grep nginx     # -t TCP，-u UDP，-l 监听中，-n 不解析服务名，-p 显示进程
+ss -tulnp | grep 1234      # 按 PID 过滤
+ss -lntp | grep :8080      # 按端口反查进程
+</code></pre>
+<p><strong>netstat</strong>（net-tools 包，较新的发行版默认可能没装）</p>
+<pre><code class="language-bash">netstat -tulnp | grep 1234
+</code></pre>
+<p><strong>lsof</strong></p>
+<pre><code class="language-bash">lsof -i -n -P | grep nginx     # 按进程名，-n 不解析主机名，-P 不解析端口名
+lsof -i -n -P -a -p 1234       # 按 PID，-a 表示条件取交集
+lsof -i :8080                  # 按端口反查进程
+</code></pre>
+<p><code>ss -lntp</code> 中 Recv-Q / Send-Q 在监听状态下分别表示当前全连接队列长度和队列上限，可以用来判断 accept 队列是否溢出。</p></div></article></section><section class="grp has-core" id="g6"><h2 class="grp-title">文件系统与命令执行 <span class="cnt"><span class="n-all">4</span><span class="n-core">高频 2</span></span></h2><article class="q core" id="q25"><h3><a class="q-link" href="#q25">什么是软链接和硬链接？它们有什么区别？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">硬链接是给同一个 inode 再起一个文件名；软链接（符号链接）是一个独立的小文件，内容是目标文件的路径，类似 Windows 的快捷方式。</p>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>硬链接</th>
+<th>软链接</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>命令</td>
+<td><code>ln src link</code></td>
+<td><code>ln -s src link</code></td>
+</tr>
+<tr>
+<td>inode</td>
+<td>和源文件是同一个 inode</td>
+<td>有自己的 inode</td>
+</tr>
+<tr>
+<td>跨文件系统</td>
+<td>不能，inode 号只在一个文件系统内唯一</td>
+<td>可以</td>
+</tr>
+<tr>
+<td>链接目录</td>
+<td>不能，避免目录树出现环</td>
+<td>可以</td>
+</tr>
+<tr>
+<td>删除源文件</td>
+<td>不影响，其他文件名仍能访问数据</td>
+<td>链接失效，成为悬空链接</td>
+</tr>
+<tr>
+<td><code>ls -l</code> 显示</td>
+<td>普通文件，链接数加 1</td>
+<td>类型为 <code>l</code>，显示 <code>link -&gt; src</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>原理</strong></p>
+<ul>
+<li>目录项保存的是&quot;文件名 → inode 号&quot;的映射。硬链接就是多一个指向同一 inode 的目录项，inode 中的链接计数加 1。</li>
+<li>删除文件（<code>rm</code>）实际是删除目录项并把链接计数减 1。计数为 0 且没有进程打开这个文件时，数据块才真正被释放。</li>
+<li>软链接访问时，内核读取其中保存的路径再去解析，所以目标被删或被移动后链接失效；相对路径的软链接是相对于链接自身所在目录解析的。</li>
+</ul>
+<p>用 <code>ls -i</code> 可以看到 inode 号，<code>stat file</code> 可以看到链接数。</p></div></article><article class="q core" id="q26"><h3><a class="q-link" href="#q26">Linux 中输入指令 ls 并回车，底层发生了什么？</a><span class="tags"><i class="t-core">高频</i></span></h3><div class="a"><p class="lead">整体流程：终端把输入交给 Shell → Shell 解析命令并找到 <code>/usr/bin/ls</code> → <code>fork</code> 出子进程 → 子进程 <code>execve</code> 加载 ls → ls 通过系统调用读取目录、<code>write</code> 到标准输出 → ls 退出 → Shell <code>waitpid</code> 回收子进程，打印新的提示符。</p>
+<ol>
+<li><strong>终端输入</strong>：键盘输入经终端（或伪终端 pty）传给前台的 Shell 进程（bash、zsh 等），Shell 从标准输入读到 <code>ls\n</code>。</li>
+<li><strong>Shell 解析</strong>：分词、展开别名和通配符、判断命令类型，在 <code>PATH</code> 中找到可执行文件。</li>
+<li><strong>创建子进程</strong>：Shell 调用 <code>fork()</code>（现代实现底层常用 <code>clone()</code>），子进程复制父进程的地址空间（写时复制）、文件描述符和环境变量。</li>
+<li><strong>加载程序</strong>：子进程调用 <code>execve(&quot;/usr/bin/ls&quot;, argv, envp)</code>，用 ls 的程序替换自身，动态链接器加载 <code>libc.so</code> 等共享库，然后从 <code>main</code> 开始执行。</li>
+<li><strong>读取目录</strong>：ls 用 <code>openat()</code> 打开当前目录，用 <code>getdents64()</code> 读取目录项；<code>ls -l</code> 还要对每个文件调用 <code>stat</code> 类系统调用获取权限、大小、时间等元数据。</li>
+<li><strong>格式化输出</strong>：排序、过滤隐藏文件、按参数格式化，通过 <code>write()</code> 写到文件描述符 1（标准输出），终端把内容显示出来。</li>
+<li><strong>进程退出</strong>：ls 调用 <code>exit()</code> 返回退出码（0 表示成功），内核释放它的资源并给父进程发送 SIGCHLD。</li>
+<li><strong>父进程回收</strong>：Shell 在 <code>waitpid()</code> 中拿到退出状态（可以用 <code>echo $?</code> 查看），回收子进程，避免产生僵尸进程，然后打印新的提示符。</li>
+</ol>
+<p>用 <code>strace ls</code> 可以看到 ls 执行过程中的全部系统调用。</p></div></article><article class="q" id="q27"><h3><a class="q-link" href="#q27">Shell 是如何解析命令并找到可执行文件的？</a></h3><div class="a"><p class="lead">Shell 先分词和展开，再按&quot;别名 → 函数 → 内置命令 → PATH 中的外部命令&quot;的顺序确定命令是什么。</p>
+<p><strong>解析</strong></p>
+<ul>
+<li>分词：把输入拆成命令名和参数，例如 <code>ls -l /tmp</code> 拆成 <code>ls</code>、<code>-l</code>、<code>/tmp</code>。</li>
+<li>展开：别名替换（很多发行版默认定义了 <code>alias ls='ls --color=auto'</code>）、变量展开（<code>$HOME</code>）、通配符展开（<code>*.log</code> 由 Shell 展开成文件列表，而不是交给 ls 处理）。</li>
+<li>处理重定向和管道：<code>&gt;</code>、<code>&lt;</code>、<code>|</code> 由 Shell 设置好文件描述符后再执行命令。</li>
+</ul>
+<p><strong>查找顺序</strong></p>
+<ol>
+<li>别名。</li>
+<li>Shell 函数。</li>
+<li>内置命令，如 <code>cd</code>、<code>echo</code>、<code>export</code>，直接在 Shell 进程内执行，不创建子进程。</li>
+<li>外部命令：依次在 <code>PATH</code> 列出的目录（如 <code>/usr/local/bin:/usr/bin:/bin</code>）中查找同名的可执行文件，用第一个找到的。命令名中带 <code>/</code>（如 <code>./run.sh</code>）时直接按路径执行，不查 PATH。</li>
+</ol>
+<p><strong>hash 缓存</strong>：bash 会把找到的外部命令路径缓存在一张哈希表中（用 <code>hash</code> 命令查看），之后不再遍历 PATH。</p>
+<p><strong>为什么 cd 必须是内置命令</strong>：当前工作目录是进程自己的属性。如果 cd 作为外部程序在子进程里执行，只能改变子进程的目录，子进程退出后父进程 Shell 的目录不变。<code>export</code> 设置环境变量也是同样的道理。</p>
+<p>用 <code>type ls</code> 可以看到命令最终被解析成别名、内置命令还是某个路径下的文件；<code>which ls</code> 只查找 PATH 中的外部命令。</p></div></article><article class="q" id="q28"><h3><a class="q-link" href="#q28">fork 和 execve 分别做了什么？</a></h3><div class="a"><p class="lead"><code>fork</code> 负责&quot;复制出一个进程&quot;，<code>execve</code> 负责&quot;把这个进程换成另一个程序&quot;。Shell 执行外部命令就是先 fork 再在子进程里 execve。</p>
+<p><strong>fork()</strong></p>
+<ul>
+<li>创建一个几乎与父进程相同的子进程：复制地址空间、打开的文件描述符、信号处理方式、环境变量、当前目录等，但 PID 不同。</li>
+<li>调用一次返回两次：父进程中返回子进程的 PID，子进程中返回 0，出错时返回 -1。</li>
+<li>采用写时复制（Copy-On-Write）：fork 时父子进程共享同一批物理页，并把页标记为只读，任何一方写入时才复制那一页，所以 fork 的成本主要是复制页表。</li>
+</ul>
+<p><strong>execve()</strong></p>
+<ul>
+<li>用新程序替换当前进程的代码段、数据段、堆和栈，PID 保持不变。</li>
+<li>内核读取可执行文件（ELF 格式），建立新的内存映射；如果是动态链接程序，先由动态链接器（如 <code>ld-linux-x86-64.so.2</code>）加载共享库，再跳到程序入口。</li>
+<li>打开的文件描述符默认保留（设置了 <code>FD_CLOEXEC</code> 的除外），这就是 Shell 能在 exec 之前先设置好重定向和管道的原因。</li>
+<li>成功时不返回（原来的代码已经不存在了），失败时返回 -1，比如文件不存在或没有执行权限。</li>
+</ul>
+<p><strong>为什么分成两步</strong>：在 fork 之后、exec 之前，子进程可以先调整重定向、管道、环境变量、工作目录、资源限制，然后再执行新程序，这让 Shell 实现 <code>ls &gt; out.txt</code>、<code>a | b</code> 非常自然。</p>
+<p><strong>回收</strong>：子进程退出后，父进程必须调用 <code>wait</code> / <code>waitpid</code> 读取退出状态，否则子进程会一直保留为僵尸进程；父进程先退出时，子进程由 init（systemd）接管并回收。</p></div></article></section><nav class="pager"><a href="network.html" class="prev"><small>上一章</small>计算机网络</a><a href="design-pattern.html" class="next"><small>下一章</small>设计模式</a></nav>
+  </div>
+</main>
+<div class="backdrop" id="backdrop"></div>
+<button class="to-top" id="to-top" aria-label="回到顶部">↑</button>
+<script id="outline" type="application/json">[{"block":"操作系统 & Linux"},{"id":"g1","title":"进程、调度与死锁","n":5,"core":2},{"id":"g2","title":"内存管理","n":5,"core":2},{"id":"g3","title":"内核、文件与 I/O","n":4,"core":2},{"block":"Linux"},{"id":"g4","title":"常用命令","n":5,"core":1},{"id":"g5","title":"进程与资源监控","n":5,"core":2},{"id":"g6","title":"文件系统与命令执行","n":4,"core":2}]</script>
+<script src="assets/app.js?v=ab30056e"></script>
+</body>
+</html>
