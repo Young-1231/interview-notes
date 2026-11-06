@@ -35,10 +35,10 @@
 .guide .chapter { padding: 8px 0 28px; border-bottom: 1px solid var(--border); }
 .guide .chapter:last-child { border-bottom: 0; }
 .only-must .chapter:not([data-tag="must"]) { display: none; }
-.guide h2.ch-title { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 27px; font-weight: 800; letter-spacing: -.02em; margin: 40px 0 14px; scroll-margin-top: 70px; }
+.guide h2.ch-title { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 27px; font-weight: 800; letter-spacing: -.02em; margin: 40px 0 14px; scroll-margin-top: 8px; }
 .guide h2.ch-title .no { width: 34px; height: 34px; border-radius: 9px; background: var(--g); color: #fff; font-size: 17px; display: inline-flex; align-items: center; justify-content: center; }
 .guide h2.ch-title .tag { font-size: 12px; padding: 2px 8px; }
-.guide h3 { font-size: 19px; font-weight: 750; margin: 32px 0 8px; padding-left: 12px; border-left: 4px solid var(--g); scroll-margin-top: 70px; }
+.guide h3 { font-size: 19px; font-weight: 750; margin: 32px 0 8px; padding-left: 12px; border-left: 4px solid var(--g); scroll-margin-top: 8px; }
 .guide h3.prod-h { border-left-color: var(--fix-bd); }
 .guide h3.quiz-h { border-left-color: var(--accent); }
 .guide h4 { font-size: 16px; font-weight: 700; margin: 20px 0 4px; }
@@ -94,3 +94,20 @@
   .g-filter button { padding: 5px 8px; }
   .guide h2.ch-title { font-size: 22px; }
 }
+
+/* 章末「下一章」 */
+.g-next { display: block; margin: 28px 0 0 auto; max-width: 420px; padding: 12px 16px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-elev); color: var(--text); font-weight: 600; text-align: right; }
+.g-next small { display: block; font-size: 12px; font-weight: 400; color: var(--text-mute); }
+.g-next:hover { border-color: var(--g); text-decoration: none; }
+.only-must .g-next { display: none; }
+
+/* 窄屏:标题保留简称;图可横向滑动并给出提示 */
+.guide-page .brand .short { display: none; }
+@media (max-width: 560px) {
+  .guide-page .brand { display: inline; font-size: 15px; }
+  .guide-page .brand .full { display: none; }
+  .guide-page .brand .short { display: inline; }
+  .diagram { padding: 10px; }
+  .diagram::after { content: "← 左右滑动查看完整图 →"; display: block; margin-top: 6px; text-align: center; font-size: 12px; color: var(--text-mute); }
+}
+#toc .g-home { margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border); border-radius: 0; font-size: 13px; color: var(--text-mute); }

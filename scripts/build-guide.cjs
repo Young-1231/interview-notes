@@ -45,8 +45,13 @@ for (const f of files) {
   });
   // 章首的一句话引用块
   out = out.replace(/<blockquote>/, '<blockquote class="gist">');
-  html += `<section class="chapter" data-tag="${TAG[chap.tag]}">${out}</section>\n`;
+  html += `<section class="chapter" data-tag="${TAG[chap.tag]}">${out}<!--NEXT:${chap.no}--></section>\n`;
 }
+// 每章末尾:下一章
+html = html.replace(/<!--NEXT:(\d+)-->/g, (_, no) => {
+  const i = toc.findIndex((c) => c.no === no), n = toc[i + 1];
+  return n ? `<a class="g-next" href="#${n.id}"><small>下一章</small>${n.no}. ${esc(n.title)} <i class="tag ${TAG[n.tag]}">${n.tag}</i></a>` : '';
+});
 
 const VER = crypto.createHash('md5').update(html)
   .update(fs.readFileSync(path.join(ROOT, 'assets', 'style.css'))).update(fs.readFileSync(path.join(ROOT, 'assets', 'guide.css'))).update(fs.readFileSync(path.join(ROOT, 'assets', 'guide.js')))

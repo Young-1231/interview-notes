@@ -18,7 +18,7 @@
     <div class="g-ch" data-ch="${c.id}" data-tag="${TAG[c.tag]}">
       <a class="g-ch-a" href="#${c.id}"><span class="no">${c.no}</span><span class="t">${esc(c.title)}</span><i class="tag ${TAG[c.tag]}">${c.tag}</i></a>
       <div class="g-secs">${c.secs.map((s) => `<a href="#${s.id}" data-s="${s.id}">${esc(s.title)}</a>`).join('')}</div>
-    </div>`).join('');
+    </div>`).join('') + '<a class="g-home" href="index.html">← 返回八股笔记</a>';
   const chEls = [...document.querySelectorAll('.g-ch')];
   const secLinks = [...document.querySelectorAll('.g-secs a')];
   // 当前位置 = 视口顶部之上最后一个标题(比 IntersectionObserver 更稳,跳转后也能立刻高亮)
@@ -76,6 +76,24 @@
   };
   btns.forEach((b) => b.addEventListener('click', () => setF(b.dataset.f)));
   setF(localStorage.getItem('iv.guide.filter') || 'all');
+
+  // 跳转到被「只看必学」隐藏的章节时(路线图、目录、正文交叉引用、继续上次),先切回「全部」再跳
+  const isHidden = (el) => el && el.closest('.chapter') && getComputedStyle(el.closest('.chapter')).display === 'none';
+  const reveal = (id) => {
+    const el = id && document.getElementById(id);
+    if (!isHidden(el)) return false;
+    setF('all');
+    el.scrollIntoView({ block: 'start' });
+    return true;
+  };
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    const id = decodeURIComponent(a.getAttribute('href').slice(1));
+    if (reveal(id)) { e.preventDefault(); history.pushState(null, '', `#${id}`); document.body.classList.remove('side-open'); }
+  });
+  if (location.hash) reveal(decodeURIComponent(location.hash.slice(1)));
+  addEventListener('hashchange', () => reveal(decodeURIComponent(location.hash.slice(1))));
 
   // 移动端目录
   $('#menu-btn').addEventListener('click', () => document.body.classList.toggle('side-open'));
