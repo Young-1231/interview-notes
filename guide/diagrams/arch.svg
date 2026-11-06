@@ -1,0 +1,91 @@
+<svg class="dg" viewBox="0 0 1000 540" role="img" aria-label="Agent 服务总体架构:客户端、API、队列、Redis、Worker、模型与工具、PostgreSQL、可观测性">
+  <defs><marker id="ah-arch" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="ahp" d="M0,0 L8,4 L0,8 z"/></marker></defs>
+
+  <!-- 客户端 -->
+  <rect class="bx" x="20" y="140" width="130" height="120" rx="10"/>
+  <text class="h" x="85" y="182">客户端</text>
+  <text class="s" x="85" y="206">Web / App</text>
+  <text class="s" x="85" y="226">其他服务</text>
+
+  <!-- API -->
+  <rect class="bx ac" x="200" y="110" width="210" height="190" rx="10"/>
+  <text class="h" x="305" y="140">API 服务</text>
+  <text class="b" x="385" y="130">§1 §7</text>
+  <text class="s" x="305" y="162">FastAPI / Spring Boot</text>
+  <text x="305" y="194">鉴权 · 限流 · 校验</text>
+  <text class="s" x="305" y="222">POST /runs → 202</text>
+  <text class="s" x="305" y="246">GET /runs/{id}/events</text>
+  <text class="s" x="305" y="270">POST /runs/{id}/cancel</text>
+
+  <!-- 队列 -->
+  <rect class="bx" x="470" y="120" width="150" height="70" rx="10"/>
+  <text class="h" x="545" y="150">任务队列</text>
+  <text class="b" x="603" y="136">§9</text>
+  <text class="s" x="545" y="174">Celery · RabbitMQ</text>
+
+  <!-- Redis -->
+  <rect class="bx" x="470" y="225" width="150" height="75" rx="10"/>
+  <text class="h" x="545" y="253">Redis</text>
+  <text class="b" x="603" y="241">§8</text>
+  <text class="s" x="545" y="276">限流 · 取消 · 事件流</text>
+
+  <!-- Worker -->
+  <rect class="bx ac" x="680" y="110" width="170" height="190" rx="10"/>
+  <text class="h" x="765" y="140">Worker · Agent Loop</text>
+  <text class="b" x="765" y="160">§2 §4 §10</text>
+  <text class="s" x="765" y="186">领取 Run(租约)</text>
+  <text class="s" x="765" y="208">LLM 决定下一步</text>
+  <text class="s" x="765" y="230">并发执行工具</text>
+  <text class="s" x="765" y="252">每步落库 + 推事件</text>
+  <text class="s" x="765" y="274">心跳 · 检查取消</text>
+
+  <!-- 模型与工具 -->
+  <rect class="bx" x="880" y="110" width="110" height="70" rx="10"/>
+  <text class="h" x="935" y="140">模型服务</text>
+  <text class="s" x="935" y="162">LLM API</text>
+  <rect class="bx" x="880" y="200" width="110" height="100" rx="10"/>
+  <text class="h" x="935" y="226">工具</text>
+  <text class="s" x="935" y="248">web_search</text>
+  <text class="s" x="935" y="268">query_db</text>
+  <text class="s w" x="935" y="288">send_email(写)</text>
+
+  <!-- PostgreSQL -->
+  <rect class="bx ac" x="200" y="370" width="650" height="70" rx="10"/>
+  <text class="h" x="525" y="398">PostgreSQL · 唯一真相源</text>
+  <text class="b" x="830" y="390">§3</text>
+  <text class="s" x="525" y="422">agent_run · agent_step · tool_call · message</text>
+
+  <!-- 可观测性 -->
+  <rect class="bx" x="880" y="370" width="110" height="70" rx="10"/>
+  <text class="h" x="935" y="398">可观测性</text>
+  <text class="b" x="975" y="386">§5</text>
+  <text class="s" x="935" y="422">Log · Metric · Trace</text>
+
+  <!-- 运行环境 -->
+  <rect class="bx ds" x="20" y="470" width="970" height="50" rx="10"/>
+  <text class="s" x="505" y="500">运行环境:Docker / Compose / K8s §6 · Secret 与工具权限 §7 · 进程 / 网络 / 连接池 §11</text>
+
+  <!-- 连线 -->
+  <path class="ln" d="M150,175 H198" marker-end="url(#ah-arch)"/>
+  <path class="ln" d="M200,232 H152" marker-end="url(#ah-arch)"/>
+  <path class="ln" d="M305,300 V368" marker-end="url(#ah-arch)"/>
+  <path class="ln" d="M410,155 H468" marker-end="url(#ah-arch)"/>
+  <path class="ln" d="M620,155 H678" marker-end="url(#ah-arch)"/>
+  <path class="ln" d="M850,145 H878" marker-end="url(#ah-arch)"/>
+  <path class="ln" d="M850,250 H878" marker-end="url(#ah-arch)"/>
+  <path class="ln" d="M680,262 H622" marker-end="url(#ah-arch)"/>
+  <path class="ln" d="M765,300 V368" marker-end="url(#ah-arch)"/>
+  <path class="ln" d="M470,282 H412" marker-end="url(#ah-arch)"/>
+  <path class="ln" d="M410,248 H468" marker-end="url(#ah-arch)"/>
+  <path class="ln ds" d="M850,300 L905,368" marker-end="url(#ah-arch)"/>
+
+  <!-- 步骤编号 -->
+  <g class="n"><circle cx="175" cy="160" r="10"/><text x="175" y="164">1</text></g>
+  <g class="n"><circle cx="290" cy="335" r="10"/><text x="290" y="339">2</text></g>
+  <g class="n"><circle cx="440" cy="140" r="10"/><text x="440" y="144">3</text></g>
+  <g class="n"><circle cx="650" cy="140" r="10"/><text x="650" y="144">4</text></g>
+  <g class="n"><circle cx="865" cy="200" r="10"/><text x="865" y="204">5</text></g>
+  <g class="n"><circle cx="780" cy="335" r="10"/><text x="780" y="339">6</text></g>
+  <g class="n"><circle cx="440" cy="298" r="10"/><text x="440" y="302">7</text></g>
+  <g class="n"><circle cx="440" cy="232" r="10"/><text x="440" y="236">8</text></g>
+</svg>

@@ -222,3 +222,12 @@ body[data-sec="interviews"] .grp-title { position: static; }
 .only-core .ov-groups a.no-core { display: none; }
 #toc a[hidden] { display: none; }
 @media (max-width: 900px) { .kbd-hint { display: none; } }
+.home-guide { display: block; margin: 0 0 22px; padding: 16px 22px; border: 1px solid #0f766e; border-left-width: 5px; border-radius: 14px; background: var(--bg-elev); color: var(--text); font-weight: 700; font-size: 17px; }
+.home-guide small { display: block; font-size: 12px; font-weight: 500; color: #0f766e; }
+.home-guide span { display: block; margin-top: 4px; font-size: 13px; font-weight: 400; color: var(--text-soft); }
+.home-guide:hover { text-decoration: none; border-color: var(--accent); }
+[data-theme="dark"] .home-guide, [data-theme="dark"] .home-guide small { border-color: #2dd4bf; color: inherit; }
+[data-theme="dark"] .home-guide small { color: #2dd4bf; }
+.hdr-guide { font-size: 13px; color: var(--text-soft); white-space: nowrap; padding: 4px 10px; border: 1px solid var(--border); border-radius: 999px; }
+.hdr-guide:hover { color: var(--text); text-decoration: none; border-color: var(--text-mute); }
+@media (max-width: 900px) { .hdr-guide { display: none; } }

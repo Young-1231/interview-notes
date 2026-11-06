@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="darkreader-lock">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent 后端工程 · 系统学习</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f766e'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' font-weight='bold' fill='white' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css?v=<!-- V -->">
+<link rel="stylesheet" href="assets/guide.css?v=<!-- V -->">
+<script>
+  (function () {
+    var t = localStorage.getItem('iv.theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+</head>
+<body class="guide-page">
+<header class="site-header">
+  <button class="icon-btn menu-btn" id="menu-btn" aria-label="目录">☰</button>
+  <a href="agent-backend.html" class="brand"><span class="dot g">●</span> Agent 后端工程</a>
+  <div class="g-filter" role="group" aria-label="按难度筛选">
+    <button type="button" data-f="all" aria-pressed="true">全部</button>
+    <button type="button" data-f="must" aria-pressed="false">只看必学</button>
+  </div>
+  <span class="g-progress" id="g-progress"></span>
+  <a href="index.html" class="g-back">八股笔记 →</a>
+  <button class="icon-btn" id="theme-toggle" aria-label="切换主题">◐</button>
+</header>
+<aside class="side" id="side"><nav id="toc"></nav></aside>
+<main class="main">
+  <div id="article" class="a guide">
+<!-- CONTENT -->
+  </div>
+</main>
+<div class="backdrop" id="backdrop"></div>
+<button class="to-top" id="to-top" aria-label="回到顶部">↑</button>
+<script id="toc-data" type="application/json"><!-- TOC --></script>
+<script src="assets/guide.js?v=<!-- V -->"></script>
+</body>
+</html>

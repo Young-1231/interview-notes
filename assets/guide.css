@@ -1,0 +1,96 @@
+/* 「Agent 后端工程」专题页。配色变量来自 style.css */
+.guide-page { --g: #0f766e; --g-soft: #ccfbf1; --must: #b91c1c; --must-bg: #fee2e2; --need: #1d4ed8; --need-bg: #dbeafe; --adv: #7c3aed; --adv-bg: #ede9fe; }
+[data-theme="dark"] .guide-page { --g: #2dd4bf; --g-soft: #134e4a; --must: #fca5a5; --must-bg: #450a0a; --need: #93c5fd; --need-bg: #1e3a8a; --adv: #c4b5fd; --adv-bg: #3b0764; }
+.brand .dot.g { color: var(--g); }
+
+/* 顶栏 */
+.g-filter { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-left: auto; }
+.g-filter button { border: 0; background: var(--bg-elev); padding: 5px 12px; font-size: 13px; color: var(--text-soft); }
+.g-filter button + button { border-left: 1px solid var(--border); }
+.g-filter button[aria-pressed="true"] { background: var(--g); color: #fff; }
+.g-progress { font-size: 12px; color: var(--text-mute); font-variant-numeric: tabular-nums; min-width: 34px; text-align: right; }
+.g-back { font-size: 13px; color: var(--text-soft); white-space: nowrap; }
+
+/* 目录 */
+.g-ch { margin-bottom: 2px; }
+#toc .g-ch-a { display: flex; align-items: center; gap: 8px; justify-content: flex-start; padding: 6px 8px; }
+.g-ch-a .no { flex: none; width: 20px; height: 20px; border-radius: 50%; background: var(--bg-soft); color: var(--text-mute); font-size: 11px; display: inline-flex; align-items: center; justify-content: center; font-variant-numeric: tabular-nums; }
+.g-ch-a .t { flex: 1; min-width: 0; }
+.g-ch.cur .g-ch-a { color: var(--text); font-weight: 700; }
+.g-ch.cur .g-ch-a .no { background: var(--g); color: #fff; }
+.g-secs { display: none; margin: 2px 0 8px 18px; padding-left: 10px; border-left: 2px solid var(--border); }
+.g-ch.cur .g-secs { display: block; }
+#toc .g-secs a { font-size: 13px; padding: 3px 8px; }
+#toc .g-secs a.active { background: var(--g-soft); color: var(--g); font-weight: 600; }
+.only-must .g-ch:not([data-tag="must"]) { opacity: .4; }
+
+/* 标签 */
+.tag { font-style: normal; font-size: 11px; font-weight: 600; padding: 1px 6px; border-radius: 4px; white-space: nowrap; flex: none; }
+.tag.must { color: var(--must); background: var(--must-bg); }
+.tag.need { color: var(--need); background: var(--need-bg); }
+.tag.adv { color: var(--adv); background: var(--adv-bg); }
+
+/* 正文 */
+.guide { max-width: 900px; font-size: 15.5px; line-height: 1.85; }
+.guide .chapter { padding: 8px 0 28px; border-bottom: 1px solid var(--border); }
+.guide .chapter:last-child { border-bottom: 0; }
+.only-must .chapter:not([data-tag="must"]) { display: none; }
+.guide h2.ch-title { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 27px; font-weight: 800; letter-spacing: -.02em; margin: 40px 0 14px; scroll-margin-top: 70px; }
+.guide h2.ch-title .no { width: 34px; height: 34px; border-radius: 9px; background: var(--g); color: #fff; font-size: 17px; display: inline-flex; align-items: center; justify-content: center; }
+.guide h2.ch-title .tag { font-size: 12px; padding: 2px 8px; }
+.guide h3 { font-size: 19px; font-weight: 750; margin: 32px 0 8px; padding-left: 12px; border-left: 4px solid var(--g); scroll-margin-top: 70px; }
+.guide h3.prod-h { border-left-color: var(--fix-bd); }
+.guide h3.quiz-h { border-left-color: var(--accent); }
+.guide h4 { font-size: 16px; font-weight: 700; margin: 20px 0 4px; }
+.guide blockquote.gist { margin: 0 0 8px; padding: 12px 16px; border: 0; border-radius: 10px; background: var(--g-soft); color: var(--text); font-size: 16px; font-weight: 600; }
+.guide blockquote.gist p { margin: 0; }
+.guide .note, .guide .tip { margin: 12px 0; padding: 10px 14px 10px 40px; border-radius: 8px; font-size: 14.5px; position: relative; }
+.guide .note { background: var(--fix-bg); border: 1px solid var(--fix-bd); }
+.guide .note::before { content: "!"; position: absolute; left: 14px; top: 10px; width: 18px; height: 18px; border-radius: 50%; background: var(--fix-bd); color: #fff; font-weight: 800; font-size: 12px; text-align: center; line-height: 18px; }
+.guide .tip { background: var(--bg-soft); border-left: 4px solid var(--ok); }
+.guide .tip::before { content: "✓"; position: absolute; left: 15px; top: 10px; color: var(--ok); font-weight: 800; }
+.guide h3.quiz-h + ul { list-style: none; padding: 0; display: grid; gap: 8px; }
+.guide h3.quiz-h + ul > li { padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-elev); }
+.guide table { font-size: 14px; }
+.g-resume { display: block; margin: 20px 0 0; padding: 10px 14px; border: 1px solid var(--g); border-radius: 10px; background: var(--g-soft); color: var(--text); font-size: 14px; }
+.g-resume:hover { text-decoration: none; }
+
+/* 图 */
+.diagram { margin: 16px 0; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-elev); overflow-x: auto; }
+.dg { display: block; width: 100%; min-width: 640px; height: auto; font-family: var(--font); }
+.dg text { fill: var(--text); font-size: 14px; text-anchor: middle; }
+.dg text.h { font-weight: 700; font-size: 15px; }
+.dg text.s { fill: var(--text-soft); font-size: 12.5px; }
+.dg text.e { text-anchor: end; }
+.dg text.st { text-anchor: start; }
+.dg text.w { fill: var(--red); }
+.dg text.b { fill: var(--g); font-size: 11px; font-weight: 700; }
+.dg .bx { fill: var(--bg-soft); stroke: var(--border); stroke-width: 1.5; }
+.dg .bx.ac { fill: var(--g-soft); stroke: var(--g); }
+.dg .bx.ok { stroke: var(--ok); }
+.dg .bx.bad { stroke: var(--red); }
+.dg .bx.ds, .dg .ln.ds { stroke-dasharray: 5 4; }
+.dg .ln { fill: none; stroke: var(--text-mute); stroke-width: 1.6; }
+.dg .ahp { fill: var(--text-mute); }
+.dg .n circle { fill: var(--g); }
+.dg .n text { fill: #fff; font-size: 12px; font-weight: 700; }
+
+/* 路线图(HTML 网格) */
+.roadmap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 14px 0; }
+.roadmap > div { padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-elev); font-size: 14px; }
+.roadmap > div > b { display: block; margin-bottom: 6px; }
+.roadmap .must { border-top: 4px solid var(--must); }
+.roadmap .need { border-top: 4px solid var(--need); }
+.roadmap .adv { border-top: 4px solid var(--adv); }
+.roadmap a { display: block; color: var(--text-soft); }
+.roadmap a:hover { color: var(--g); }
+
+@media (max-width: 900px) {
+  .g-back { display: none; }
+  .roadmap { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .g-progress { display: none; }
+  .g-filter button { padding: 5px 8px; }
+  .guide h2.ch-title { font-size: 22px; }
+}
